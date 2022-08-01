@@ -3,7 +3,7 @@ package tracer
 import (
 	"fmt"
 
-	servicename "github.com/NpoolPlatform/service-template/pkg/servicename"
+	servicename "github.com/NpoolPlatform/ledger-middleware/pkg/servicename"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -23,6 +23,14 @@ func TraceOffsetLimit(span trace.Span, offset, limit int) trace.Span {
 	span.SetAttributes(
 		attribute.Int("Offset", offset),
 		attribute.Int("Limit", limit),
+	)
+	return span
+}
+
+func TraceStartEnd(span trace.Span, start, end uint32) trace.Span {
+	span.SetAttributes(
+		attribute.Int64("Start", int64(start)),
+		attribute.Int64("End", int64(end)),
 	)
 	return span
 }

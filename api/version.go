@@ -7,11 +7,13 @@ import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	npool "github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/service-template/pkg/version"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/version"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	npool "github.com/NpoolPlatform/message/npool"
 )
 
 func (s *Server) Version(ctx context.Context, in *emptypb.Empty) (*npool.VersionResponse, error) {

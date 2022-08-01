@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger-middleware
+  namespace: kube-system
+  annotations:
+    "sidecar.jaegertracing.io/inject": "true"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ledger-middleware
+  template:
+    metadata:
+      labels:
+        app: ledger-middleware
+    spec:
+      containers:
+        - name: ledger-middleware
+          image: uhub.service.ucloud.cn/entropypool/ledger-middleware:latest
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: service-config
+              mountPath: /etc/LedgerMiddleware
+          env:
+            - name: ENV_ENVIRONMENT_TARGET
+              valueFrom:
+                configMapKeyRef:
+                  name: system-environment
+                  key: environment.target
+            - name: ENV_CONSUL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: system-environment
+                  key: environment.consul_host
+            - name: ENV_CONSUL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: system-environment
+                  key: environment.consul_port
+            - name: ENV_CLUSTER_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+      volumes:
+        - name: service-config
+          configMap:
+            name: ledger-middleware-config
+            items:
+              - key: service-conf
+                path: LedgerMiddleware.viper.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ledger-middleware
+  namespace: kube-system
+spec:
+  ports:
+    - name: http
+      port: 50420
+      targetPort: 50420
+    - name: grpc
+      port: 50421
+      targetPort: 50421
+    - name: healthz
+      port: 50422
+      targetPort: 50422
+    - name: prometheus
+      port: 50423
+      targetPort: 50423
+  selector:
+    app: ledger-middleware
