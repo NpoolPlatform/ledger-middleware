@@ -48,9 +48,9 @@ func (s *Server) GetIntervalGenerals(
 
 	span = tracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
 	span = tracer.TraceStartEnd(span, in.GetStart(), in.GetEnd())
-	span = tracer.TraceInvoker(span, "ledger", "ledger", "Rows")
+	span = tracer.TraceInvoker(span, "ledger", "ledger", "GetIntervalGenerals")
 
-	rows, total, err := ledger1.GetIntervalGenerals(
+	infos, total, err := ledger1.GetIntervalGenerals(
 		ctx,
 		in.GetAppID(), in.GetUserID(),
 		in.GetStart(), in.GetEnd(),
@@ -62,7 +62,101 @@ func (s *Server) GetIntervalGenerals(
 	}
 
 	return &npool.GetIntervalGeneralsResponse{
-		Infos: rows,
+		Infos: infos,
+		Total: total,
+	}, nil
+}
+
+func (s *Server) GetIntervalDetails(
+	ctx context.Context, in *npool.GetIntervalDetailsRequest,
+) (
+	*npool.GetIntervalDetailsResponse, error,
+) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetIntervalDetails")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("GetIntervalDetails", "AppID", in.GetAppID(), "error", err)
+		return &npool.GetIntervalDetailsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Errorw("GetIntervalDetails", "UserID", in.GetUserID(), "error", err)
+		return &npool.GetIntervalDetailsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = tracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
+	span = tracer.TraceStartEnd(span, in.GetStart(), in.GetEnd())
+	span = tracer.TraceInvoker(span, "ledger", "ledger", "GetIntervalDetails")
+
+	infos, total, err := ledger1.GetIntervalDetails(
+		ctx,
+		in.GetAppID(), in.GetUserID(),
+		in.GetStart(), in.GetEnd(),
+		in.GetOffset(), in.GetLimit(),
+	)
+	if err != nil {
+		logger.Sugar().Errorw("GetIntervalDetails", "error", err)
+		return &npool.GetIntervalDetailsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetIntervalDetailsResponse{
+		Infos: infos,
+		Total: total,
+	}, nil
+}
+
+func (s *Server) GetIntervalProfits(
+	ctx context.Context, in *npool.GetIntervalProfitsRequest,
+) (
+	*npool.GetIntervalProfitsResponse, error,
+) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetIntervalProfits")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("GetIntervalProfits", "AppID", in.GetAppID(), "error", err)
+		return &npool.GetIntervalProfitsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Errorw("GetIntervalProfits", "UserID", in.GetUserID(), "error", err)
+		return &npool.GetIntervalProfitsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = tracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
+	span = tracer.TraceStartEnd(span, in.GetStart(), in.GetEnd())
+	span = tracer.TraceInvoker(span, "ledger", "ledger", "GetIntervalProfits")
+
+	infos, total, err := ledger1.GetIntervalProfits(
+		ctx,
+		in.GetAppID(), in.GetUserID(),
+		in.GetStart(), in.GetEnd(),
+		in.GetOffset(), in.GetLimit(),
+	)
+	if err != nil {
+		logger.Sugar().Errorw("GetIntervalProfits", "error", err)
+		return &npool.GetIntervalProfitsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetIntervalProfitsResponse{
+		Infos: infos,
 		Total: total,
 	}, nil
 }

@@ -1,3 +1,4 @@
+//nolint:dupl
 package ledger
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent"
 	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent/detail"
 
+	detailconverter "github.com/NpoolPlatform/ledger-manager/pkg/converter/detail"
 	detailpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
 	generalpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/general"
 
@@ -83,4 +85,79 @@ func GetIntervalGenerals(
 	}
 
 	return infos, total, nil
+}
+
+func GetIntervalDetails(
+	ctx context.Context, appID, userID string, start, end uint32, offset, limit int32,
+) (
+	infos []*detailpb.Detail, total uint32, err error,
+) {
+	details := []*ent.Detail{}
+
+	err = db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		stm := cli.
+			Detail.
+			Query().
+			Where(
+				detail.AppID(uuid.MustParse(appID)),
+				detail.UserID(uuid.MustParse(userID)),
+				detail.CreatedAtGT(start),
+				detail.CreatedAtLT(end),
+			)
+		_total, err := stm.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		total = uint32(_total)
+
+		details, err = stm.
+			Offset(int(offset)).
+			Limit(int(limit)).
+			All(ctx)
+		return err
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return detailconverter.Ent2GrpcMany(details), total, nil
+}
+
+func GetIntervalProfits(
+	ctx context.Context, appID, userID string, start, end uint32, offset, limit int32,
+) (
+	infos []*detailpb.Detail, total uint32, err error,
+) {
+	details := []*ent.Detail{}
+
+	err = db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		stm := cli.
+			Detail.
+			Query().
+			Where(
+				detail.AppID(uuid.MustParse(appID)),
+				detail.UserID(uuid.MustParse(userID)),
+				detail.CreatedAtGT(start),
+				detail.CreatedAtLT(end),
+				detail.IoType(detailpb.IOType_Incoming.String()),
+			)
+		_total, err := stm.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		total = uint32(_total)
+
+		details, err = stm.
+			Offset(int(offset)).
+			Limit(int(limit)).
+			All(ctx)
+		return err
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return detailconverter.Ent2GrpcMany(details), total, nil
 }

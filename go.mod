@@ -7,7 +7,7 @@ require (
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220722111225-08c2156ac8bf
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220801083606-458fa4cd2fbe
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220621110548-8f3f8049ecc5
-	github.com/NpoolPlatform/message v0.0.0-20220801133106-f91e5ee00d35
+	github.com/NpoolPlatform/message v0.0.0-20220801151049-9fc1aca6505b
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
