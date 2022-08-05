@@ -5,6 +5,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -126,4 +128,37 @@ func BookKeeping(ctx context.Context, in *detailpb.DetailReq) error {
 	return err
 }
 
-func UnlockBalance(ctx context.Context)
+func LockBalance(ctx context.Context, appID, userID, coinTypeID string, amount decimal.Decimal) error {
+	_, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		_, err := cli.LockBalance(_ctx, &npool.LockBalanceRequest{
+			AppID:      appID,
+			UserID:     userID,
+			CoinTypeID: coinTypeID,
+			Amount:     amount.String(),
+		})
+		return nil, err
+	})
+	return err
+}
+
+func UnlockBalance(
+	ctx context.Context,
+	appID, userID, coinTypeID string,
+	ioSubType detailpb.IOSubType,
+	unlocked, outcoming decimal.Decimal,
+	ioExtra string,
+) error {
+	_, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		_, err := cli.UnlockBalance(_ctx, &npool.UnlockBalanceRequest{
+			AppID:      appID,
+			UserID:     userID,
+			CoinTypeID: coinTypeID,
+			IOSubType:  ioSubType,
+			Unlocked:   unlocked.String(),
+			Outcoming:  outcoming.String(),
+			IOExtra:    ioExtra,
+		})
+		return nil, err
+	})
+	return err
+}
