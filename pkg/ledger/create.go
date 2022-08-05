@@ -16,7 +16,7 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error {
 func UnlockBalance(
 	ctx context.Context,
 	appID, userID, coinTypeID string,
-	ioType detailmgrpb.IOType,
+	ioSubType detailmgrpb.IOSubType,
 	unlocked, outcoming decimal.Decimal,
 	ioExtra string,
 ) error {
