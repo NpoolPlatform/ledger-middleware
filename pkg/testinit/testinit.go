@@ -5,6 +5,8 @@ import (
 	"path"
 	"runtime"
 
+	"github.com/NpoolPlatform/ledger-manager/pkg/db"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/app"
 
 	servicename "github.com/NpoolPlatform/ledger-middleware/pkg/servicename"
@@ -37,6 +39,10 @@ func Init() error {
 	)
 	if err != nil {
 		return fmt.Errorf("cannot init app stub: %v", err)
+	}
+
+	if err = db.Init(); err != nil {
+		return fmt.Errorf("cannot init db: %v", err)
 	}
 
 	return nil

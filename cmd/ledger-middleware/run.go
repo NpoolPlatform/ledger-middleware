@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/NpoolPlatform/ledger-middleware/api"
 
+	"github.com/NpoolPlatform/ledger-manager/pkg/db"
+
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -22,6 +24,10 @@ var runCmd = &cli.Command{
 	Aliases: []string{"s"},
 	Usage:   "Run the daemon",
 	Action: func(c *cli.Context) error {
+		if err := db.Init(); err != nil {
+			return err
+		}
+
 		go func() {
 			if err := grpc2.RunGRPC(rpcRegister); err != nil {
 				logger.Sugar().Errorf("fail to run grpc server: %v", err)
