@@ -13,6 +13,7 @@ import (
 	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent/general"
 	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent/profit"
 
+	detailcli "github.com/NpoolPlatform/ledger-manager/pkg/client/detail"
 	detailcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/detail"
 	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
 
@@ -164,6 +165,39 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 		_ = redis2.Unlock(key)
 	}()
 
+	exist, err := detailcli.ExistDetailConds(ctx, &detailmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetUserID(),
+		},
+		CoinTypeID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetCoinTypeID(),
+		},
+		IOType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(in.GetIOType()),
+		},
+		IOSubType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(in.GetIOSubType()),
+		},
+		IOExtra: &commonpb.StringVal{
+			Op:    cruder.LIKE,
+			Value: in.GetIOExtra(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("already exist")
+	}
+
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		c1, err := detailcrud.CreateSet(tx.Detail.Create(), in)
 		if err != nil {
@@ -314,6 +348,39 @@ func UnlockBalance(
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
+
+	exist, err := detailcli.ExistDetailConds(ctx, &detailmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: detailReq.GetAppID(),
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: detailReq.GetUserID(),
+		},
+		CoinTypeID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: detailReq.GetCoinTypeID(),
+		},
+		IOType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(detailReq.GetIOType()),
+		},
+		IOSubType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(detailReq.GetIOSubType()),
+		},
+		IOExtra: &commonpb.StringVal{
+			Op:    cruder.LIKE,
+			Value: detailReq.GetIOExtra(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("already exist")
+	}
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		info, err := tx.
