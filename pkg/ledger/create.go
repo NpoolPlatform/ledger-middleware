@@ -289,7 +289,7 @@ func UnlockBalance(
 		return fmt.Errorf("nothing todo")
 	}
 
-	spendable := decimal.NewFromInt(0).Sub(outcoming)
+	spendable := unlocked.Sub(outcoming)
 
 	unlockedS := fmt.Sprintf("-%v", unlocked)
 	outcomingS := outcoming.String()
