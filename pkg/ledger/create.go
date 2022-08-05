@@ -3,6 +3,7 @@ package ledger
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
@@ -116,6 +117,19 @@ func TryCreateGeneral(ctx context.Context, appID, userID, coinTypeID string) (st
 	return general1.ID, nil
 }
 
+func detailKey(in *detailmgrpb.DetailReq) string {
+	extra := sha256.Sum256([]byte(in.GetIOExtra()))
+	return fmt.Sprintf("ledger-detail:%v:%v:%v:%v:%v:%v:%v",
+		in.GetAppID(),
+		in.GetUserID(),
+		in.GetCoinTypeID(),
+		in.GetIOType(),
+		in.GetIOSubType(),
+		in.GetIOExtra(),
+		extra,
+	)
+}
+
 func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolint
 	val, err := decimal.NewFromString(in.GetAmount())
 	if err != nil {
@@ -141,6 +155,14 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 	); err != nil {
 		return err
 	}
+
+	key := detailKey(in)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		c1, err := detailcrud.CreateSet(tx.Detail.Create(), in)
@@ -240,6 +262,7 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 	})
 }
 
+// nolint
 func UnlockBalance(
 	ctx context.Context,
 	appID, userID, coinTypeID string,
@@ -271,6 +294,26 @@ func UnlockBalance(
 	unlockedS := fmt.Sprintf("-%v", unlocked)
 	outcomingS := outcoming.String()
 	spendableS := spendable.String()
+
+	ioType := detailmgrpb.IOType_Outcoming
+
+	detailReq := &detailmgrpb.DetailReq{
+		AppID:      &appID,
+		UserID:     &userID,
+		CoinTypeID: &coinTypeID,
+		IOType:     &ioType,
+		IOSubType:  &ioSubType,
+		Amount:     &outcomingS,
+		IOExtra:    &ioExtra,
+	}
+
+	key := detailKey(detailReq)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		info, err := tx.
@@ -305,8 +348,6 @@ func UnlockBalance(
 		if outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 			return nil
 		}
-
-		ioType := detailmgrpb.IOType_Outcoming
 
 		c2, err := detailcrud.CreateSet(tx.Detail.Create(), &detailmgrpb.DetailReq{
 			AppID:      &appID,
