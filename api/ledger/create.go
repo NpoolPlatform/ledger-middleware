@@ -34,6 +34,37 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 	return &npool.BookKeepingResponse{}, nil
 }
 
+func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) (*npool.LockBalanceResponse, error) {
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("LockBalance", "AppID", in.GetAppID(), "error", err)
+		return &npool.LockBalanceResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Errorw("LockBalance", "UserID", in.GetUserID(), "error", err)
+		return &npool.LockBalanceResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if _, err := uuid.Parse(in.GetCoinTypeID()); err != nil {
+		logger.Sugar().Errorw("LockBalance", "CoinTypeID", in.GetCoinTypeID(), "error", err)
+		return &npool.LockBalanceResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	locked, err := decimal.NewFromString(in.GetAmount())
+	if err != nil {
+		logger.Sugar().Errorw("LockBalance", "Amount", in.GetAmount(), "error", err)
+		return &npool.LockBalanceResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	err = ledger1.LockBalance(ctx, in.GetAppID(), in.GetUserID(), in.GetCoinTypeID(), locked)
+	if err != nil {
+		logger.Sugar().Errorw("LockBalance", "error", err)
+		return &npool.LockBalanceResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.LockBalanceResponse{}, nil
+}
+
 func (s *Server) UnlockBalance(ctx context.Context, in *npool.UnlockBalanceRequest) (*npool.UnlockBalanceResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("UnlockBalance", "AppID", in.GetAppID(), "error", err)

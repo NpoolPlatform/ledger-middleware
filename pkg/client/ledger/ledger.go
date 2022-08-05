@@ -19,7 +19,7 @@ var timeout = 10 * time.Second
 
 type handler func(context.Context, npool.MiddlewareClient) (cruder.Any, error)
 
-func withCRUD(ctx context.Context, handler handler) (cruder.Any, error) {
+func withClient(ctx context.Context, handler handler) (cruder.Any, error) {
 	_ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -41,8 +41,8 @@ func GetIntervalGenerals(
 	[]*generalpb.General, uint32, error,
 ) {
 	var total uint32
-	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetIntervalGenerals(ctx, &npool.GetIntervalGeneralsRequest{
+	infos, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetIntervalGenerals(_ctx, &npool.GetIntervalGeneralsRequest{
 			AppID:  appID,
 			UserID: userID,
 			Start:  start,
@@ -54,7 +54,7 @@ func GetIntervalGenerals(
 			return nil, err
 		}
 		total = resp.GetTotal()
-		return resp.GetInfos(), nil
+		return resp.Infos, nil
 	})
 	if err != nil {
 		return nil, 0, err
@@ -68,8 +68,8 @@ func GetIntervalDetails(
 	[]*detailpb.Detail, uint32, error,
 ) {
 	var total uint32
-	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetIntervalDetails(ctx, &npool.GetIntervalDetailsRequest{
+	infos, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetIntervalDetails(_ctx, &npool.GetIntervalDetailsRequest{
 			AppID:  appID,
 			UserID: userID,
 			Start:  start,
@@ -81,7 +81,7 @@ func GetIntervalDetails(
 			return nil, err
 		}
 		total = resp.GetTotal()
-		return resp.GetInfos(), nil
+		return resp.Infos, nil
 	})
 	if err != nil {
 		return nil, 0, err
@@ -95,8 +95,8 @@ func GetIntervalProfits(
 	[]*detailpb.Detail, uint32, error,
 ) {
 	var total uint32
-	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetIntervalProfits(ctx, &npool.GetIntervalProfitsRequest{
+	infos, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetIntervalProfits(_ctx, &npool.GetIntervalProfitsRequest{
 			AppID:  appID,
 			UserID: userID,
 			Start:  start,
@@ -108,10 +108,22 @@ func GetIntervalProfits(
 			return nil, err
 		}
 		total = resp.GetTotal()
-		return resp.GetInfos(), nil
+		return resp.Infos, nil
 	})
 	if err != nil {
 		return nil, 0, err
 	}
 	return infos.([]*detailpb.Detail), total, nil
 }
+
+func BookKeeping(ctx context.Context, in *detailpb.DetailReq) error {
+	_, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		_, err := cli.BookKeeping(_ctx, &npool.BookKeepingRequest{
+			Info: in,
+		})
+		return nil, err
+	})
+	return err
+}
+
+func UnlockBalance(ctx context.Context)

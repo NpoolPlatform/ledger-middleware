@@ -366,3 +366,32 @@ func UnlockBalance(
 		return err
 	})
 }
+
+func LockBalance(
+	ctx context.Context,
+	appID, userID, coinTypeID string,
+	amount decimal.Decimal,
+) error {
+	var generalID string
+	var err error
+
+	if amount.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("invalid amount")
+	}
+
+	if generalID, err = TryCreateGeneral(
+		ctx, appID, userID, coinTypeID,
+	); err != nil {
+		return err
+	}
+
+	locked := fmt.Sprintf("%v", amount)
+	_, err = generalcli.AddGeneral(ctx, &generalmgrpb.GeneralReq{
+		ID:         &generalID,
+		AppID:      &appID,
+		UserID:     &userID,
+		CoinTypeID: &coinTypeID,
+		Locked:     &locked,
+	})
+	return err
+}
