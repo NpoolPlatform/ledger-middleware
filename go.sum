@@ -79,8 +79,8 @@ github.com/NpoolPlatform/go-service-framework v0.0.0-20220120091626-4e8035637592
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220722111225-08c2156ac8bf/go.mod h1:o9I+ipazkngO2E5yC7LOdLTA6nlvf4uTUMOOZ2sRiRU=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220726144547-41aefeaea336 h1:LQtAbTaGZKrGT/AwUKLGx2ojoksqp0XQGtf4RcRx9ME=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220726144547-41aefeaea336/go.mod h1:0x2o/TTJ+LZA6sPcTbhOUvt3+Ed/HiNia9gxvcw5nRA=
-github.com/NpoolPlatform/ledger-manager v0.0.0-20220807140138-3f8af767980e h1:ahRowuQNk6HeuUHW+iswWA0WppwU73bMP5Ubb5FhPoM=
-github.com/NpoolPlatform/ledger-manager v0.0.0-20220807140138-3f8af767980e/go.mod h1:JMe9oYGpwCK//w/whGDgTXFttQdmm0ELrhNc+KE8LIo=
+github.com/NpoolPlatform/ledger-manager v0.0.0-20220807142507-f756e04edc86 h1:05pWVeJ/zG39CqVnHqgySXaq0GX1xjyVb/ptRCPFXnM=
+github.com/NpoolPlatform/ledger-manager v0.0.0-20220807142507-f756e04edc86/go.mod h1:JMe9oYGpwCK//w/whGDgTXFttQdmm0ELrhNc+KE8LIo=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20220621110548-8f3f8049ecc5 h1:JF3d0OshTe/tHBKflk2x71N83ZgwxNF+EjApSa6qm1M=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20220621110548-8f3f8049ecc5/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
 github.com/NpoolPlatform/message v0.0.0-20220120075427-38182760a780/go.mod h1:tnsf7zHQ5Mv2uG0ezOwCfm/bxluiRW10DeuIl4SjG4Y=
