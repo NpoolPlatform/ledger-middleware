@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"context"
+	"errors"
 
 	"github.com/shopspring/decimal"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/NpoolPlatform/ledger-manager/api/detail"
 
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/ledger"
+
+	errno "github.com/NpoolPlatform/ledger-middleware/pkg/errno"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -28,6 +31,9 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 
 	if err := ledger1.BookKeeping(ctx, in.GetInfo()); err != nil {
 		logger.Sugar().Errorw("BookKeeping", "error", err)
+		if errors.Is(err, errno.ErrAlreadyExists) {
+			return &npool.BookKeepingResponse{}, status.Error(codes.AlreadyExists, err.Error())
+		}
 		return &npool.BookKeepingResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
