@@ -49,8 +49,8 @@ func GetIntervalGenerals(
 			UserID: userID,
 			Start:  start,
 			End:    end,
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, err
@@ -76,8 +76,8 @@ func GetIntervalDetails(
 			UserID: userID,
 			Start:  start,
 			End:    end,
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, err
@@ -103,8 +103,8 @@ func GetIntervalProfits(
 			UserID: userID,
 			Start:  start,
 			End:    end,
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, err
