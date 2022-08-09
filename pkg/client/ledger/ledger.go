@@ -38,7 +38,7 @@ func withClient(ctx context.Context, handler handler) (cruder.Any, error) {
 }
 
 func GetIntervalGenerals(
-	ctx context.Context, appID, userID string, start, end uint32, limit, offset int32,
+	ctx context.Context, appID, userID string, start, end uint32, offset, limit int32,
 ) (
 	[]*generalpb.General, uint32, error,
 ) {
@@ -49,8 +49,8 @@ func GetIntervalGenerals(
 			UserID: userID,
 			Start:  start,
 			End:    end,
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, err
@@ -65,7 +65,7 @@ func GetIntervalGenerals(
 }
 
 func GetIntervalDetails(
-	ctx context.Context, appID, userID string, start, end uint32, limit, offset int32,
+	ctx context.Context, appID, userID string, start, end uint32, offset, limit int32,
 ) (
 	[]*detailpb.Detail, uint32, error,
 ) {
@@ -76,8 +76,8 @@ func GetIntervalDetails(
 			UserID: userID,
 			Start:  start,
 			End:    end,
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, err
@@ -92,7 +92,7 @@ func GetIntervalDetails(
 }
 
 func GetIntervalProfits(
-	ctx context.Context, appID, userID string, start, end uint32, limit, offset int32,
+	ctx context.Context, appID, userID string, start, end uint32, offset, limit int32,
 ) (
 	[]*detailpb.Detail, uint32, error,
 ) {
@@ -103,8 +103,8 @@ func GetIntervalProfits(
 			UserID: userID,
 			Start:  start,
 			End:    end,
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, err
