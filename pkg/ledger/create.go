@@ -167,7 +167,7 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 		_ = redis2.Unlock(key)
 	}()
 
-	exist, err := detailcli.ExistDetailConds(ctx, &detailmgrpb.Conds{
+	conds := &detailmgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: in.GetAppID(),
@@ -175,10 +175,6 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 		UserID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: in.GetUserID(),
-		},
-		CoinTypeID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetCoinTypeID(),
 		},
 		IOType: &commonpb.Int32Val{
 			Op:    cruder.EQ,
@@ -192,7 +188,17 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 			Op:    cruder.LIKE,
 			Value: in.GetIOExtra(),
 		},
-	})
+	}
+
+	// For commission, we just ignore coin type ID here
+	if in.GetIOSubType() != detailmgrpb.IOSubType_Commission {
+		conds.CoinTypeID = &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetCoinTypeID(),
+		}
+	}
+
+	exist, err := detailcli.ExistDetailConds(ctx, conds)
 	if err != nil {
 		return err
 	}
