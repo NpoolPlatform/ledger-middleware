@@ -455,12 +455,15 @@ func LockBalance(
 	}
 
 	locked := fmt.Sprintf("%v", amount)
+	spendable := fmt.Sprintf("-%v", amount)
+
 	_, err = generalcli.AddGeneral(ctx, &generalmgrpb.GeneralReq{
 		ID:         &generalID,
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
 		Locked:     &locked,
+		Spendable:  &spendable,
 	})
 	return err
 }
