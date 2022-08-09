@@ -34,13 +34,6 @@ func GetIntervalGenerals(
 				detail.CreatedAtGT(start),
 				detail.CreatedAtLT(end),
 			)
-		_total, err := stm.Count(ctx)
-		if err != nil {
-			return err
-		}
-
-		total = uint32(_total)
-
 		details, err = stm.
 			Offset(int(offset)).
 			Limit(int(limit)).
@@ -72,6 +65,7 @@ func GetIntervalGenerals(
 				Incoming:   decimal.NewFromInt(0).String(),
 				Outcoming:  decimal.NewFromInt(0).String(),
 			}
+			total += 1
 		}
 
 		general.Incoming = incoming.Add(decimal.RequireFromString(general.Incoming)).String()
