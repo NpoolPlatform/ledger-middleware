@@ -45,14 +45,13 @@ func GetIntervalGenerals(
 
 	gMap := map[uuid.UUID]*generalpb.General{}
 	for _, detail := range details {
-		incoming := decimal.NewFromInt(0)
-		outcoming := decimal.NewFromInt(0)
+		amount := decimal.NewFromInt(0)
 
 		switch detail.IoType {
 		case detailpb.IOType_Incoming.String():
-			incoming = incoming.Add(detail.Amount)
+			fallthrough //nolint
 		case detailpb.IOType_Outcoming.String():
-			outcoming = incoming.Add(detail.Amount)
+			amount = amount.Add(detail.Amount)
 		}
 
 		general, ok := gMap[detail.CoinTypeID]
@@ -67,8 +66,12 @@ func GetIntervalGenerals(
 			total += 1
 		}
 
-		general.Incoming = incoming.Add(decimal.RequireFromString(general.Incoming)).String()
-		general.Outcoming = outcoming.Add(decimal.RequireFromString(general.Outcoming)).String()
+		switch detail.IoType {
+		case detailpb.IOType_Incoming.String():
+			general.Incoming = amount.Add(decimal.RequireFromString(general.Incoming)).String()
+		case detailpb.IOType_Outcoming.String():
+			general.Outcoming = amount.Add(decimal.RequireFromString(general.Outcoming)).String()
+		}
 
 		gMap[detail.CoinTypeID] = general
 	}
