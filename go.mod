@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220328101926-8907b2f76c6d
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95
-	github.com/NpoolPlatform/ledger-manager v0.0.0-20220815053032-56b2e5d4bed8
+	github.com/NpoolPlatform/ledger-manager v0.0.0-20220818154841-e03f6c0428b0
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220621110548-8f3f8049ecc5
 	github.com/NpoolPlatform/message v0.0.0-20220808093541-0309003ed5a8
 	github.com/go-resty/resty/v2 v2.7.0
