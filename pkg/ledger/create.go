@@ -664,7 +664,3 @@ func LockBalance(
 	})
 	return err
 }
-
-func UpdateBalance() {
-
-}
