@@ -304,14 +304,14 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 	})
 }
 
-type detail struct {
+type detailInfo struct {
 	Detail    *detailmgrpb.DetailReq
 	GeneralID string
 	ProfitID  string
 }
 
 func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error { //nolint
-	details := []detail{}
+	details := []detailInfo{}
 
 	for _, in := range infos {
 		val, err := decimal.NewFromString(in.GetAmount())
@@ -338,14 +338,6 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error { 
 		); err != nil {
 			return err
 		}
-
-		key := detailKey(in)
-		if err := redis2.TryLock(key, 0); err != nil {
-			return err
-		}
-		defer func() {
-			_ = redis2.Unlock(key)
-		}()
 
 		conds := &detailmgrpb.Conds{
 			AppID: &commonpb.StringVal{
@@ -385,22 +377,30 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error { 
 		if exist {
 			return errno.ErrAlreadyExists
 		}
-		details = append(details, detail{
+		details = append(details, detailInfo{
 			Detail:    in,
 			GeneralID: generalID,
 			ProfitID:  profitID,
 		})
 	}
 
+	key := detailKey(infos[0])
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		bulk := make([]*ent.DetailCreate, len(details))
 
-		for _, val := range details {
+		for i, val := range details {
 			c1, err := detailcrud.CreateSet(tx.Detail.Create(), val.Detail)
 			if err != nil {
 				return err
 			}
-			bulk = append(bulk, c1)
+			bulk[i] = c1
 
 			incomingD := decimal.NewFromInt(0)
 			outcomingD := decimal.NewFromInt(0)
@@ -485,7 +485,9 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error { 
 			}
 
 			_, err = c3.Save(ctx)
-			return err
+			if err != nil {
+				return err
+			}
 		}
 
 		_, err := tx.Detail.CreateBulk(bulk...).Save(ctx)
@@ -649,8 +651,8 @@ func LockBalance(
 		return err
 	}
 
-	locked := fmt.Sprintf("%v", amount)
-	spendable := fmt.Sprintf("-%v", amount)
+	locked := amount.String()
+	spendable := amount.String()
 
 	_, err = generalcli.AddGeneral(ctx, &generalmgrpb.GeneralReq{
 		ID:         &generalID,
