@@ -310,6 +310,7 @@ type detailInfo struct {
 	ProfitID  string
 }
 
+//nolint:funlen,gocyclo
 func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error {
 	detailInfos := []detailInfo{}
 
@@ -643,7 +644,7 @@ func LockBalance(
 		return err
 	}
 
-	locked := fmt.Sprintf("%v", amount)
+	locked := amount.String()
 	spendable := fmt.Sprintf("-%v", amount)
 
 	_, err = generalcli.AddGeneral(ctx, &generalmgrpb.GeneralReq{
