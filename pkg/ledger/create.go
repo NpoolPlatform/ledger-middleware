@@ -304,6 +304,190 @@ func BookKeeping(ctx context.Context, in *detailmgrpb.DetailReq) error { //nolin
 	})
 }
 
+type detailInfo struct {
+	Detail    *detailmgrpb.DetailReq
+	GeneralID string
+	ProfitID  string
+}
+
+//nolint:funlen,gocyclo
+func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error {
+	detailInfos := []detailInfo{}
+
+	for _, in := range infos {
+		val, err := decimal.NewFromString(in.GetAmount())
+		if err != nil {
+			return err
+		}
+		if val.Cmp(decimal.NewFromInt(0)) <= 0 {
+			return fmt.Errorf("invalid amount")
+		}
+
+		var generalID string
+		var profitID string
+
+		if generalID, err = TryCreateGeneral(
+			ctx,
+			in.GetAppID(), in.GetUserID(), in.GetCoinTypeID(),
+		); err != nil {
+			return err
+		}
+
+		if profitID, err = TryCreateProfit(
+			ctx,
+			in.GetAppID(), in.GetUserID(), in.GetCoinTypeID(),
+		); err != nil {
+			return err
+		}
+		detailInfos = append(detailInfos, detailInfo{
+			Detail:    in,
+			GeneralID: generalID,
+			ProfitID:  profitID,
+		})
+	}
+
+	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		for _, val := range detailInfos {
+			conds := &detailmgrpb.Conds{
+				AppID: &commonpb.StringVal{
+					Op:    cruder.EQ,
+					Value: val.Detail.GetAppID(),
+				},
+				UserID: &commonpb.StringVal{
+					Op:    cruder.EQ,
+					Value: val.Detail.GetUserID(),
+				},
+				IOType: &commonpb.Int32Val{
+					Op:    cruder.EQ,
+					Value: int32(val.Detail.GetIOType()),
+				},
+				IOSubType: &commonpb.Int32Val{
+					Op:    cruder.EQ,
+					Value: int32(val.Detail.GetIOSubType()),
+				},
+				IOExtra: &commonpb.StringVal{
+					Op:    cruder.LIKE,
+					Value: val.Detail.GetIOExtra(),
+				},
+			}
+
+			// For commission, we just ignore coin type ID here
+			if val.Detail.GetIOSubType() != detailmgrpb.IOSubType_Commission {
+				conds.CoinTypeID = &commonpb.StringVal{
+					Op:    cruder.EQ,
+					Value: val.Detail.GetCoinTypeID(),
+				}
+			}
+
+			exist, err := detailcli.ExistDetailConds(ctx, conds)
+			if err != nil {
+				return err
+			}
+			if exist {
+				return errno.ErrAlreadyExists
+			}
+
+			c1, err := detailcrud.CreateSet(tx.Detail.Create(), val.Detail)
+			if err != nil {
+				return err
+			}
+
+			_, err = c1.Save(ctx)
+			if err != nil {
+				return err
+			}
+
+			incomingD := decimal.NewFromInt(0)
+			outcomingD := decimal.NewFromInt(0)
+
+			switch val.Detail.GetIOType() {
+			case detailmgrpb.IOType_Incoming:
+				incomingD = decimal.RequireFromString(val.Detail.GetAmount())
+			case detailmgrpb.IOType_Outcoming:
+				outcomingD = decimal.RequireFromString(val.Detail.GetAmount())
+			default:
+				return fmt.Errorf("invalid iotype")
+			}
+
+			spendableD := incomingD.Sub(outcomingD)
+
+			incoming := incomingD.String()
+			outcoming := outcomingD.String()
+			spendable := spendableD.String()
+
+			info, err := tx.
+				General.
+				Query().
+				Where(
+					general.ID(uuid.MustParse(val.GeneralID)),
+				).
+				ForUpdate().
+				Only(ctx)
+			if err != nil {
+				return err
+			}
+
+			c2, err := generalcrud.UpdateSet(info, &generalmgrpb.GeneralReq{
+				AppID:      val.Detail.AppID,
+				UserID:     val.Detail.UserID,
+				CoinTypeID: val.Detail.CoinTypeID,
+				Incoming:   &incoming,
+				Outcoming:  &outcoming,
+				Spendable:  &spendable,
+			})
+			if err != nil {
+				return err
+			}
+
+			_, err = c2.Save(ctx)
+			if err != nil {
+				return err
+			}
+
+			profitAmountD := decimal.NewFromInt(0)
+
+			if val.Detail.GetIOType() == detailmgrpb.IOType_Incoming {
+				if val.Detail.GetIOSubType() == detailmgrpb.IOSubType_MiningBenefit {
+					profitAmountD = incomingD
+				}
+			}
+			if profitAmountD.Cmp(decimal.NewFromInt(0)) == 0 {
+				continue
+			}
+
+			profitAmount := profitAmountD.String()
+
+			info1, err := tx.
+				Profit.
+				Query().
+				Where(
+					profit.ID(uuid.MustParse(val.ProfitID)),
+				).
+				ForUpdate().
+				Only(ctx)
+			if err != nil {
+				return err
+			}
+
+			c3, err := profitcrud.UpdateSet(info1, &profitmgrpb.ProfitReq{
+				AppID:      val.Detail.AppID,
+				UserID:     val.Detail.UserID,
+				CoinTypeID: val.Detail.CoinTypeID,
+				Incoming:   &profitAmount,
+			})
+			if err != nil {
+				return err
+			}
+
+			_, err = c3.Save(ctx)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 // nolint
 func UnlockBalance(
 	ctx context.Context,
@@ -460,7 +644,7 @@ func LockBalance(
 		return err
 	}
 
-	locked := fmt.Sprintf("%v", amount)
+	locked := amount.String()
 	spendable := fmt.Sprintf("-%v", amount)
 
 	_, err = generalcli.AddGeneral(ctx, &generalmgrpb.GeneralReq{
