@@ -451,7 +451,7 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error {
 				}
 			}
 			if profitAmountD.Cmp(decimal.NewFromInt(0)) == 0 {
-				return nil
+				continue
 			}
 
 			profitAmount := profitAmountD.String()
@@ -479,7 +479,9 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error {
 			}
 
 			_, err = c3.Save(ctx)
-			return err
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -641,8 +643,8 @@ func LockBalance(
 		return err
 	}
 
-	locked := amount.String()
-	spendable := amount.String()
+	locked := fmt.Sprintf("%v", amount)
+	spendable := fmt.Sprintf("-%v", amount)
 
 	_, err = generalcli.AddGeneral(ctx, &generalmgrpb.GeneralReq{
 		ID:         &generalID,
