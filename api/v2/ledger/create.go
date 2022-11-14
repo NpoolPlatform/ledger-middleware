@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 
+	converter "github.com/NpoolPlatform/ledger-manager/pkg/converter/general"
+	curl "github.com/NpoolPlatform/ledger-manager/pkg/crud/general"
+	"github.com/google/uuid"
+
 	"github.com/NpoolPlatform/ledger-manager/api/detail"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -39,4 +43,21 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 	}
 
 	return &npool.BookKeepingResponse{}, nil
+}
+
+func (s *Server) AddGeneral(ctx context.Context, in *npool.AddGeneralRequest) (*npool.AddGeneralResponse, error) {
+	_, err := uuid.Parse(in.GetInfo().GetID())
+	if err != nil {
+		return &npool.AddGeneralResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := curl.AddFields(ctx, in.Info)
+	if err != nil {
+		logger.Sugar().Errorw("GetGeneralOnly", "error", err)
+		return &npool.AddGeneralResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.AddGeneralResponse{
+		Info: converter.Ent2Grpc(info),
+	}, nil
 }

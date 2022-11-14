@@ -59,3 +59,19 @@ func GetGeneralOnly(ctx context.Context, conds *generalpb.Conds) (*generalpb.Gen
 	}
 	return info.(*generalpb.General), err
 }
+
+func AddGeneral(ctx context.Context, in *generalpb.GeneralReq) (*generalpb.General, error) {
+	info, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		info, err := cli.AddGeneral(_ctx, &npool.AddGeneralRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return info, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return info.(*generalpb.General), err
+}
