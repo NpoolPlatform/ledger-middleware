@@ -28,16 +28,16 @@ func (s *Server) GetGeneralOnly(ctx context.Context, in *npool.GetGeneralOnlyReq
 			return &npool.GetGeneralOnlyResponse{}, status.Error(codes.InvalidArgument, "Conds ID value is invalid")
 		}
 	}
-	if in.Conds.AppID != nil {
-		if _, err := uuid.Parse(in.Conds.GetAppID().GetValue()); err != nil {
-			logger.Sugar().Errorw("validate", "AppID", in.Conds.GetAppID().GetValue(), "error", err)
-			return &npool.GetGeneralOnlyResponse{}, status.Error(codes.InvalidArgument, "Conds AppID value is invalid")
-		}
-	}
 	if in.Conds.CoinTypeID != nil {
 		if _, err := uuid.Parse(in.Conds.GetCoinTypeID().GetValue()); err != nil {
 			logger.Sugar().Errorw("validate", "CoinTypeID", in.Conds.GetCoinTypeID().GetValue(), "error", err)
 			return &npool.GetGeneralOnlyResponse{}, status.Error(codes.InvalidArgument, "Conds CoinTypeID value is invalid")
+		}
+	}
+	if in.Conds.AppID != nil {
+		if _, err := uuid.Parse(in.Conds.GetAppID().GetValue()); err != nil {
+			logger.Sugar().Errorw("validate", "AppID", in.Conds.GetAppID().GetValue(), "error", err)
+			return &npool.GetGeneralOnlyResponse{}, status.Error(codes.InvalidArgument, "Conds AppID value is invalid")
 		}
 	}
 	info, err := curl.RowOnly(ctx, in.Conds)
