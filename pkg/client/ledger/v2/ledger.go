@@ -46,13 +46,13 @@ func BookKeeping(ctx context.Context, infos []*detailpb.DetailReq) error {
 
 func GetGeneralOnly(ctx context.Context, conds *generalpb.Conds) (*generalpb.General, error) {
 	info, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		info, err := cli.GetGeneralOnly(_ctx, &npool.GetGeneralOnlyRequest{
+		res, err := cli.GetGeneralOnly(_ctx, &npool.GetGeneralOnlyRequest{
 			Conds: conds,
 		})
 		if err != nil {
 			return nil, err
 		}
-		return info, err
+		return res.Info, err
 	})
 	if err != nil {
 		return nil, err
@@ -62,13 +62,13 @@ func GetGeneralOnly(ctx context.Context, conds *generalpb.Conds) (*generalpb.Gen
 
 func AddGeneral(ctx context.Context, in *generalpb.GeneralReq) (*generalpb.General, error) {
 	info, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		info, err := cli.AddGeneral(_ctx, &npool.AddGeneralRequest{
+		res, err := cli.AddGeneral(_ctx, &npool.AddGeneralRequest{
 			Info: in,
 		})
 		if err != nil {
 			return nil, err
 		}
-		return info, err
+		return res.Info, err
 	})
 	if err != nil {
 		return nil, err
