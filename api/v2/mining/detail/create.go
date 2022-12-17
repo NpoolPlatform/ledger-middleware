@@ -32,6 +32,9 @@ func (s *Server) CreateDetail(ctx context.Context, in *npool.CreateDetailRequest
 	if amount.Cmp(decimal.NewFromInt(0)) <= 0 {
 		return &npool.CreateDetailResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
+	if in.GetInfo().GetBenefitIntervalHours() <= 0 {
+		return &npool.CreateDetailResponse{}, status.Error(codes.InvalidArgument, "BenefitIntervalHours is invalid")
+	}
 
 	info, err := mdetail.CreateDetail(ctx, in.GetInfo())
 	if err != nil {
