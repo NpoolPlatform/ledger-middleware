@@ -26,9 +26,10 @@ func CreateDetail(ctx context.Context, in *npool.DetailReq) (*mgrpb.Detail, erro
 
 	var info *mgrpb.Detail
 	var info1 *ent.MiningDetail
+	var err error
 
-	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		_, err := tx.
+	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
+		info1, err = tx.
 			MiningDetail.
 			Query().
 			Where(
@@ -41,6 +42,9 @@ func CreateDetail(ctx context.Context, in *npool.DetailReq) (*mgrpb.Detail, erro
 			if !ent.IsNotFound(err) {
 				return err
 			}
+		}
+		if info1 != nil {
+			return nil
 		}
 
 		info1, err = tx.
