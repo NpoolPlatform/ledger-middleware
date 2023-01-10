@@ -63,7 +63,9 @@ func BookKeeping(
 
 		g, err := stm2.ForUpdate().Only(_ctx)
 		if err != nil {
-			return err
+			if !ent.IsNotFound(err) {
+				return err
+			}
 		}
 		if g == nil {
 			c, err := generalcrud.CreateSet(
