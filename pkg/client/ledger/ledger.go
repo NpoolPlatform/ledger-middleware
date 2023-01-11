@@ -17,7 +17,7 @@ import (
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/message/const"
 )
 
-var timeout = 10 * time.Second
+var timeout = 120 * time.Second
 
 type handler func(context.Context, npool.MiddlewareClient) (cruder.Any, error)
 
