@@ -68,11 +68,13 @@ func GetDetailOnly(ctx context.Context, conds *mgrpb.Conds) (*mgrpb.Detail, erro
 	return info.(*mgrpb.Detail), nil
 }
 
-func GetDetails(ctx context.Context, conds *mgrpb.Conds) ([]*mgrpb.Detail, uint32, error) {
+func GetDetails(ctx context.Context, conds *mgrpb.Conds, offset, limit uint32) ([]*mgrpb.Detail, uint32, error) {
 	var total = uint32(0)
 	rows, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetDetails(ctx, &npool.GetDetailsRequest{
-			Conds: conds,
+			Conds:  conds,
+			Offset: offset,
+			Limit:  limit,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get detail: %v", err)
