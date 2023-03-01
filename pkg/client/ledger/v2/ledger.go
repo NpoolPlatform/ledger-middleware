@@ -75,3 +75,23 @@ func AddGeneral(ctx context.Context, in *generalpb.GeneralReq) (*generalpb.Gener
 	}
 	return info.(*generalpb.General), err
 }
+
+func GetDetails(ctx context.Context, conds *detailpb.Conds, offset, limit uint32) ([]*detailpb.Detail, uint32, error) {
+	var total uint32
+	infos, err := withClient(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		res, err := cli.GetDetails(_ctx, &npool.GetDetailsRequest{
+			Conds:  conds,
+			Offset: offset,
+			Limit:  limit,
+		})
+		if err != nil {
+			return nil, err
+		}
+		total = res.GetTotal()
+		return res.Infos, err
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return infos.([]*detailpb.Detail), total, err
+}
