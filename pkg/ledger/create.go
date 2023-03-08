@@ -412,7 +412,7 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error {
 					General.
 					Query().
 					Where(
-						general.ID(uuid.MustParse(val.GeneralID)),
+						general.ID(uuid.MustParse(generalID)),
 					).
 					ForUpdate().
 					Only(ctx)
@@ -454,7 +454,7 @@ func BookKeepingV2(ctx context.Context, infos []*detailmgrpb.DetailReq) error {
 					Profit.
 					Query().
 					Where(
-						profit.ID(uuid.MustParse(val.ProfitID)),
+						profit.ID(uuid.MustParse(profitID)),
 					).
 					ForUpdate().
 					Only(ctx)
