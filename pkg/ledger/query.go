@@ -32,6 +32,7 @@ func GetIntervalGenerals(
 				detail.UserID(uuid.MustParse(userID)),
 				detail.CreatedAtGT(start),
 				detail.CreatedAtLT(end),
+				detail.DeletedAt(0),
 			)
 		details, err = stm.
 			Offset(int(offset)).
@@ -99,6 +100,7 @@ func GetIntervalDetails(
 				detail.UserID(uuid.MustParse(userID)),
 				detail.CreatedAtGT(start),
 				detail.CreatedAtLT(end),
+				detail.DeletedAt(0),
 			)
 		_total, err := stm.Count(ctx)
 		if err != nil {
@@ -137,6 +139,7 @@ func GetIntervalProfits(
 				detail.CreatedAtGT(start),
 				detail.CreatedAtLT(end),
 				detail.IoType(detailpb.IOType_Incoming.String()),
+				detail.DeletedAt(0),
 			)
 		_total, err := stm.Count(ctx)
 		if err != nil {
