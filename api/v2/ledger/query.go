@@ -9,11 +9,11 @@ import (
 
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 
-	curldetail "github.com/NpoolPlatform/ledger-manager/pkg/crud/detail"
-	curl "github.com/NpoolPlatform/ledger-manager/pkg/crud/general"
+	curldetail "github.com/NpoolPlatform/ledger-middleware/pkg/crud/detail"
+	curl "github.com/NpoolPlatform/ledger-middleware/pkg/crud/general"
 
-	converterdetail "github.com/NpoolPlatform/ledger-manager/pkg/converter/detail"
-	converter "github.com/NpoolPlatform/ledger-manager/pkg/converter/general"
+	converterdetail "github.com/NpoolPlatform/ledger-middleware/pkg/converter/detail"
+	converter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/general"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

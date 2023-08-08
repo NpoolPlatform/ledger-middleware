@@ -8,22 +8,22 @@ import (
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent/general"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 
-	detailcli "github.com/NpoolPlatform/ledger-manager/pkg/client/detail"
-	detailcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/detail"
-	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
+	detailcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/detail"
+	detailcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/detail"
+	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
 
-	generalcli "github.com/NpoolPlatform/ledger-manager/pkg/client/general"
-	generalcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/general"
-	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/general"
+	generalcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/general"
+	generalcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/general"
+	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/general"
 
-	profitcli "github.com/NpoolPlatform/ledger-manager/pkg/client/profit"
-	profitcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/profit"
-	profitmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/profit"
+	profitcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/profit"
+	profitcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/profit"
+	profitmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/profit"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 

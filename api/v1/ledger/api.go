@@ -1,7 +1,7 @@
 package ledger
 
 import (
-	"github.com/NpoolPlatform/message/npool/ledger/mw/v1/ledger"
+	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

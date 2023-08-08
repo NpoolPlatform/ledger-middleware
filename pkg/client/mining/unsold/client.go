@@ -10,7 +10,7 @@ import (
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
-	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/unsold"
+	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/message/const"

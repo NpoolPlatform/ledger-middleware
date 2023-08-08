@@ -3,16 +3,16 @@ package bookkeeping
 import (
 	"context"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 
-	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/detail"
-	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/general"
-	unsoldmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/unsold"
+	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
+	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/general"
+	unsoldmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 
-	detailcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/mining/detail"
-	generalcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/mining/general"
-	unsoldcrud "github.com/NpoolPlatform/ledger-manager/pkg/crud/mining/unsold"
+	detailcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/detail"
+	generalcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/general"
+	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsold"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"

@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 
-	converter "github.com/NpoolPlatform/ledger-manager/pkg/converter/general"
-	curl "github.com/NpoolPlatform/ledger-manager/pkg/crud/general"
+	converter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/general"
+	curl "github.com/NpoolPlatform/ledger-middleware/pkg/crud/general"
 	"github.com/google/uuid"
-
-	"github.com/NpoolPlatform/ledger-manager/api/detail"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 

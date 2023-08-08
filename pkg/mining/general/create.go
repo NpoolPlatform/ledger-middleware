@@ -3,13 +3,13 @@ package general
 import (
 	"context"
 
-	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/general"
+	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/general"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 
-	converter "github.com/NpoolPlatform/ledger-manager/pkg/converter/mining/general"
-	entmgeneral "github.com/NpoolPlatform/ledger-manager/pkg/db/ent/mininggeneral"
+	converter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/mining/general"
+	entmgeneral "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"

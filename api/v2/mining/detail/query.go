@@ -3,10 +3,10 @@ package detail
 import (
 	"context"
 
-	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/detail"
+	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
 
-	mdetailmgrcli "github.com/NpoolPlatform/ledger-manager/pkg/client/mining/detail"
+	mdetailmgrcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/mining/detail"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

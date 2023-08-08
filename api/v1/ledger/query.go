@@ -15,7 +15,7 @@ import (
 	tracer "github.com/NpoolPlatform/ledger-middleware/pkg/tracer"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v1/ledger"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 
 	"github.com/google/uuid"
 )

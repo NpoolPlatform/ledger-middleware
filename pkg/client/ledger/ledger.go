@@ -10,9 +10,9 @@ import (
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	detailpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
-	generalpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/general"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v1/ledger"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	detailpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
+	generalpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/general"
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/message/const"
 )

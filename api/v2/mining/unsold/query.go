@@ -3,10 +3,10 @@ package unsold
 import (
 	"context"
 
-	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/unsold"
+	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 
-	munsoldmgrcli "github.com/NpoolPlatform/ledger-manager/pkg/client/mining/unsold"
+	munsoldmgrcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/mining/unsold"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

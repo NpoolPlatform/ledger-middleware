@@ -5,7 +5,7 @@ import (
 
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/general"
 
-	mgeneralmgrcli "github.com/NpoolPlatform/ledger-manager/pkg/client/mining/general"
+	mgeneralmgrcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/mining/general"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

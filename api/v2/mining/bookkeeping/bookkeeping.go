@@ -6,8 +6,8 @@ import (
 	bookkeeping1 "github.com/NpoolPlatform/ledger-middleware/pkg/mining/bookkeeping"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/bookkeeping"
 
-	mdetailmgrcli "github.com/NpoolPlatform/ledger-manager/pkg/client/mining/detail"
-	mdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/detail"
+	mdetailmgrcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/mining/detail"
+	mdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"

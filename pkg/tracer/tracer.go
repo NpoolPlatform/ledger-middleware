@@ -26,11 +26,3 @@ func TraceOffsetLimit(span trace.Span, offset, limit int) trace.Span {
 	)
 	return span
 }
-
-func TraceStartEnd(span trace.Span, start, end uint32) trace.Span {
-	span.SetAttributes(
-		attribute.Int64("Start", int64(start)),
-		attribute.Int64("End", int64(end)),
-	)
-	return span
-}

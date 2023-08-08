@@ -4,16 +4,16 @@ import (
 	"context"
 	"time"
 
-	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/mining/unsold"
+	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
 
 	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 
-	converter "github.com/NpoolPlatform/ledger-manager/pkg/converter/mining/unsold"
-	entmunsold "github.com/NpoolPlatform/ledger-manager/pkg/db/ent/miningunsold"
+	converter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/mining/unsold"
+	entmunsold "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningunsold"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"

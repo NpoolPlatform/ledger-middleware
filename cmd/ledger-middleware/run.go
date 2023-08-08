@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/NpoolPlatform/ledger-middleware/api"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"

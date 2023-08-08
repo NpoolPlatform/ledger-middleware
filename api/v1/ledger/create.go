@@ -8,10 +8,8 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v1/ledger"
-
-	"github.com/NpoolPlatform/ledger-manager/api/detail"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
 
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/ledger"
 

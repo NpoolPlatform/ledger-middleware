@@ -5,13 +5,13 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent"
-	"github.com/NpoolPlatform/ledger-manager/pkg/db/ent/detail"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
 
-	detailconverter "github.com/NpoolPlatform/ledger-manager/pkg/converter/detail"
-	detailpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
-	generalpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/general"
+	detailconverter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/detail"
+	detailpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
+	generalpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/general"
 
 	"github.com/google/uuid"
 )
