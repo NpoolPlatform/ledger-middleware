@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/withdraw"
+	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/withdraw"
 )
 
 // Withdraw holds the schema definition for the Withdraw entity.
@@ -70,7 +70,7 @@ func (Withdraw) Fields() []ent.Field {
 		field.
 			String("state").
 			Optional().
-			Default(npool.WithdrawState_DefaultWithdrawState.String()),
+			Default(withdraw.WithdrawState_DefaultWithdrawState.String()),
 		field.
 			Float("amount").
 			GoType(decimal.Decimal{}).

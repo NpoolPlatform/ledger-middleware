@@ -5,10 +5,9 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/mixin"
+	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-
-	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
 )
 
 // Detail holds the schema definition for the Detail entity.
