@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entgeneral "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
+	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/google/uuid"
 )
@@ -130,7 +130,7 @@ type Conds struct {
 }
 
 func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error) { //nolint
-	q.Where(entgeneral.DeletedAt(0))
+	q.Where(entledger.DeletedAt(0))
 	if conds == nil {
 		return q, nil
 	}
@@ -141,7 +141,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.ID.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.ID(id))
+			q.Where(entledger.ID(id))
 		default:
 			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
 		}
@@ -153,7 +153,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.AppID.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.AppID(appID))
+			q.Where(entledger.AppID(appID))
 		default:
 			return nil, fmt.Errorf("invalid app id op field %v", conds.AppID.Op)
 		}
@@ -165,7 +165,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.UserID.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.UserID(userID))
+			q.Where(entledger.UserID(userID))
 		default:
 			return nil, fmt.Errorf("invalid user id op field %v", conds.UserID.Op)
 		}
@@ -177,7 +177,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.CoinTypeID.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.CoinTypeID(coinTypeID))
+			q.Where(entledger.CoinTypeID(coinTypeID))
 		default:
 			return nil, fmt.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
 		}
@@ -189,7 +189,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.Incoming.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.Incoming(incoming))
+			q.Where(entledger.Incoming(incoming))
 		default:
 			return nil, fmt.Errorf("invalid incoming op field %v", conds.Incoming.Op)
 		}
@@ -201,7 +201,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.Outcoming.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.Outcoming(outcoming))
+			q.Where(entledger.Outcoming(outcoming))
 		default:
 			return nil, fmt.Errorf("invalid outcoming op field %v", conds.Outcoming.Op)
 		}
@@ -213,11 +213,11 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.Spendable.Op {
 		case cruder.LT:
-			q.Where(entgeneral.SpendableLT(spendable))
+			q.Where(entledger.SpendableLT(spendable))
 		case cruder.GT:
-			q.Where(entgeneral.SpendableGT(spendable))
+			q.Where(entledger.SpendableGT(spendable))
 		case cruder.EQ:
-			q.Where(entgeneral.SpendableEQ(spendable))
+			q.Where(entledger.SpendableEQ(spendable))
 		default:
 			return nil, fmt.Errorf("invalid spendable op field %v", conds.Spendable.Op)
 		}
@@ -229,7 +229,7 @@ func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error)
 		}
 		switch conds.Locked.Op {
 		case cruder.EQ:
-			q.Where(entgeneral.Locked(locked))
+			q.Where(entledger.Locked(locked))
 		default:
 			return nil, fmt.Errorf("invalid locked op field %v", conds.Locked.Op)
 		}

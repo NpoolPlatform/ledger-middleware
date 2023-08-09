@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entdetail "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
+	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 
@@ -83,7 +83,7 @@ type Conds struct {
 }
 
 func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) { //nolint
-	q.Where(entdetail.DeletedAt(0))
+	q.Where(entstatement.DeletedAt(0))
 	if conds == nil {
 		return q, nil
 	}
@@ -94,7 +94,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.ID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.ID(id))
+			q.Where(entstatement.ID(id))
 		default:
 			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
 		}
@@ -106,7 +106,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.AppID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.AppID(appID))
+			q.Where(entstatement.AppID(appID))
 		default:
 			return nil, fmt.Errorf("invalid app id op field %v", conds.AppID.Op)
 		}
@@ -118,7 +118,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.UserID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.UserID(userID))
+			q.Where(entstatement.UserID(userID))
 		default:
 			return nil, fmt.Errorf("invalid user id op field %v", conds.UserID.Op)
 		}
@@ -130,7 +130,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.CoinTypeID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.CoinTypeID(coinTypeID))
+			q.Where(entstatement.CoinTypeID(coinTypeID))
 		default:
 			return nil, fmt.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
 		}
@@ -142,7 +142,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.IOType.Op {
 		case cruder.EQ:
-			q.Where(entdetail.IoType(ioType.String()))
+			q.Where(entstatement.IoType(ioType.String()))
 		default:
 			return nil, fmt.Errorf("invalid io type op field %v", conds.IOType.Op)
 		}
@@ -154,7 +154,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.IOSubType.Op {
 		case cruder.EQ:
-			q.Where(entdetail.IoSubType(ioSubType.String()))
+			q.Where(entstatement.IoSubType(ioSubType.String()))
 		default:
 			return nil, fmt.Errorf("invalid io sub type op field %v", conds.IOSubType.Op)
 		}
@@ -166,11 +166,11 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.Amount.Op {
 		case cruder.LT:
-			q.Where(entdetail.AmountLT(amount))
+			q.Where(entstatement.AmountLT(amount))
 		case cruder.GT:
-			q.Where(entdetail.AmountGT(amount))
+			q.Where(entstatement.AmountGT(amount))
 		case cruder.EQ:
-			q.Where(entdetail.AmountEQ(amount))
+			q.Where(entstatement.AmountEQ(amount))
 		default:
 			return nil, fmt.Errorf("invalid amount op field %v", conds.Amount.Op)
 		}
@@ -182,7 +182,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.FromCoinTypeID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.FromCoinTypeID(fromCoinTypeID))
+			q.Where(entstatement.FromCoinTypeID(fromCoinTypeID))
 		default:
 			return nil, fmt.Errorf("invalid from coin type id op field %v", conds.FromCoinTypeID.Op)
 		}
@@ -194,11 +194,11 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.CoinUSDCurrency.Op {
 		case cruder.LT:
-			q.Where(entdetail.AmountLT(currency))
+			q.Where(entstatement.AmountLT(currency))
 		case cruder.GT:
-			q.Where(entdetail.AmountGT(currency))
+			q.Where(entstatement.AmountGT(currency))
 		case cruder.EQ:
-			q.Where(entdetail.AmountEQ(currency))
+			q.Where(entstatement.AmountEQ(currency))
 		default:
 			return nil, fmt.Errorf("invalid coin usd currency op field %v", conds.CoinUSDCurrency.Op)
 		}
@@ -210,7 +210,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.IOExtra.Op {
 		case cruder.LIKE:
-			q.Where(entdetail.IoExtraContains(extra))
+			q.Where(entstatement.IoExtraContains(extra))
 		default:
 			return nil, fmt.Errorf("invalid io extra op field %v", conds.IOExtra.Op)
 		}
