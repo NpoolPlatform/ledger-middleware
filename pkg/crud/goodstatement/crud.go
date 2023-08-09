@@ -1,1 +1,136 @@
 package goodstatement
+
+import (
+	"fmt"
+
+	"github.com/shopspring/decimal"
+
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	entgoodstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningdetail"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	"github.com/google/uuid"
+)
+
+type Req struct {
+	ID          *uuid.UUID
+	GoodID      *uuid.UUID
+	CoinTypeID  *uuid.UUID
+	Amount      *decimal.Decimal
+	BenefitDate *uint32
+	CreatedAt   *uint32
+	DeletedAt   *uint32
+}
+
+func CreateSet(c *ent.MiningDetailCreate, in *Req) *ent.MiningDetailCreate {
+	if in.ID != nil {
+		c.SetID(*in.ID)
+	}
+	if in.GoodID != nil {
+		c.SetGoodID(*in.GoodID)
+	}
+	if in.CoinTypeID != nil {
+		c.SetCoinTypeID(*in.CoinTypeID)
+	}
+	if in.Amount != nil {
+		c.SetAmount(*in.Amount)
+	}
+	if in.BenefitDate != nil {
+		c.SetBenefitDate(*in.BenefitDate)
+	}
+
+	return c
+}
+
+func UpdateSet(u *ent.MiningDetailUpdateOne, req *Req) *ent.MiningDetailUpdateOne {
+	if req.Amount != nil {
+		u.SetAmount(*req.Amount)
+	}
+	if req.DeletedAt != nil {
+		u.SetDeletedAt(*req.DeletedAt)
+	}
+	return u
+}
+
+type Conds struct {
+	ID          *cruder.Cond
+	GoodID      *cruder.Cond
+	CoinTypeID  *cruder.Cond
+	Amount      *cruder.Cond
+	BenefitDate *cruder.Cond
+}
+
+func SetQueryConds(q *ent.MiningDetailQuery, conds *Conds) (*ent.MiningDetailQuery, error) { //nolint
+	q.Where(entgoodstatement.DeletedAt(0))
+	if conds == nil {
+		return q, nil
+	}
+	if conds.ID != nil {
+		id, ok := conds.ID.Val.(uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid id")
+		}
+		switch conds.ID.Op {
+		case cruder.EQ:
+			q.Where(entgoodstatement.ID(id))
+		default:
+			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
+		}
+	}
+	if conds.GoodID != nil {
+		goodID, ok := conds.GoodID.Val.(uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid good id")
+		}
+		switch conds.GoodID.Op {
+		case cruder.EQ:
+			q.Where(entgoodstatement.GoodID(goodID))
+		default:
+			return nil, fmt.Errorf("invalid good id op field %v", conds.GoodID.Op)
+		}
+	}
+	if conds.CoinTypeID != nil {
+		coinTypeID, ok := conds.CoinTypeID.Val.(uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid coin type id")
+		}
+		switch conds.CoinTypeID.Op {
+		case cruder.EQ:
+			q.Where(entgoodstatement.CoinTypeID(coinTypeID))
+		default:
+			return nil, fmt.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
+		}
+	}
+	if conds.Amount != nil {
+		amount, ok := conds.Amount.Val.(decimal.Decimal)
+		if !ok {
+			return nil, fmt.Errorf("invalid amount %v", conds.Amount.Val)
+		}
+		switch conds.Amount.Op {
+		case cruder.LT:
+			q.Where(entgoodstatement.AmountLT(amount))
+		case cruder.GT:
+			q.Where(entgoodstatement.AmountGT(amount))
+		case cruder.EQ:
+			q.Where(entgoodstatement.AmountEQ(amount))
+		default:
+			return nil, fmt.Errorf("invalid amount op field %v", conds.Amount.Op)
+		}
+	}
+	if conds.BenefitDate != nil {
+		benefitDate, ok := conds.BenefitDate.Val.(uint32)
+		if !ok {
+			return nil, fmt.Errorf("invalid benefit date %v", conds.BenefitDate.Val)
+		}
+		switch conds.BenefitDate.Op {
+		case cruder.LT:
+			q.Where(entgoodstatement.BenefitDateLT(benefitDate))
+		case cruder.GT:
+			q.Where(entgoodstatement.BenefitDateGT(benefitDate))
+		case cruder.EQ:
+			q.Where(entgoodstatement.BenefitDateEQ(benefitDate))
+		default:
+			return nil, fmt.Errorf("invalid benefit date op field %v", conds.BenefitDate.Op)
+		}
+	}
+	return q, nil
+}

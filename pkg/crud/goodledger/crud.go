@@ -135,17 +135,17 @@ func SetQueryConds(q *ent.MiningGeneralQuery, conds *Conds) (*ent.MiningGeneralQ
 		}
 	}
 	if conds.ToUser != nil {
-		currency, ok := conds.ToUser.Val.(decimal.Decimal)
+		toUser, ok := conds.ToUser.Val.(decimal.Decimal)
 		if !ok {
 			return nil, fmt.Errorf("invalid to user %v", conds.ToUser.Val)
 		}
 		switch conds.ToUser.Op {
 		case cruder.LT:
-			q.Where(entgoodledger.AmountLT(currency))
+			q.Where(entgoodledger.AmountLT(toUser))
 		case cruder.GT:
-			q.Where(entgoodledger.AmountGT(currency))
+			q.Where(entgoodledger.AmountGT(toUser))
 		case cruder.EQ:
-			q.Where(entgoodledger.AmountEQ(currency))
+			q.Where(entgoodledger.AmountEQ(toUser))
 		default:
 			return nil, fmt.Errorf("invalid to user op field %v", conds.ToUser.Op)
 		}
