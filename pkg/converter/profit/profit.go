@@ -2,7 +2,7 @@ package profit
 
 import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/profit"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/profit"
 )
 
 func Ent2Grpc(row *ent.Profit) *npool.Profit {

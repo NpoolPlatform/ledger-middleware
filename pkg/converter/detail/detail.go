@@ -3,7 +3,7 @@ package detail
 import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 	"github.com/shopspring/decimal"
 )
 

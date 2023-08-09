@@ -10,8 +10,8 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
 
 	detailconverter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/detail"
-	detailpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
-	generalpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/general"
+	generalpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	detailpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 
 	"github.com/google/uuid"
 )

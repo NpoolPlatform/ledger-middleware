@@ -15,15 +15,15 @@ import (
 
 	detailcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/detail"
 	detailcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/detail"
-	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
+	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 
 	generalcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/general"
 	generalcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/general"
-	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/general"
+	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 
 	profitcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/profit"
 	profitcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/profit"
-	profitmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/profit"
+	profitmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/profit"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
