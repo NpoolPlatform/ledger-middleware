@@ -6,63 +6,50 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entdetail "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
+	entgoodledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-
 	"github.com/google/uuid"
 )
 
 type Req struct {
-	ID              *uuid.UUID
-	AppID           *uuid.UUID
-	UserID          *uuid.UUID
-	CoinTypeID      *uuid.UUID
-	IOType          *basetypes.IOType
-	IOSubType       *basetypes.IOSubType
-	Amount          *decimal.Decimal
-	FromCoinTypeID  *uuid.UUID
-	CoinUSDCurrency *decimal.Decimal
-	IOExtra         *string
-	CreatedAt       *uint32
-	DeletedAt       *uint32
+	ID         *uuid.UUID
+	GoodID     *uuid.UUID
+	CoinTypeID *uuid.UUID
+	Amount     *decimal.Decimal
+	ToPlatform *decimal.Decimal
+	ToUser     *decimal.Decimal
+	CreatedAt  *uint32
+	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.DetailCreate, in *Req) *ent.DetailCreate {
+func CreateSet(c *ent.MiningGeneralCreate, in *Req) *ent.MiningGeneralCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
-	if in.AppID != nil {
-		c.SetAppID(*in.AppID)
-	}
-	if in.UserID != nil {
-		c.SetUserID(*in.UserID)
+	if in.GoodID != nil {
+		c.SetGoodID(*in.GoodID)
 	}
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-	if in.IOType != nil {
-		c.SetIoType(in.IOType.String())
-	}
-	if in.IOSubType != nil {
-		c.SetIoSubType(in.IOSubType.String())
-	}
-	if in.Amount != nil {
-		c.SetAmount(*in.Amount)
-	}
-	if in.FromCoinTypeID != nil {
-		c.SetFromCoinTypeID(*in.FromCoinTypeID)
-	}
-	if in.CoinUSDCurrency != nil {
-		c.SetCoinUsdCurrency(*in.CoinUSDCurrency)
-	}
-	if in.IOExtra != nil {
-		c.SetIoExtra(*in.IOExtra)
-	}
+
+	c.SetAmount(decimal.NewFromInt(0))
+	c.SetToPlatform(decimal.NewFromInt(0))
+	c.SetToUser(decimal.NewFromInt(0))
+
 	return c
 }
 
-func UpdateSet(u *ent.DetailUpdateOne, req *Req) *ent.DetailUpdateOne {
+func UpdateSet(u *ent.MiningGeneralUpdateOne, req *Req) *ent.MiningGeneralUpdateOne {
+	if req.Amount != nil {
+		u.SetAmount(*req.Amount)
+	}
+	if req.ToPlatform != nil {
+		u.SetToPlatform(*req.ToPlatform)
+	}
+	if req.ToUser != nil {
+		u.SetToUser(*req.ToUser)
+	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
@@ -70,20 +57,16 @@ func UpdateSet(u *ent.DetailUpdateOne, req *Req) *ent.DetailUpdateOne {
 }
 
 type Conds struct {
-	ID              *cruder.Cond
-	AppID           *cruder.Cond
-	UserID          *cruder.Cond
-	CoinTypeID      *cruder.Cond
-	IOType          *cruder.Cond
-	IOSubType       *cruder.Cond
-	Amount          *cruder.Cond
-	FromCoinTypeID  *cruder.Cond
-	CoinUSDCurrency *cruder.Cond
-	IOExtra         *cruder.Cond
+	ID         *cruder.Cond
+	GoodID     *cruder.Cond
+	CoinTypeID *cruder.Cond
+	Amount     *cruder.Cond
+	ToPlatform *cruder.Cond
+	ToUser     *cruder.Cond
 }
 
-func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) { //nolint
-	q.Where(entdetail.DeletedAt(0))
+func SetQueryConds(q *ent.MiningGeneralQuery, conds *Conds) (*ent.MiningGeneralQuery, error) { //nolint
+	q.Where(entgoodledger.DeletedAt(0))
 	if conds == nil {
 		return q, nil
 	}
@@ -94,33 +77,21 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.ID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.ID(id))
+			q.Where(entgoodledger.ID(id))
 		default:
 			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
 		}
 	}
-	if conds.AppID != nil {
-		appID, ok := conds.AppID.Val.(uuid.UUID)
+	if conds.GoodID != nil {
+		goodID, ok := conds.GoodID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid app id")
+			return nil, fmt.Errorf("invalid good id")
 		}
-		switch conds.AppID.Op {
+		switch conds.GoodID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.AppID(appID))
+			q.Where(entgoodledger.GoodID(goodID))
 		default:
-			return nil, fmt.Errorf("invalid app id op field %v", conds.AppID.Op)
-		}
-	}
-	if conds.UserID != nil {
-		userID, ok := conds.UserID.Val.(uuid.UUID)
-		if !ok {
-			return nil, fmt.Errorf("invalid user id")
-		}
-		switch conds.UserID.Op {
-		case cruder.EQ:
-			q.Where(entdetail.UserID(userID))
-		default:
-			return nil, fmt.Errorf("invalid user id op field %v", conds.UserID.Op)
+			return nil, fmt.Errorf("invalid good id op field %v", conds.GoodID.Op)
 		}
 	}
 	if conds.CoinTypeID != nil {
@@ -130,33 +101,9 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.CoinTypeID.Op {
 		case cruder.EQ:
-			q.Where(entdetail.CoinTypeID(coinTypeID))
+			q.Where(entgoodledger.CoinTypeID(coinTypeID))
 		default:
 			return nil, fmt.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
-		}
-	}
-	if conds.IOType != nil {
-		ioType, ok := conds.IOType.Val.(basetypes.IOType)
-		if !ok {
-			return nil, fmt.Errorf("invalid io type %v", conds.IOType.Val)
-		}
-		switch conds.IOType.Op {
-		case cruder.EQ:
-			q.Where(entdetail.IoType(ioType.String()))
-		default:
-			return nil, fmt.Errorf("invalid io type op field %v", conds.IOType.Op)
-		}
-	}
-	if conds.IOSubType != nil {
-		ioSubType, ok := conds.IOSubType.Val.(basetypes.IOSubType)
-		if !ok {
-			return nil, fmt.Errorf("invalid io type %v", conds.IOSubType.Val)
-		}
-		switch conds.IOSubType.Op {
-		case cruder.EQ:
-			q.Where(entdetail.IoSubType(ioSubType.String()))
-		default:
-			return nil, fmt.Errorf("invalid io sub type op field %v", conds.IOSubType.Op)
 		}
 	}
 	if conds.Amount != nil {
@@ -166,53 +113,41 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.Amount.Op {
 		case cruder.LT:
-			q.Where(entdetail.AmountLT(amount))
+			q.Where(entgoodledger.AmountLT(amount))
 		case cruder.GT:
-			q.Where(entdetail.AmountGT(amount))
+			q.Where(entgoodledger.AmountGT(amount))
 		case cruder.EQ:
-			q.Where(entdetail.AmountEQ(amount))
+			q.Where(entgoodledger.AmountEQ(amount))
 		default:
 			return nil, fmt.Errorf("invalid amount op field %v", conds.Amount.Op)
 		}
 	}
-	if conds.FromCoinTypeID != nil {
-		fromCoinTypeID, ok := conds.FromCoinTypeID.Val.(uuid.UUID)
+	if conds.ToPlatform != nil {
+		toPlatform, ok := conds.ToPlatform.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid from coin type id %v", conds.FromCoinTypeID.Val)
+			return nil, fmt.Errorf("invalid to platform %v", conds.ToPlatform.Val)
 		}
-		switch conds.FromCoinTypeID.Op {
+		switch conds.ToPlatform.Op {
 		case cruder.EQ:
-			q.Where(entdetail.FromCoinTypeID(fromCoinTypeID))
+			q.Where(entgoodledger.ToPlatform(toPlatform))
 		default:
-			return nil, fmt.Errorf("invalid from coin type id op field %v", conds.FromCoinTypeID.Op)
+			return nil, fmt.Errorf("invalid to platform op field %v", conds.ToPlatform.Op)
 		}
 	}
-	if conds.CoinUSDCurrency != nil {
-		currency, ok := conds.CoinUSDCurrency.Val.(decimal.Decimal)
+	if conds.ToUser != nil {
+		currency, ok := conds.ToUser.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid coin usd currency %v", conds.CoinUSDCurrency.Val)
+			return nil, fmt.Errorf("invalid to user %v", conds.ToUser.Val)
 		}
-		switch conds.CoinUSDCurrency.Op {
+		switch conds.ToUser.Op {
 		case cruder.LT:
-			q.Where(entdetail.AmountLT(currency))
+			q.Where(entgoodledger.AmountLT(currency))
 		case cruder.GT:
-			q.Where(entdetail.AmountGT(currency))
+			q.Where(entgoodledger.AmountGT(currency))
 		case cruder.EQ:
-			q.Where(entdetail.AmountEQ(currency))
+			q.Where(entgoodledger.AmountEQ(currency))
 		default:
-			return nil, fmt.Errorf("invalid coin usd currency op field %v", conds.CoinUSDCurrency.Op)
-		}
-	}
-	if conds.IOExtra != nil {
-		extra, ok := conds.IOExtra.Val.(string)
-		if !ok {
-			return nil, fmt.Errorf("invalid io extra %v", conds.IOExtra.Val)
-		}
-		switch conds.IOExtra.Op {
-		case cruder.LIKE:
-			q.Where(entdetail.IoExtraContains(extra))
-		default:
-			return nil, fmt.Errorf("invalid io extra op field %v", conds.IOExtra.Op)
+			return nil, fmt.Errorf("invalid to user op field %v", conds.ToUser.Op)
 		}
 	}
 	return q, nil
