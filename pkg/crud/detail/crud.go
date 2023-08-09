@@ -6,7 +6,6 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
 	entdetail "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -167,11 +166,11 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.Amount.Op {
 		case cruder.LT:
-			q.Where(detail.AmountLT(amount))
+			q.Where(entdetail.AmountLT(amount))
 		case cruder.GT:
-			q.Where(detail.AmountGT(amount))
+			q.Where(entdetail.AmountGT(amount))
 		case cruder.EQ:
-			q.Where(detail.AmountEQ(amount))
+			q.Where(entdetail.AmountEQ(amount))
 		default:
 			return nil, fmt.Errorf("invalid amount op field %v", conds.Amount.Op)
 		}
@@ -195,11 +194,11 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.CoinUSDCurrency.Op {
 		case cruder.LT:
-			q.Where(detail.AmountLT(currency))
+			q.Where(entdetail.AmountLT(currency))
 		case cruder.GT:
-			q.Where(detail.AmountGT(currency))
+			q.Where(entdetail.AmountGT(currency))
 		case cruder.EQ:
-			q.Where(detail.AmountEQ(currency))
+			q.Where(entdetail.AmountEQ(currency))
 		default:
 			return nil, fmt.Errorf("invalid coin usd currency op field %v", conds.CoinUSDCurrency.Op)
 		}
@@ -211,7 +210,7 @@ func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) {
 		}
 		switch conds.IOExtra.Op {
 		case cruder.LIKE:
-			q.Where(detail.IoExtraContains(extra))
+			q.Where(entdetail.IoExtraContains(extra))
 		default:
 			return nil, fmt.Errorf("invalid io extra op field %v", conds.IOExtra.Op)
 		}
