@@ -5,7 +5,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/mixin"
-	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/detail"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -49,11 +49,11 @@ func (Detail) Fields() []ent.Field {
 		field.
 			String("io_type").
 			Optional().
-			Default(detail.IOType_DefaultType.String()),
+			Default(basetypes.IOType_DefaultType.String()),
 		field.
 			String("io_sub_type").
 			Optional().
-			Default(detail.IOSubType_DefaultSubType.String()),
+			Default(basetypes.IOSubType_DefaultSubType.String()),
 		field.
 			Float("amount").
 			GoType(decimal.Decimal{}).
