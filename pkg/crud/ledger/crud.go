@@ -119,14 +119,15 @@ func UpdateSet(entity *ent.Ledger, u *ent.LedgerUpdateOne, req *Req) (*ent.Ledge
 }
 
 type Conds struct {
-	ID         *cruder.Cond
-	AppID      *cruder.Cond
-	UserID     *cruder.Cond
-	CoinTypeID *cruder.Cond
-	Incoming   *cruder.Cond
-	Outcoming  *cruder.Cond
-	Spendable  *cruder.Cond
-	Locked     *cruder.Cond
+	ID          *cruder.Cond
+	AppID       *cruder.Cond
+	UserID      *cruder.Cond
+	CoinTypeID  *cruder.Cond
+	Incoming    *cruder.Cond
+	Outcoming   *cruder.Cond
+	Spendable   *cruder.Cond
+	Locked      *cruder.Cond
+	CoinTypeIDs *cruder.Cond
 }
 
 func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) { //nolint
@@ -232,6 +233,18 @@ func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) {
 			q.Where(entledger.Locked(locked))
 		default:
 			return nil, fmt.Errorf("invalid locked op field %v", conds.Locked.Op)
+		}
+	}
+	if conds.CoinTypeIDs != nil {
+		ids, ok := conds.CoinTypeIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid coin type ids %v", conds.CoinTypeIDs.Val)
+		}
+		switch conds.CoinTypeIDs.Op {
+		case cruder.LIKE:
+			q.Where(entledger.CoinTypeIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)
 		}
 	}
 	return q, nil
