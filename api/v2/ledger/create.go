@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	converter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/general"
-	curl "github.com/NpoolPlatform/ledger-middleware/pkg/crud/general"
+	curl "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"

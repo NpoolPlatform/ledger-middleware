@@ -9,8 +9,8 @@ import (
 
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 
-	curldetail "github.com/NpoolPlatform/ledger-middleware/pkg/crud/detail"
-	curl "github.com/NpoolPlatform/ledger-middleware/pkg/crud/general"
+	curl "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	curldetail "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
 
 	converterdetail "github.com/NpoolPlatform/ledger-middleware/pkg/converter/detail"
 	converter "github.com/NpoolPlatform/ledger-middleware/pkg/converter/general"
