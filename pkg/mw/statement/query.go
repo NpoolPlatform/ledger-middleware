@@ -7,7 +7,7 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
+	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 	"github.com/shopspring/decimal"
@@ -15,12 +15,12 @@ import (
 
 type queryHandler struct {
 	*Handler
-	stmSelect *ent.DetailSelect
+	stmSelect *ent.StatementSelect
 	infos     []*npool.Statement
 	total     uint32
 }
 
-func (h *queryHandler) selectStatement(stm *ent.DetailQuery) {
+func (h *queryHandler) selectStatement(stm *ent.StatementQuery) {
 	h.stmSelect = stm.Select(
 		entstatement.FieldID,
 		entstatement.FieldAppID,
@@ -39,7 +39,7 @@ func (h *queryHandler) selectStatement(stm *ent.DetailQuery) {
 
 func (h *queryHandler) queryStatement(cli *ent.Client) {
 	h.selectStatement(
-		cli.Detail.
+		cli.Statement.
 			Query().
 			Where(
 				entstatement.ID(*h.ID),
@@ -49,7 +49,7 @@ func (h *queryHandler) queryStatement(cli *ent.Client) {
 }
 
 func (h *queryHandler) queryStatements(ctx context.Context, cli *ent.Client) error {
-	stm, err := crud.SetQueryConds(cli.Detail.Query(), h.Conds)
+	stm, err := crud.SetQueryConds(cli.Statement.Query(), h.Conds)
 	if err != nil {
 		return err
 	}

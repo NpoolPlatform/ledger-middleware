@@ -19,7 +19,7 @@ type createHandler struct {
 func (h *createHandler) createStatement(ctx context.Context) error {
 	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
 		if _, err := crud.CreateSet(
-			cli.Detail.Create(),
+			cli.Statement.Create(),
 			&h.Req,
 		).Save(_ctx); err != nil {
 			return err

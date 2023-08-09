@@ -7,7 +7,7 @@ import (
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
+	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 )
 
@@ -23,7 +23,7 @@ func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error)
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
 		now := uint32(time.Now().Unix())
-		if _, err := cli.Detail.
+		if _, err := cli.Statement.
 			Update().
 			Where(
 				entstatement.ID(*h.ID),
