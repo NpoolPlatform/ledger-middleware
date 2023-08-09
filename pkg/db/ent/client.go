@@ -11,12 +11,12 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/migrate"
 	"github.com/google/uuid"
 
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningdetail"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningunsold"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 
 	"entgo.io/ent/dialect"
@@ -28,18 +28,18 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Detail is the client for interacting with the Detail builders.
-	Detail *DetailClient
-	// General is the client for interacting with the General builders.
-	General *GeneralClient
-	// MiningDetail is the client for interacting with the MiningDetail builders.
-	MiningDetail *MiningDetailClient
-	// MiningGeneral is the client for interacting with the MiningGeneral builders.
-	MiningGeneral *MiningGeneralClient
-	// MiningUnsold is the client for interacting with the MiningUnsold builders.
-	MiningUnsold *MiningUnsoldClient
+	// GoodLedger is the client for interacting with the GoodLedger builders.
+	GoodLedger *GoodLedgerClient
+	// GoodStatement is the client for interacting with the GoodStatement builders.
+	GoodStatement *GoodStatementClient
+	// Ledger is the client for interacting with the Ledger builders.
+	Ledger *LedgerClient
 	// Profit is the client for interacting with the Profit builders.
 	Profit *ProfitClient
+	// Statement is the client for interacting with the Statement builders.
+	Statement *StatementClient
+	// UnsoldStatement is the client for interacting with the UnsoldStatement builders.
+	UnsoldStatement *UnsoldStatementClient
 	// Withdraw is the client for interacting with the Withdraw builders.
 	Withdraw *WithdrawClient
 }
@@ -55,12 +55,12 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Detail = NewDetailClient(c.config)
-	c.General = NewGeneralClient(c.config)
-	c.MiningDetail = NewMiningDetailClient(c.config)
-	c.MiningGeneral = NewMiningGeneralClient(c.config)
-	c.MiningUnsold = NewMiningUnsoldClient(c.config)
+	c.GoodLedger = NewGoodLedgerClient(c.config)
+	c.GoodStatement = NewGoodStatementClient(c.config)
+	c.Ledger = NewLedgerClient(c.config)
 	c.Profit = NewProfitClient(c.config)
+	c.Statement = NewStatementClient(c.config)
+	c.UnsoldStatement = NewUnsoldStatementClient(c.config)
 	c.Withdraw = NewWithdrawClient(c.config)
 }
 
@@ -93,15 +93,15 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		Detail:        NewDetailClient(cfg),
-		General:       NewGeneralClient(cfg),
-		MiningDetail:  NewMiningDetailClient(cfg),
-		MiningGeneral: NewMiningGeneralClient(cfg),
-		MiningUnsold:  NewMiningUnsoldClient(cfg),
-		Profit:        NewProfitClient(cfg),
-		Withdraw:      NewWithdrawClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		GoodLedger:      NewGoodLedgerClient(cfg),
+		GoodStatement:   NewGoodStatementClient(cfg),
+		Ledger:          NewLedgerClient(cfg),
+		Profit:          NewProfitClient(cfg),
+		Statement:       NewStatementClient(cfg),
+		UnsoldStatement: NewUnsoldStatementClient(cfg),
+		Withdraw:        NewWithdrawClient(cfg),
 	}, nil
 }
 
@@ -119,22 +119,22 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		Detail:        NewDetailClient(cfg),
-		General:       NewGeneralClient(cfg),
-		MiningDetail:  NewMiningDetailClient(cfg),
-		MiningGeneral: NewMiningGeneralClient(cfg),
-		MiningUnsold:  NewMiningUnsoldClient(cfg),
-		Profit:        NewProfitClient(cfg),
-		Withdraw:      NewWithdrawClient(cfg),
+		ctx:             ctx,
+		config:          cfg,
+		GoodLedger:      NewGoodLedgerClient(cfg),
+		GoodStatement:   NewGoodStatementClient(cfg),
+		Ledger:          NewLedgerClient(cfg),
+		Profit:          NewProfitClient(cfg),
+		Statement:       NewStatementClient(cfg),
+		UnsoldStatement: NewUnsoldStatementClient(cfg),
+		Withdraw:        NewWithdrawClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Detail.
+//		GoodLedger.
 //		Query().
 //		Count(ctx)
 //
@@ -157,93 +157,93 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Detail.Use(hooks...)
-	c.General.Use(hooks...)
-	c.MiningDetail.Use(hooks...)
-	c.MiningGeneral.Use(hooks...)
-	c.MiningUnsold.Use(hooks...)
+	c.GoodLedger.Use(hooks...)
+	c.GoodStatement.Use(hooks...)
+	c.Ledger.Use(hooks...)
 	c.Profit.Use(hooks...)
+	c.Statement.Use(hooks...)
+	c.UnsoldStatement.Use(hooks...)
 	c.Withdraw.Use(hooks...)
 }
 
-// DetailClient is a client for the Detail schema.
-type DetailClient struct {
+// GoodLedgerClient is a client for the GoodLedger schema.
+type GoodLedgerClient struct {
 	config
 }
 
-// NewDetailClient returns a client for the Detail from the given config.
-func NewDetailClient(c config) *DetailClient {
-	return &DetailClient{config: c}
+// NewGoodLedgerClient returns a client for the GoodLedger from the given config.
+func NewGoodLedgerClient(c config) *GoodLedgerClient {
+	return &GoodLedgerClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `detail.Hooks(f(g(h())))`.
-func (c *DetailClient) Use(hooks ...Hook) {
-	c.hooks.Detail = append(c.hooks.Detail, hooks...)
+// A call to `Use(f, g, h)` equals to `goodledger.Hooks(f(g(h())))`.
+func (c *GoodLedgerClient) Use(hooks ...Hook) {
+	c.hooks.GoodLedger = append(c.hooks.GoodLedger, hooks...)
 }
 
-// Create returns a builder for creating a Detail entity.
-func (c *DetailClient) Create() *DetailCreate {
-	mutation := newDetailMutation(c.config, OpCreate)
-	return &DetailCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a GoodLedger entity.
+func (c *GoodLedgerClient) Create() *GoodLedgerCreate {
+	mutation := newGoodLedgerMutation(c.config, OpCreate)
+	return &GoodLedgerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Detail entities.
-func (c *DetailClient) CreateBulk(builders ...*DetailCreate) *DetailCreateBulk {
-	return &DetailCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of GoodLedger entities.
+func (c *GoodLedgerClient) CreateBulk(builders ...*GoodLedgerCreate) *GoodLedgerCreateBulk {
+	return &GoodLedgerCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Detail.
-func (c *DetailClient) Update() *DetailUpdate {
-	mutation := newDetailMutation(c.config, OpUpdate)
-	return &DetailUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for GoodLedger.
+func (c *GoodLedgerClient) Update() *GoodLedgerUpdate {
+	mutation := newGoodLedgerMutation(c.config, OpUpdate)
+	return &GoodLedgerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *DetailClient) UpdateOne(d *Detail) *DetailUpdateOne {
-	mutation := newDetailMutation(c.config, OpUpdateOne, withDetail(d))
-	return &DetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *GoodLedgerClient) UpdateOne(gl *GoodLedger) *GoodLedgerUpdateOne {
+	mutation := newGoodLedgerMutation(c.config, OpUpdateOne, withGoodLedger(gl))
+	return &GoodLedgerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DetailClient) UpdateOneID(id uuid.UUID) *DetailUpdateOne {
-	mutation := newDetailMutation(c.config, OpUpdateOne, withDetailID(id))
-	return &DetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *GoodLedgerClient) UpdateOneID(id uuid.UUID) *GoodLedgerUpdateOne {
+	mutation := newGoodLedgerMutation(c.config, OpUpdateOne, withGoodLedgerID(id))
+	return &GoodLedgerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Detail.
-func (c *DetailClient) Delete() *DetailDelete {
-	mutation := newDetailMutation(c.config, OpDelete)
-	return &DetailDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for GoodLedger.
+func (c *GoodLedgerClient) Delete() *GoodLedgerDelete {
+	mutation := newGoodLedgerMutation(c.config, OpDelete)
+	return &GoodLedgerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *DetailClient) DeleteOne(d *Detail) *DetailDeleteOne {
-	return c.DeleteOneID(d.ID)
+func (c *GoodLedgerClient) DeleteOne(gl *GoodLedger) *GoodLedgerDeleteOne {
+	return c.DeleteOneID(gl.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *DetailClient) DeleteOneID(id uuid.UUID) *DetailDeleteOne {
-	builder := c.Delete().Where(detail.ID(id))
+func (c *GoodLedgerClient) DeleteOneID(id uuid.UUID) *GoodLedgerDeleteOne {
+	builder := c.Delete().Where(goodledger.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &DetailDeleteOne{builder}
+	return &GoodLedgerDeleteOne{builder}
 }
 
-// Query returns a query builder for Detail.
-func (c *DetailClient) Query() *DetailQuery {
-	return &DetailQuery{
+// Query returns a query builder for GoodLedger.
+func (c *GoodLedgerClient) Query() *GoodLedgerQuery {
+	return &GoodLedgerQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Detail entity by its id.
-func (c *DetailClient) Get(ctx context.Context, id uuid.UUID) (*Detail, error) {
-	return c.Query().Where(detail.ID(id)).Only(ctx)
+// Get returns a GoodLedger entity by its id.
+func (c *GoodLedgerClient) Get(ctx context.Context, id uuid.UUID) (*GoodLedger, error) {
+	return c.Query().Where(goodledger.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DetailClient) GetX(ctx context.Context, id uuid.UUID) *Detail {
+func (c *GoodLedgerClient) GetX(ctx context.Context, id uuid.UUID) *GoodLedger {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -252,89 +252,89 @@ func (c *DetailClient) GetX(ctx context.Context, id uuid.UUID) *Detail {
 }
 
 // Hooks returns the client hooks.
-func (c *DetailClient) Hooks() []Hook {
-	hooks := c.hooks.Detail
-	return append(hooks[:len(hooks):len(hooks)], detail.Hooks[:]...)
+func (c *GoodLedgerClient) Hooks() []Hook {
+	hooks := c.hooks.GoodLedger
+	return append(hooks[:len(hooks):len(hooks)], goodledger.Hooks[:]...)
 }
 
-// GeneralClient is a client for the General schema.
-type GeneralClient struct {
+// GoodStatementClient is a client for the GoodStatement schema.
+type GoodStatementClient struct {
 	config
 }
 
-// NewGeneralClient returns a client for the General from the given config.
-func NewGeneralClient(c config) *GeneralClient {
-	return &GeneralClient{config: c}
+// NewGoodStatementClient returns a client for the GoodStatement from the given config.
+func NewGoodStatementClient(c config) *GoodStatementClient {
+	return &GoodStatementClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `general.Hooks(f(g(h())))`.
-func (c *GeneralClient) Use(hooks ...Hook) {
-	c.hooks.General = append(c.hooks.General, hooks...)
+// A call to `Use(f, g, h)` equals to `goodstatement.Hooks(f(g(h())))`.
+func (c *GoodStatementClient) Use(hooks ...Hook) {
+	c.hooks.GoodStatement = append(c.hooks.GoodStatement, hooks...)
 }
 
-// Create returns a builder for creating a General entity.
-func (c *GeneralClient) Create() *GeneralCreate {
-	mutation := newGeneralMutation(c.config, OpCreate)
-	return &GeneralCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a GoodStatement entity.
+func (c *GoodStatementClient) Create() *GoodStatementCreate {
+	mutation := newGoodStatementMutation(c.config, OpCreate)
+	return &GoodStatementCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of General entities.
-func (c *GeneralClient) CreateBulk(builders ...*GeneralCreate) *GeneralCreateBulk {
-	return &GeneralCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of GoodStatement entities.
+func (c *GoodStatementClient) CreateBulk(builders ...*GoodStatementCreate) *GoodStatementCreateBulk {
+	return &GoodStatementCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for General.
-func (c *GeneralClient) Update() *GeneralUpdate {
-	mutation := newGeneralMutation(c.config, OpUpdate)
-	return &GeneralUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for GoodStatement.
+func (c *GoodStatementClient) Update() *GoodStatementUpdate {
+	mutation := newGoodStatementMutation(c.config, OpUpdate)
+	return &GoodStatementUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *GeneralClient) UpdateOne(ge *General) *GeneralUpdateOne {
-	mutation := newGeneralMutation(c.config, OpUpdateOne, withGeneral(ge))
-	return &GeneralUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *GoodStatementClient) UpdateOne(gs *GoodStatement) *GoodStatementUpdateOne {
+	mutation := newGoodStatementMutation(c.config, OpUpdateOne, withGoodStatement(gs))
+	return &GoodStatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *GeneralClient) UpdateOneID(id uuid.UUID) *GeneralUpdateOne {
-	mutation := newGeneralMutation(c.config, OpUpdateOne, withGeneralID(id))
-	return &GeneralUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *GoodStatementClient) UpdateOneID(id uuid.UUID) *GoodStatementUpdateOne {
+	mutation := newGoodStatementMutation(c.config, OpUpdateOne, withGoodStatementID(id))
+	return &GoodStatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for General.
-func (c *GeneralClient) Delete() *GeneralDelete {
-	mutation := newGeneralMutation(c.config, OpDelete)
-	return &GeneralDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for GoodStatement.
+func (c *GoodStatementClient) Delete() *GoodStatementDelete {
+	mutation := newGoodStatementMutation(c.config, OpDelete)
+	return &GoodStatementDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *GeneralClient) DeleteOne(ge *General) *GeneralDeleteOne {
-	return c.DeleteOneID(ge.ID)
+func (c *GoodStatementClient) DeleteOne(gs *GoodStatement) *GoodStatementDeleteOne {
+	return c.DeleteOneID(gs.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *GeneralClient) DeleteOneID(id uuid.UUID) *GeneralDeleteOne {
-	builder := c.Delete().Where(general.ID(id))
+func (c *GoodStatementClient) DeleteOneID(id uuid.UUID) *GoodStatementDeleteOne {
+	builder := c.Delete().Where(goodstatement.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &GeneralDeleteOne{builder}
+	return &GoodStatementDeleteOne{builder}
 }
 
-// Query returns a query builder for General.
-func (c *GeneralClient) Query() *GeneralQuery {
-	return &GeneralQuery{
+// Query returns a query builder for GoodStatement.
+func (c *GoodStatementClient) Query() *GoodStatementQuery {
+	return &GoodStatementQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a General entity by its id.
-func (c *GeneralClient) Get(ctx context.Context, id uuid.UUID) (*General, error) {
-	return c.Query().Where(general.ID(id)).Only(ctx)
+// Get returns a GoodStatement entity by its id.
+func (c *GoodStatementClient) Get(ctx context.Context, id uuid.UUID) (*GoodStatement, error) {
+	return c.Query().Where(goodstatement.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *GeneralClient) GetX(ctx context.Context, id uuid.UUID) *General {
+func (c *GoodStatementClient) GetX(ctx context.Context, id uuid.UUID) *GoodStatement {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -343,89 +343,89 @@ func (c *GeneralClient) GetX(ctx context.Context, id uuid.UUID) *General {
 }
 
 // Hooks returns the client hooks.
-func (c *GeneralClient) Hooks() []Hook {
-	hooks := c.hooks.General
-	return append(hooks[:len(hooks):len(hooks)], general.Hooks[:]...)
+func (c *GoodStatementClient) Hooks() []Hook {
+	hooks := c.hooks.GoodStatement
+	return append(hooks[:len(hooks):len(hooks)], goodstatement.Hooks[:]...)
 }
 
-// MiningDetailClient is a client for the MiningDetail schema.
-type MiningDetailClient struct {
+// LedgerClient is a client for the Ledger schema.
+type LedgerClient struct {
 	config
 }
 
-// NewMiningDetailClient returns a client for the MiningDetail from the given config.
-func NewMiningDetailClient(c config) *MiningDetailClient {
-	return &MiningDetailClient{config: c}
+// NewLedgerClient returns a client for the Ledger from the given config.
+func NewLedgerClient(c config) *LedgerClient {
+	return &LedgerClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `miningdetail.Hooks(f(g(h())))`.
-func (c *MiningDetailClient) Use(hooks ...Hook) {
-	c.hooks.MiningDetail = append(c.hooks.MiningDetail, hooks...)
+// A call to `Use(f, g, h)` equals to `ledger.Hooks(f(g(h())))`.
+func (c *LedgerClient) Use(hooks ...Hook) {
+	c.hooks.Ledger = append(c.hooks.Ledger, hooks...)
 }
 
-// Create returns a builder for creating a MiningDetail entity.
-func (c *MiningDetailClient) Create() *MiningDetailCreate {
-	mutation := newMiningDetailMutation(c.config, OpCreate)
-	return &MiningDetailCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Ledger entity.
+func (c *LedgerClient) Create() *LedgerCreate {
+	mutation := newLedgerMutation(c.config, OpCreate)
+	return &LedgerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of MiningDetail entities.
-func (c *MiningDetailClient) CreateBulk(builders ...*MiningDetailCreate) *MiningDetailCreateBulk {
-	return &MiningDetailCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Ledger entities.
+func (c *LedgerClient) CreateBulk(builders ...*LedgerCreate) *LedgerCreateBulk {
+	return &LedgerCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for MiningDetail.
-func (c *MiningDetailClient) Update() *MiningDetailUpdate {
-	mutation := newMiningDetailMutation(c.config, OpUpdate)
-	return &MiningDetailUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Ledger.
+func (c *LedgerClient) Update() *LedgerUpdate {
+	mutation := newLedgerMutation(c.config, OpUpdate)
+	return &LedgerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *MiningDetailClient) UpdateOne(md *MiningDetail) *MiningDetailUpdateOne {
-	mutation := newMiningDetailMutation(c.config, OpUpdateOne, withMiningDetail(md))
-	return &MiningDetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *LedgerClient) UpdateOne(l *Ledger) *LedgerUpdateOne {
+	mutation := newLedgerMutation(c.config, OpUpdateOne, withLedger(l))
+	return &LedgerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *MiningDetailClient) UpdateOneID(id uuid.UUID) *MiningDetailUpdateOne {
-	mutation := newMiningDetailMutation(c.config, OpUpdateOne, withMiningDetailID(id))
-	return &MiningDetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *LedgerClient) UpdateOneID(id uuid.UUID) *LedgerUpdateOne {
+	mutation := newLedgerMutation(c.config, OpUpdateOne, withLedgerID(id))
+	return &LedgerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for MiningDetail.
-func (c *MiningDetailClient) Delete() *MiningDetailDelete {
-	mutation := newMiningDetailMutation(c.config, OpDelete)
-	return &MiningDetailDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Ledger.
+func (c *LedgerClient) Delete() *LedgerDelete {
+	mutation := newLedgerMutation(c.config, OpDelete)
+	return &LedgerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *MiningDetailClient) DeleteOne(md *MiningDetail) *MiningDetailDeleteOne {
-	return c.DeleteOneID(md.ID)
+func (c *LedgerClient) DeleteOne(l *Ledger) *LedgerDeleteOne {
+	return c.DeleteOneID(l.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *MiningDetailClient) DeleteOneID(id uuid.UUID) *MiningDetailDeleteOne {
-	builder := c.Delete().Where(miningdetail.ID(id))
+func (c *LedgerClient) DeleteOneID(id uuid.UUID) *LedgerDeleteOne {
+	builder := c.Delete().Where(ledger.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &MiningDetailDeleteOne{builder}
+	return &LedgerDeleteOne{builder}
 }
 
-// Query returns a query builder for MiningDetail.
-func (c *MiningDetailClient) Query() *MiningDetailQuery {
-	return &MiningDetailQuery{
+// Query returns a query builder for Ledger.
+func (c *LedgerClient) Query() *LedgerQuery {
+	return &LedgerQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a MiningDetail entity by its id.
-func (c *MiningDetailClient) Get(ctx context.Context, id uuid.UUID) (*MiningDetail, error) {
-	return c.Query().Where(miningdetail.ID(id)).Only(ctx)
+// Get returns a Ledger entity by its id.
+func (c *LedgerClient) Get(ctx context.Context, id uuid.UUID) (*Ledger, error) {
+	return c.Query().Where(ledger.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *MiningDetailClient) GetX(ctx context.Context, id uuid.UUID) *MiningDetail {
+func (c *LedgerClient) GetX(ctx context.Context, id uuid.UUID) *Ledger {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -434,191 +434,9 @@ func (c *MiningDetailClient) GetX(ctx context.Context, id uuid.UUID) *MiningDeta
 }
 
 // Hooks returns the client hooks.
-func (c *MiningDetailClient) Hooks() []Hook {
-	hooks := c.hooks.MiningDetail
-	return append(hooks[:len(hooks):len(hooks)], miningdetail.Hooks[:]...)
-}
-
-// MiningGeneralClient is a client for the MiningGeneral schema.
-type MiningGeneralClient struct {
-	config
-}
-
-// NewMiningGeneralClient returns a client for the MiningGeneral from the given config.
-func NewMiningGeneralClient(c config) *MiningGeneralClient {
-	return &MiningGeneralClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `mininggeneral.Hooks(f(g(h())))`.
-func (c *MiningGeneralClient) Use(hooks ...Hook) {
-	c.hooks.MiningGeneral = append(c.hooks.MiningGeneral, hooks...)
-}
-
-// Create returns a builder for creating a MiningGeneral entity.
-func (c *MiningGeneralClient) Create() *MiningGeneralCreate {
-	mutation := newMiningGeneralMutation(c.config, OpCreate)
-	return &MiningGeneralCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of MiningGeneral entities.
-func (c *MiningGeneralClient) CreateBulk(builders ...*MiningGeneralCreate) *MiningGeneralCreateBulk {
-	return &MiningGeneralCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for MiningGeneral.
-func (c *MiningGeneralClient) Update() *MiningGeneralUpdate {
-	mutation := newMiningGeneralMutation(c.config, OpUpdate)
-	return &MiningGeneralUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *MiningGeneralClient) UpdateOne(mg *MiningGeneral) *MiningGeneralUpdateOne {
-	mutation := newMiningGeneralMutation(c.config, OpUpdateOne, withMiningGeneral(mg))
-	return &MiningGeneralUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *MiningGeneralClient) UpdateOneID(id uuid.UUID) *MiningGeneralUpdateOne {
-	mutation := newMiningGeneralMutation(c.config, OpUpdateOne, withMiningGeneralID(id))
-	return &MiningGeneralUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for MiningGeneral.
-func (c *MiningGeneralClient) Delete() *MiningGeneralDelete {
-	mutation := newMiningGeneralMutation(c.config, OpDelete)
-	return &MiningGeneralDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *MiningGeneralClient) DeleteOne(mg *MiningGeneral) *MiningGeneralDeleteOne {
-	return c.DeleteOneID(mg.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *MiningGeneralClient) DeleteOneID(id uuid.UUID) *MiningGeneralDeleteOne {
-	builder := c.Delete().Where(mininggeneral.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &MiningGeneralDeleteOne{builder}
-}
-
-// Query returns a query builder for MiningGeneral.
-func (c *MiningGeneralClient) Query() *MiningGeneralQuery {
-	return &MiningGeneralQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a MiningGeneral entity by its id.
-func (c *MiningGeneralClient) Get(ctx context.Context, id uuid.UUID) (*MiningGeneral, error) {
-	return c.Query().Where(mininggeneral.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *MiningGeneralClient) GetX(ctx context.Context, id uuid.UUID) *MiningGeneral {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *MiningGeneralClient) Hooks() []Hook {
-	hooks := c.hooks.MiningGeneral
-	return append(hooks[:len(hooks):len(hooks)], mininggeneral.Hooks[:]...)
-}
-
-// MiningUnsoldClient is a client for the MiningUnsold schema.
-type MiningUnsoldClient struct {
-	config
-}
-
-// NewMiningUnsoldClient returns a client for the MiningUnsold from the given config.
-func NewMiningUnsoldClient(c config) *MiningUnsoldClient {
-	return &MiningUnsoldClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `miningunsold.Hooks(f(g(h())))`.
-func (c *MiningUnsoldClient) Use(hooks ...Hook) {
-	c.hooks.MiningUnsold = append(c.hooks.MiningUnsold, hooks...)
-}
-
-// Create returns a builder for creating a MiningUnsold entity.
-func (c *MiningUnsoldClient) Create() *MiningUnsoldCreate {
-	mutation := newMiningUnsoldMutation(c.config, OpCreate)
-	return &MiningUnsoldCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of MiningUnsold entities.
-func (c *MiningUnsoldClient) CreateBulk(builders ...*MiningUnsoldCreate) *MiningUnsoldCreateBulk {
-	return &MiningUnsoldCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for MiningUnsold.
-func (c *MiningUnsoldClient) Update() *MiningUnsoldUpdate {
-	mutation := newMiningUnsoldMutation(c.config, OpUpdate)
-	return &MiningUnsoldUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *MiningUnsoldClient) UpdateOne(mu *MiningUnsold) *MiningUnsoldUpdateOne {
-	mutation := newMiningUnsoldMutation(c.config, OpUpdateOne, withMiningUnsold(mu))
-	return &MiningUnsoldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *MiningUnsoldClient) UpdateOneID(id uuid.UUID) *MiningUnsoldUpdateOne {
-	mutation := newMiningUnsoldMutation(c.config, OpUpdateOne, withMiningUnsoldID(id))
-	return &MiningUnsoldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for MiningUnsold.
-func (c *MiningUnsoldClient) Delete() *MiningUnsoldDelete {
-	mutation := newMiningUnsoldMutation(c.config, OpDelete)
-	return &MiningUnsoldDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *MiningUnsoldClient) DeleteOne(mu *MiningUnsold) *MiningUnsoldDeleteOne {
-	return c.DeleteOneID(mu.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *MiningUnsoldClient) DeleteOneID(id uuid.UUID) *MiningUnsoldDeleteOne {
-	builder := c.Delete().Where(miningunsold.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &MiningUnsoldDeleteOne{builder}
-}
-
-// Query returns a query builder for MiningUnsold.
-func (c *MiningUnsoldClient) Query() *MiningUnsoldQuery {
-	return &MiningUnsoldQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a MiningUnsold entity by its id.
-func (c *MiningUnsoldClient) Get(ctx context.Context, id uuid.UUID) (*MiningUnsold, error) {
-	return c.Query().Where(miningunsold.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *MiningUnsoldClient) GetX(ctx context.Context, id uuid.UUID) *MiningUnsold {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *MiningUnsoldClient) Hooks() []Hook {
-	hooks := c.hooks.MiningUnsold
-	return append(hooks[:len(hooks):len(hooks)], miningunsold.Hooks[:]...)
+func (c *LedgerClient) Hooks() []Hook {
+	hooks := c.hooks.Ledger
+	return append(hooks[:len(hooks):len(hooks)], ledger.Hooks[:]...)
 }
 
 // ProfitClient is a client for the Profit schema.
@@ -710,6 +528,188 @@ func (c *ProfitClient) GetX(ctx context.Context, id uuid.UUID) *Profit {
 func (c *ProfitClient) Hooks() []Hook {
 	hooks := c.hooks.Profit
 	return append(hooks[:len(hooks):len(hooks)], profit.Hooks[:]...)
+}
+
+// StatementClient is a client for the Statement schema.
+type StatementClient struct {
+	config
+}
+
+// NewStatementClient returns a client for the Statement from the given config.
+func NewStatementClient(c config) *StatementClient {
+	return &StatementClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `statement.Hooks(f(g(h())))`.
+func (c *StatementClient) Use(hooks ...Hook) {
+	c.hooks.Statement = append(c.hooks.Statement, hooks...)
+}
+
+// Create returns a builder for creating a Statement entity.
+func (c *StatementClient) Create() *StatementCreate {
+	mutation := newStatementMutation(c.config, OpCreate)
+	return &StatementCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Statement entities.
+func (c *StatementClient) CreateBulk(builders ...*StatementCreate) *StatementCreateBulk {
+	return &StatementCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Statement.
+func (c *StatementClient) Update() *StatementUpdate {
+	mutation := newStatementMutation(c.config, OpUpdate)
+	return &StatementUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StatementClient) UpdateOne(s *Statement) *StatementUpdateOne {
+	mutation := newStatementMutation(c.config, OpUpdateOne, withStatement(s))
+	return &StatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StatementClient) UpdateOneID(id uuid.UUID) *StatementUpdateOne {
+	mutation := newStatementMutation(c.config, OpUpdateOne, withStatementID(id))
+	return &StatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Statement.
+func (c *StatementClient) Delete() *StatementDelete {
+	mutation := newStatementMutation(c.config, OpDelete)
+	return &StatementDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StatementClient) DeleteOne(s *Statement) *StatementDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *StatementClient) DeleteOneID(id uuid.UUID) *StatementDeleteOne {
+	builder := c.Delete().Where(statement.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StatementDeleteOne{builder}
+}
+
+// Query returns a query builder for Statement.
+func (c *StatementClient) Query() *StatementQuery {
+	return &StatementQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Statement entity by its id.
+func (c *StatementClient) Get(ctx context.Context, id uuid.UUID) (*Statement, error) {
+	return c.Query().Where(statement.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StatementClient) GetX(ctx context.Context, id uuid.UUID) *Statement {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *StatementClient) Hooks() []Hook {
+	hooks := c.hooks.Statement
+	return append(hooks[:len(hooks):len(hooks)], statement.Hooks[:]...)
+}
+
+// UnsoldStatementClient is a client for the UnsoldStatement schema.
+type UnsoldStatementClient struct {
+	config
+}
+
+// NewUnsoldStatementClient returns a client for the UnsoldStatement from the given config.
+func NewUnsoldStatementClient(c config) *UnsoldStatementClient {
+	return &UnsoldStatementClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `unsoldstatement.Hooks(f(g(h())))`.
+func (c *UnsoldStatementClient) Use(hooks ...Hook) {
+	c.hooks.UnsoldStatement = append(c.hooks.UnsoldStatement, hooks...)
+}
+
+// Create returns a builder for creating a UnsoldStatement entity.
+func (c *UnsoldStatementClient) Create() *UnsoldStatementCreate {
+	mutation := newUnsoldStatementMutation(c.config, OpCreate)
+	return &UnsoldStatementCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UnsoldStatement entities.
+func (c *UnsoldStatementClient) CreateBulk(builders ...*UnsoldStatementCreate) *UnsoldStatementCreateBulk {
+	return &UnsoldStatementCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UnsoldStatement.
+func (c *UnsoldStatementClient) Update() *UnsoldStatementUpdate {
+	mutation := newUnsoldStatementMutation(c.config, OpUpdate)
+	return &UnsoldStatementUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UnsoldStatementClient) UpdateOne(us *UnsoldStatement) *UnsoldStatementUpdateOne {
+	mutation := newUnsoldStatementMutation(c.config, OpUpdateOne, withUnsoldStatement(us))
+	return &UnsoldStatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UnsoldStatementClient) UpdateOneID(id uuid.UUID) *UnsoldStatementUpdateOne {
+	mutation := newUnsoldStatementMutation(c.config, OpUpdateOne, withUnsoldStatementID(id))
+	return &UnsoldStatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UnsoldStatement.
+func (c *UnsoldStatementClient) Delete() *UnsoldStatementDelete {
+	mutation := newUnsoldStatementMutation(c.config, OpDelete)
+	return &UnsoldStatementDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UnsoldStatementClient) DeleteOne(us *UnsoldStatement) *UnsoldStatementDeleteOne {
+	return c.DeleteOneID(us.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *UnsoldStatementClient) DeleteOneID(id uuid.UUID) *UnsoldStatementDeleteOne {
+	builder := c.Delete().Where(unsoldstatement.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UnsoldStatementDeleteOne{builder}
+}
+
+// Query returns a query builder for UnsoldStatement.
+func (c *UnsoldStatementClient) Query() *UnsoldStatementQuery {
+	return &UnsoldStatementQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a UnsoldStatement entity by its id.
+func (c *UnsoldStatementClient) Get(ctx context.Context, id uuid.UUID) (*UnsoldStatement, error) {
+	return c.Query().Where(unsoldstatement.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UnsoldStatementClient) GetX(ctx context.Context, id uuid.UUID) *UnsoldStatement {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *UnsoldStatementClient) Hooks() []Hook {
+	hooks := c.hooks.UnsoldStatement
+	return append(hooks[:len(hooks):len(hooks)], unsoldstatement.Hooks[:]...)
 }
 
 // WithdrawClient is a client for the Withdraw schema.

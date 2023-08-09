@@ -5,13 +5,13 @@ package runtime
 import (
 	"context"
 
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningdetail"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningunsold"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/schema"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	"github.com/google/uuid"
 
@@ -23,240 +23,134 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	detailMixin := schema.Detail{}.Mixin()
-	detail.Policy = privacy.NewPolicies(detailMixin[0], schema.Detail{})
-	detail.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	goodledgerMixin := schema.GoodLedger{}.Mixin()
+	goodledger.Policy = privacy.NewPolicies(goodledgerMixin[0], schema.GoodLedger{})
+	goodledger.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := detail.Policy.EvalMutation(ctx, m); err != nil {
+			if err := goodledger.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	detailMixinFields0 := detailMixin[0].Fields()
-	_ = detailMixinFields0
-	detailFields := schema.Detail{}.Fields()
-	_ = detailFields
-	// detailDescCreatedAt is the schema descriptor for created_at field.
-	detailDescCreatedAt := detailMixinFields0[0].Descriptor()
-	// detail.DefaultCreatedAt holds the default value on creation for the created_at field.
-	detail.DefaultCreatedAt = detailDescCreatedAt.Default.(func() uint32)
-	// detailDescUpdatedAt is the schema descriptor for updated_at field.
-	detailDescUpdatedAt := detailMixinFields0[1].Descriptor()
-	// detail.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	detail.DefaultUpdatedAt = detailDescUpdatedAt.Default.(func() uint32)
-	// detail.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	detail.UpdateDefaultUpdatedAt = detailDescUpdatedAt.UpdateDefault.(func() uint32)
-	// detailDescDeletedAt is the schema descriptor for deleted_at field.
-	detailDescDeletedAt := detailMixinFields0[2].Descriptor()
-	// detail.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	detail.DefaultDeletedAt = detailDescDeletedAt.Default.(func() uint32)
-	// detailDescAppID is the schema descriptor for app_id field.
-	detailDescAppID := detailFields[1].Descriptor()
-	// detail.DefaultAppID holds the default value on creation for the app_id field.
-	detail.DefaultAppID = detailDescAppID.Default.(func() uuid.UUID)
-	// detailDescUserID is the schema descriptor for user_id field.
-	detailDescUserID := detailFields[2].Descriptor()
-	// detail.DefaultUserID holds the default value on creation for the user_id field.
-	detail.DefaultUserID = detailDescUserID.Default.(func() uuid.UUID)
-	// detailDescCoinTypeID is the schema descriptor for coin_type_id field.
-	detailDescCoinTypeID := detailFields[3].Descriptor()
-	// detail.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
-	detail.DefaultCoinTypeID = detailDescCoinTypeID.Default.(func() uuid.UUID)
-	// detailDescIoType is the schema descriptor for io_type field.
-	detailDescIoType := detailFields[4].Descriptor()
-	// detail.DefaultIoType holds the default value on creation for the io_type field.
-	detail.DefaultIoType = detailDescIoType.Default.(string)
-	// detailDescIoSubType is the schema descriptor for io_sub_type field.
-	detailDescIoSubType := detailFields[5].Descriptor()
-	// detail.DefaultIoSubType holds the default value on creation for the io_sub_type field.
-	detail.DefaultIoSubType = detailDescIoSubType.Default.(string)
-	// detailDescFromCoinTypeID is the schema descriptor for from_coin_type_id field.
-	detailDescFromCoinTypeID := detailFields[7].Descriptor()
-	// detail.DefaultFromCoinTypeID holds the default value on creation for the from_coin_type_id field.
-	detail.DefaultFromCoinTypeID = detailDescFromCoinTypeID.Default.(func() uuid.UUID)
-	// detailDescIoExtra is the schema descriptor for io_extra field.
-	detailDescIoExtra := detailFields[9].Descriptor()
-	// detail.DefaultIoExtra holds the default value on creation for the io_extra field.
-	detail.DefaultIoExtra = detailDescIoExtra.Default.(string)
-	// detail.IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
-	detail.IoExtraValidator = detailDescIoExtra.Validators[0].(func(string) error)
-	// detailDescID is the schema descriptor for id field.
-	detailDescID := detailFields[0].Descriptor()
-	// detail.DefaultID holds the default value on creation for the id field.
-	detail.DefaultID = detailDescID.Default.(func() uuid.UUID)
-	generalMixin := schema.General{}.Mixin()
-	general.Policy = privacy.NewPolicies(generalMixin[0], schema.General{})
-	general.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	goodledgerMixinFields0 := goodledgerMixin[0].Fields()
+	_ = goodledgerMixinFields0
+	goodledgerFields := schema.GoodLedger{}.Fields()
+	_ = goodledgerFields
+	// goodledgerDescCreatedAt is the schema descriptor for created_at field.
+	goodledgerDescCreatedAt := goodledgerMixinFields0[0].Descriptor()
+	// goodledger.DefaultCreatedAt holds the default value on creation for the created_at field.
+	goodledger.DefaultCreatedAt = goodledgerDescCreatedAt.Default.(func() uint32)
+	// goodledgerDescUpdatedAt is the schema descriptor for updated_at field.
+	goodledgerDescUpdatedAt := goodledgerMixinFields0[1].Descriptor()
+	// goodledger.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	goodledger.DefaultUpdatedAt = goodledgerDescUpdatedAt.Default.(func() uint32)
+	// goodledger.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	goodledger.UpdateDefaultUpdatedAt = goodledgerDescUpdatedAt.UpdateDefault.(func() uint32)
+	// goodledgerDescDeletedAt is the schema descriptor for deleted_at field.
+	goodledgerDescDeletedAt := goodledgerMixinFields0[2].Descriptor()
+	// goodledger.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	goodledger.DefaultDeletedAt = goodledgerDescDeletedAt.Default.(func() uint32)
+	// goodledgerDescGoodID is the schema descriptor for good_id field.
+	goodledgerDescGoodID := goodledgerFields[1].Descriptor()
+	// goodledger.DefaultGoodID holds the default value on creation for the good_id field.
+	goodledger.DefaultGoodID = goodledgerDescGoodID.Default.(func() uuid.UUID)
+	// goodledgerDescCoinTypeID is the schema descriptor for coin_type_id field.
+	goodledgerDescCoinTypeID := goodledgerFields[2].Descriptor()
+	// goodledger.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	goodledger.DefaultCoinTypeID = goodledgerDescCoinTypeID.Default.(func() uuid.UUID)
+	// goodledgerDescID is the schema descriptor for id field.
+	goodledgerDescID := goodledgerFields[0].Descriptor()
+	// goodledger.DefaultID holds the default value on creation for the id field.
+	goodledger.DefaultID = goodledgerDescID.Default.(func() uuid.UUID)
+	goodstatementMixin := schema.GoodStatement{}.Mixin()
+	goodstatement.Policy = privacy.NewPolicies(goodstatementMixin[0], schema.GoodStatement{})
+	goodstatement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := general.Policy.EvalMutation(ctx, m); err != nil {
+			if err := goodstatement.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	generalMixinFields0 := generalMixin[0].Fields()
-	_ = generalMixinFields0
-	generalFields := schema.General{}.Fields()
-	_ = generalFields
-	// generalDescCreatedAt is the schema descriptor for created_at field.
-	generalDescCreatedAt := generalMixinFields0[0].Descriptor()
-	// general.DefaultCreatedAt holds the default value on creation for the created_at field.
-	general.DefaultCreatedAt = generalDescCreatedAt.Default.(func() uint32)
-	// generalDescUpdatedAt is the schema descriptor for updated_at field.
-	generalDescUpdatedAt := generalMixinFields0[1].Descriptor()
-	// general.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	general.DefaultUpdatedAt = generalDescUpdatedAt.Default.(func() uint32)
-	// general.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	general.UpdateDefaultUpdatedAt = generalDescUpdatedAt.UpdateDefault.(func() uint32)
-	// generalDescDeletedAt is the schema descriptor for deleted_at field.
-	generalDescDeletedAt := generalMixinFields0[2].Descriptor()
-	// general.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	general.DefaultDeletedAt = generalDescDeletedAt.Default.(func() uint32)
-	// generalDescAppID is the schema descriptor for app_id field.
-	generalDescAppID := generalFields[1].Descriptor()
-	// general.DefaultAppID holds the default value on creation for the app_id field.
-	general.DefaultAppID = generalDescAppID.Default.(func() uuid.UUID)
-	// generalDescUserID is the schema descriptor for user_id field.
-	generalDescUserID := generalFields[2].Descriptor()
-	// general.DefaultUserID holds the default value on creation for the user_id field.
-	general.DefaultUserID = generalDescUserID.Default.(func() uuid.UUID)
-	// generalDescCoinTypeID is the schema descriptor for coin_type_id field.
-	generalDescCoinTypeID := generalFields[3].Descriptor()
-	// general.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
-	general.DefaultCoinTypeID = generalDescCoinTypeID.Default.(func() uuid.UUID)
-	// generalDescID is the schema descriptor for id field.
-	generalDescID := generalFields[0].Descriptor()
-	// general.DefaultID holds the default value on creation for the id field.
-	general.DefaultID = generalDescID.Default.(func() uuid.UUID)
-	miningdetailMixin := schema.MiningDetail{}.Mixin()
-	miningdetail.Policy = privacy.NewPolicies(miningdetailMixin[0], schema.MiningDetail{})
-	miningdetail.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	goodstatementMixinFields0 := goodstatementMixin[0].Fields()
+	_ = goodstatementMixinFields0
+	goodstatementFields := schema.GoodStatement{}.Fields()
+	_ = goodstatementFields
+	// goodstatementDescCreatedAt is the schema descriptor for created_at field.
+	goodstatementDescCreatedAt := goodstatementMixinFields0[0].Descriptor()
+	// goodstatement.DefaultCreatedAt holds the default value on creation for the created_at field.
+	goodstatement.DefaultCreatedAt = goodstatementDescCreatedAt.Default.(func() uint32)
+	// goodstatementDescUpdatedAt is the schema descriptor for updated_at field.
+	goodstatementDescUpdatedAt := goodstatementMixinFields0[1].Descriptor()
+	// goodstatement.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	goodstatement.DefaultUpdatedAt = goodstatementDescUpdatedAt.Default.(func() uint32)
+	// goodstatement.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	goodstatement.UpdateDefaultUpdatedAt = goodstatementDescUpdatedAt.UpdateDefault.(func() uint32)
+	// goodstatementDescDeletedAt is the schema descriptor for deleted_at field.
+	goodstatementDescDeletedAt := goodstatementMixinFields0[2].Descriptor()
+	// goodstatement.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	goodstatement.DefaultDeletedAt = goodstatementDescDeletedAt.Default.(func() uint32)
+	// goodstatementDescGoodID is the schema descriptor for good_id field.
+	goodstatementDescGoodID := goodstatementFields[1].Descriptor()
+	// goodstatement.DefaultGoodID holds the default value on creation for the good_id field.
+	goodstatement.DefaultGoodID = goodstatementDescGoodID.Default.(func() uuid.UUID)
+	// goodstatementDescCoinTypeID is the schema descriptor for coin_type_id field.
+	goodstatementDescCoinTypeID := goodstatementFields[2].Descriptor()
+	// goodstatement.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	goodstatement.DefaultCoinTypeID = goodstatementDescCoinTypeID.Default.(func() uuid.UUID)
+	// goodstatementDescBenefitDate is the schema descriptor for benefit_date field.
+	goodstatementDescBenefitDate := goodstatementFields[4].Descriptor()
+	// goodstatement.DefaultBenefitDate holds the default value on creation for the benefit_date field.
+	goodstatement.DefaultBenefitDate = goodstatementDescBenefitDate.Default.(uint32)
+	// goodstatementDescID is the schema descriptor for id field.
+	goodstatementDescID := goodstatementFields[0].Descriptor()
+	// goodstatement.DefaultID holds the default value on creation for the id field.
+	goodstatement.DefaultID = goodstatementDescID.Default.(func() uuid.UUID)
+	ledgerMixin := schema.Ledger{}.Mixin()
+	ledger.Policy = privacy.NewPolicies(ledgerMixin[0], schema.Ledger{})
+	ledger.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := miningdetail.Policy.EvalMutation(ctx, m); err != nil {
+			if err := ledger.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	miningdetailMixinFields0 := miningdetailMixin[0].Fields()
-	_ = miningdetailMixinFields0
-	miningdetailFields := schema.MiningDetail{}.Fields()
-	_ = miningdetailFields
-	// miningdetailDescCreatedAt is the schema descriptor for created_at field.
-	miningdetailDescCreatedAt := miningdetailMixinFields0[0].Descriptor()
-	// miningdetail.DefaultCreatedAt holds the default value on creation for the created_at field.
-	miningdetail.DefaultCreatedAt = miningdetailDescCreatedAt.Default.(func() uint32)
-	// miningdetailDescUpdatedAt is the schema descriptor for updated_at field.
-	miningdetailDescUpdatedAt := miningdetailMixinFields0[1].Descriptor()
-	// miningdetail.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	miningdetail.DefaultUpdatedAt = miningdetailDescUpdatedAt.Default.(func() uint32)
-	// miningdetail.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	miningdetail.UpdateDefaultUpdatedAt = miningdetailDescUpdatedAt.UpdateDefault.(func() uint32)
-	// miningdetailDescDeletedAt is the schema descriptor for deleted_at field.
-	miningdetailDescDeletedAt := miningdetailMixinFields0[2].Descriptor()
-	// miningdetail.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	miningdetail.DefaultDeletedAt = miningdetailDescDeletedAt.Default.(func() uint32)
-	// miningdetailDescGoodID is the schema descriptor for good_id field.
-	miningdetailDescGoodID := miningdetailFields[1].Descriptor()
-	// miningdetail.DefaultGoodID holds the default value on creation for the good_id field.
-	miningdetail.DefaultGoodID = miningdetailDescGoodID.Default.(func() uuid.UUID)
-	// miningdetailDescCoinTypeID is the schema descriptor for coin_type_id field.
-	miningdetailDescCoinTypeID := miningdetailFields[2].Descriptor()
-	// miningdetail.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
-	miningdetail.DefaultCoinTypeID = miningdetailDescCoinTypeID.Default.(func() uuid.UUID)
-	// miningdetailDescBenefitDate is the schema descriptor for benefit_date field.
-	miningdetailDescBenefitDate := miningdetailFields[4].Descriptor()
-	// miningdetail.DefaultBenefitDate holds the default value on creation for the benefit_date field.
-	miningdetail.DefaultBenefitDate = miningdetailDescBenefitDate.Default.(uint32)
-	// miningdetailDescID is the schema descriptor for id field.
-	miningdetailDescID := miningdetailFields[0].Descriptor()
-	// miningdetail.DefaultID holds the default value on creation for the id field.
-	miningdetail.DefaultID = miningdetailDescID.Default.(func() uuid.UUID)
-	mininggeneralMixin := schema.MiningGeneral{}.Mixin()
-	mininggeneral.Policy = privacy.NewPolicies(mininggeneralMixin[0], schema.MiningGeneral{})
-	mininggeneral.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := mininggeneral.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	mininggeneralMixinFields0 := mininggeneralMixin[0].Fields()
-	_ = mininggeneralMixinFields0
-	mininggeneralFields := schema.MiningGeneral{}.Fields()
-	_ = mininggeneralFields
-	// mininggeneralDescCreatedAt is the schema descriptor for created_at field.
-	mininggeneralDescCreatedAt := mininggeneralMixinFields0[0].Descriptor()
-	// mininggeneral.DefaultCreatedAt holds the default value on creation for the created_at field.
-	mininggeneral.DefaultCreatedAt = mininggeneralDescCreatedAt.Default.(func() uint32)
-	// mininggeneralDescUpdatedAt is the schema descriptor for updated_at field.
-	mininggeneralDescUpdatedAt := mininggeneralMixinFields0[1].Descriptor()
-	// mininggeneral.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	mininggeneral.DefaultUpdatedAt = mininggeneralDescUpdatedAt.Default.(func() uint32)
-	// mininggeneral.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	mininggeneral.UpdateDefaultUpdatedAt = mininggeneralDescUpdatedAt.UpdateDefault.(func() uint32)
-	// mininggeneralDescDeletedAt is the schema descriptor for deleted_at field.
-	mininggeneralDescDeletedAt := mininggeneralMixinFields0[2].Descriptor()
-	// mininggeneral.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	mininggeneral.DefaultDeletedAt = mininggeneralDescDeletedAt.Default.(func() uint32)
-	// mininggeneralDescGoodID is the schema descriptor for good_id field.
-	mininggeneralDescGoodID := mininggeneralFields[1].Descriptor()
-	// mininggeneral.DefaultGoodID holds the default value on creation for the good_id field.
-	mininggeneral.DefaultGoodID = mininggeneralDescGoodID.Default.(func() uuid.UUID)
-	// mininggeneralDescCoinTypeID is the schema descriptor for coin_type_id field.
-	mininggeneralDescCoinTypeID := mininggeneralFields[2].Descriptor()
-	// mininggeneral.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
-	mininggeneral.DefaultCoinTypeID = mininggeneralDescCoinTypeID.Default.(func() uuid.UUID)
-	// mininggeneralDescID is the schema descriptor for id field.
-	mininggeneralDescID := mininggeneralFields[0].Descriptor()
-	// mininggeneral.DefaultID holds the default value on creation for the id field.
-	mininggeneral.DefaultID = mininggeneralDescID.Default.(func() uuid.UUID)
-	miningunsoldMixin := schema.MiningUnsold{}.Mixin()
-	miningunsold.Policy = privacy.NewPolicies(miningunsoldMixin[0], schema.MiningUnsold{})
-	miningunsold.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := miningunsold.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	miningunsoldMixinFields0 := miningunsoldMixin[0].Fields()
-	_ = miningunsoldMixinFields0
-	miningunsoldFields := schema.MiningUnsold{}.Fields()
-	_ = miningunsoldFields
-	// miningunsoldDescCreatedAt is the schema descriptor for created_at field.
-	miningunsoldDescCreatedAt := miningunsoldMixinFields0[0].Descriptor()
-	// miningunsold.DefaultCreatedAt holds the default value on creation for the created_at field.
-	miningunsold.DefaultCreatedAt = miningunsoldDescCreatedAt.Default.(func() uint32)
-	// miningunsoldDescUpdatedAt is the schema descriptor for updated_at field.
-	miningunsoldDescUpdatedAt := miningunsoldMixinFields0[1].Descriptor()
-	// miningunsold.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	miningunsold.DefaultUpdatedAt = miningunsoldDescUpdatedAt.Default.(func() uint32)
-	// miningunsold.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	miningunsold.UpdateDefaultUpdatedAt = miningunsoldDescUpdatedAt.UpdateDefault.(func() uint32)
-	// miningunsoldDescDeletedAt is the schema descriptor for deleted_at field.
-	miningunsoldDescDeletedAt := miningunsoldMixinFields0[2].Descriptor()
-	// miningunsold.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	miningunsold.DefaultDeletedAt = miningunsoldDescDeletedAt.Default.(func() uint32)
-	// miningunsoldDescGoodID is the schema descriptor for good_id field.
-	miningunsoldDescGoodID := miningunsoldFields[1].Descriptor()
-	// miningunsold.DefaultGoodID holds the default value on creation for the good_id field.
-	miningunsold.DefaultGoodID = miningunsoldDescGoodID.Default.(func() uuid.UUID)
-	// miningunsoldDescCoinTypeID is the schema descriptor for coin_type_id field.
-	miningunsoldDescCoinTypeID := miningunsoldFields[2].Descriptor()
-	// miningunsold.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
-	miningunsold.DefaultCoinTypeID = miningunsoldDescCoinTypeID.Default.(func() uuid.UUID)
-	// miningunsoldDescBenefitDate is the schema descriptor for benefit_date field.
-	miningunsoldDescBenefitDate := miningunsoldFields[4].Descriptor()
-	// miningunsold.DefaultBenefitDate holds the default value on creation for the benefit_date field.
-	miningunsold.DefaultBenefitDate = miningunsoldDescBenefitDate.Default.(uint32)
-	// miningunsoldDescID is the schema descriptor for id field.
-	miningunsoldDescID := miningunsoldFields[0].Descriptor()
-	// miningunsold.DefaultID holds the default value on creation for the id field.
-	miningunsold.DefaultID = miningunsoldDescID.Default.(func() uuid.UUID)
+	ledgerMixinFields0 := ledgerMixin[0].Fields()
+	_ = ledgerMixinFields0
+	ledgerFields := schema.Ledger{}.Fields()
+	_ = ledgerFields
+	// ledgerDescCreatedAt is the schema descriptor for created_at field.
+	ledgerDescCreatedAt := ledgerMixinFields0[0].Descriptor()
+	// ledger.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ledger.DefaultCreatedAt = ledgerDescCreatedAt.Default.(func() uint32)
+	// ledgerDescUpdatedAt is the schema descriptor for updated_at field.
+	ledgerDescUpdatedAt := ledgerMixinFields0[1].Descriptor()
+	// ledger.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	ledger.DefaultUpdatedAt = ledgerDescUpdatedAt.Default.(func() uint32)
+	// ledger.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	ledger.UpdateDefaultUpdatedAt = ledgerDescUpdatedAt.UpdateDefault.(func() uint32)
+	// ledgerDescDeletedAt is the schema descriptor for deleted_at field.
+	ledgerDescDeletedAt := ledgerMixinFields0[2].Descriptor()
+	// ledger.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	ledger.DefaultDeletedAt = ledgerDescDeletedAt.Default.(func() uint32)
+	// ledgerDescAppID is the schema descriptor for app_id field.
+	ledgerDescAppID := ledgerFields[1].Descriptor()
+	// ledger.DefaultAppID holds the default value on creation for the app_id field.
+	ledger.DefaultAppID = ledgerDescAppID.Default.(func() uuid.UUID)
+	// ledgerDescUserID is the schema descriptor for user_id field.
+	ledgerDescUserID := ledgerFields[2].Descriptor()
+	// ledger.DefaultUserID holds the default value on creation for the user_id field.
+	ledger.DefaultUserID = ledgerDescUserID.Default.(func() uuid.UUID)
+	// ledgerDescCoinTypeID is the schema descriptor for coin_type_id field.
+	ledgerDescCoinTypeID := ledgerFields[3].Descriptor()
+	// ledger.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	ledger.DefaultCoinTypeID = ledgerDescCoinTypeID.Default.(func() uuid.UUID)
+	// ledgerDescID is the schema descriptor for id field.
+	ledgerDescID := ledgerFields[0].Descriptor()
+	// ledger.DefaultID holds the default value on creation for the id field.
+	ledger.DefaultID = ledgerDescID.Default.(func() uuid.UUID)
 	profitMixin := schema.Profit{}.Mixin()
 	profit.Policy = privacy.NewPolicies(profitMixin[0], schema.Profit{})
 	profit.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -301,6 +195,112 @@ func init() {
 	profitDescID := profitFields[0].Descriptor()
 	// profit.DefaultID holds the default value on creation for the id field.
 	profit.DefaultID = profitDescID.Default.(func() uuid.UUID)
+	statementMixin := schema.Statement{}.Mixin()
+	statement.Policy = privacy.NewPolicies(statementMixin[0], schema.Statement{})
+	statement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := statement.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	statementMixinFields0 := statementMixin[0].Fields()
+	_ = statementMixinFields0
+	statementFields := schema.Statement{}.Fields()
+	_ = statementFields
+	// statementDescCreatedAt is the schema descriptor for created_at field.
+	statementDescCreatedAt := statementMixinFields0[0].Descriptor()
+	// statement.DefaultCreatedAt holds the default value on creation for the created_at field.
+	statement.DefaultCreatedAt = statementDescCreatedAt.Default.(func() uint32)
+	// statementDescUpdatedAt is the schema descriptor for updated_at field.
+	statementDescUpdatedAt := statementMixinFields0[1].Descriptor()
+	// statement.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	statement.DefaultUpdatedAt = statementDescUpdatedAt.Default.(func() uint32)
+	// statement.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	statement.UpdateDefaultUpdatedAt = statementDescUpdatedAt.UpdateDefault.(func() uint32)
+	// statementDescDeletedAt is the schema descriptor for deleted_at field.
+	statementDescDeletedAt := statementMixinFields0[2].Descriptor()
+	// statement.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	statement.DefaultDeletedAt = statementDescDeletedAt.Default.(func() uint32)
+	// statementDescAppID is the schema descriptor for app_id field.
+	statementDescAppID := statementFields[1].Descriptor()
+	// statement.DefaultAppID holds the default value on creation for the app_id field.
+	statement.DefaultAppID = statementDescAppID.Default.(func() uuid.UUID)
+	// statementDescUserID is the schema descriptor for user_id field.
+	statementDescUserID := statementFields[2].Descriptor()
+	// statement.DefaultUserID holds the default value on creation for the user_id field.
+	statement.DefaultUserID = statementDescUserID.Default.(func() uuid.UUID)
+	// statementDescCoinTypeID is the schema descriptor for coin_type_id field.
+	statementDescCoinTypeID := statementFields[3].Descriptor()
+	// statement.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	statement.DefaultCoinTypeID = statementDescCoinTypeID.Default.(func() uuid.UUID)
+	// statementDescIoType is the schema descriptor for io_type field.
+	statementDescIoType := statementFields[4].Descriptor()
+	// statement.DefaultIoType holds the default value on creation for the io_type field.
+	statement.DefaultIoType = statementDescIoType.Default.(string)
+	// statementDescIoSubType is the schema descriptor for io_sub_type field.
+	statementDescIoSubType := statementFields[5].Descriptor()
+	// statement.DefaultIoSubType holds the default value on creation for the io_sub_type field.
+	statement.DefaultIoSubType = statementDescIoSubType.Default.(string)
+	// statementDescFromCoinTypeID is the schema descriptor for from_coin_type_id field.
+	statementDescFromCoinTypeID := statementFields[7].Descriptor()
+	// statement.DefaultFromCoinTypeID holds the default value on creation for the from_coin_type_id field.
+	statement.DefaultFromCoinTypeID = statementDescFromCoinTypeID.Default.(func() uuid.UUID)
+	// statementDescIoExtra is the schema descriptor for io_extra field.
+	statementDescIoExtra := statementFields[9].Descriptor()
+	// statement.DefaultIoExtra holds the default value on creation for the io_extra field.
+	statement.DefaultIoExtra = statementDescIoExtra.Default.(string)
+	// statement.IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
+	statement.IoExtraValidator = statementDescIoExtra.Validators[0].(func(string) error)
+	// statementDescID is the schema descriptor for id field.
+	statementDescID := statementFields[0].Descriptor()
+	// statement.DefaultID holds the default value on creation for the id field.
+	statement.DefaultID = statementDescID.Default.(func() uuid.UUID)
+	unsoldstatementMixin := schema.UnsoldStatement{}.Mixin()
+	unsoldstatement.Policy = privacy.NewPolicies(unsoldstatementMixin[0], schema.UnsoldStatement{})
+	unsoldstatement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := unsoldstatement.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	unsoldstatementMixinFields0 := unsoldstatementMixin[0].Fields()
+	_ = unsoldstatementMixinFields0
+	unsoldstatementFields := schema.UnsoldStatement{}.Fields()
+	_ = unsoldstatementFields
+	// unsoldstatementDescCreatedAt is the schema descriptor for created_at field.
+	unsoldstatementDescCreatedAt := unsoldstatementMixinFields0[0].Descriptor()
+	// unsoldstatement.DefaultCreatedAt holds the default value on creation for the created_at field.
+	unsoldstatement.DefaultCreatedAt = unsoldstatementDescCreatedAt.Default.(func() uint32)
+	// unsoldstatementDescUpdatedAt is the schema descriptor for updated_at field.
+	unsoldstatementDescUpdatedAt := unsoldstatementMixinFields0[1].Descriptor()
+	// unsoldstatement.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	unsoldstatement.DefaultUpdatedAt = unsoldstatementDescUpdatedAt.Default.(func() uint32)
+	// unsoldstatement.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	unsoldstatement.UpdateDefaultUpdatedAt = unsoldstatementDescUpdatedAt.UpdateDefault.(func() uint32)
+	// unsoldstatementDescDeletedAt is the schema descriptor for deleted_at field.
+	unsoldstatementDescDeletedAt := unsoldstatementMixinFields0[2].Descriptor()
+	// unsoldstatement.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	unsoldstatement.DefaultDeletedAt = unsoldstatementDescDeletedAt.Default.(func() uint32)
+	// unsoldstatementDescGoodID is the schema descriptor for good_id field.
+	unsoldstatementDescGoodID := unsoldstatementFields[1].Descriptor()
+	// unsoldstatement.DefaultGoodID holds the default value on creation for the good_id field.
+	unsoldstatement.DefaultGoodID = unsoldstatementDescGoodID.Default.(func() uuid.UUID)
+	// unsoldstatementDescCoinTypeID is the schema descriptor for coin_type_id field.
+	unsoldstatementDescCoinTypeID := unsoldstatementFields[2].Descriptor()
+	// unsoldstatement.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	unsoldstatement.DefaultCoinTypeID = unsoldstatementDescCoinTypeID.Default.(func() uuid.UUID)
+	// unsoldstatementDescBenefitDate is the schema descriptor for benefit_date field.
+	unsoldstatementDescBenefitDate := unsoldstatementFields[4].Descriptor()
+	// unsoldstatement.DefaultBenefitDate holds the default value on creation for the benefit_date field.
+	unsoldstatement.DefaultBenefitDate = unsoldstatementDescBenefitDate.Default.(uint32)
+	// unsoldstatementDescID is the schema descriptor for id field.
+	unsoldstatementDescID := unsoldstatementFields[0].Descriptor()
+	// unsoldstatement.DefaultID holds the default value on creation for the id field.
+	unsoldstatement.DefaultID = unsoldstatementDescID.Default.(func() uuid.UUID)
 	withdrawMixin := schema.Withdraw{}.Mixin()
 	withdraw.Policy = privacy.NewPolicies(withdrawMixin[0], schema.Withdraw{})
 	withdraw.Hooks[0] = func(next ent.Mutator) ent.Mutator {

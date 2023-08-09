@@ -9,67 +9,41 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 )
 
-// The DetailFunc type is an adapter to allow the use of ordinary
-// function as Detail mutator.
-type DetailFunc func(context.Context, *ent.DetailMutation) (ent.Value, error)
+// The GoodLedgerFunc type is an adapter to allow the use of ordinary
+// function as GoodLedger mutator.
+type GoodLedgerFunc func(context.Context, *ent.GoodLedgerMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f DetailFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.DetailMutation)
+func (f GoodLedgerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GoodLedgerMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DetailMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GoodLedgerMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The GeneralFunc type is an adapter to allow the use of ordinary
-// function as General mutator.
-type GeneralFunc func(context.Context, *ent.GeneralMutation) (ent.Value, error)
+// The GoodStatementFunc type is an adapter to allow the use of ordinary
+// function as GoodStatement mutator.
+type GoodStatementFunc func(context.Context, *ent.GoodStatementMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f GeneralFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.GeneralMutation)
+func (f GoodStatementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.GoodStatementMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GeneralMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GoodStatementMutation", m)
 	}
 	return f(ctx, mv)
 }
 
-// The MiningDetailFunc type is an adapter to allow the use of ordinary
-// function as MiningDetail mutator.
-type MiningDetailFunc func(context.Context, *ent.MiningDetailMutation) (ent.Value, error)
+// The LedgerFunc type is an adapter to allow the use of ordinary
+// function as Ledger mutator.
+type LedgerFunc func(context.Context, *ent.LedgerMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f MiningDetailFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MiningDetailMutation)
+func (f LedgerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LedgerMutation)
 	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MiningDetailMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The MiningGeneralFunc type is an adapter to allow the use of ordinary
-// function as MiningGeneral mutator.
-type MiningGeneralFunc func(context.Context, *ent.MiningGeneralMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f MiningGeneralFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MiningGeneralMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MiningGeneralMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The MiningUnsoldFunc type is an adapter to allow the use of ordinary
-// function as MiningUnsold mutator.
-type MiningUnsoldFunc func(context.Context, *ent.MiningUnsoldMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f MiningUnsoldFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.MiningUnsoldMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MiningUnsoldMutation", m)
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LedgerMutation", m)
 	}
 	return f(ctx, mv)
 }
@@ -83,6 +57,32 @@ func (f ProfitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	mv, ok := m.(*ent.ProfitMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProfitMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The StatementFunc type is an adapter to allow the use of ordinary
+// function as Statement mutator.
+type StatementFunc func(context.Context, *ent.StatementMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StatementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.StatementMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StatementMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The UnsoldStatementFunc type is an adapter to allow the use of ordinary
+// function as UnsoldStatement mutator.
+type UnsoldStatementFunc func(context.Context, *ent.UnsoldStatementMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UnsoldStatementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.UnsoldStatementMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UnsoldStatementMutation", m)
 	}
 	return f(ctx, mv)
 }

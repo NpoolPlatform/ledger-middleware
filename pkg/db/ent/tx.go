@@ -14,18 +14,18 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// Detail is the client for interacting with the Detail builders.
-	Detail *DetailClient
-	// General is the client for interacting with the General builders.
-	General *GeneralClient
-	// MiningDetail is the client for interacting with the MiningDetail builders.
-	MiningDetail *MiningDetailClient
-	// MiningGeneral is the client for interacting with the MiningGeneral builders.
-	MiningGeneral *MiningGeneralClient
-	// MiningUnsold is the client for interacting with the MiningUnsold builders.
-	MiningUnsold *MiningUnsoldClient
+	// GoodLedger is the client for interacting with the GoodLedger builders.
+	GoodLedger *GoodLedgerClient
+	// GoodStatement is the client for interacting with the GoodStatement builders.
+	GoodStatement *GoodStatementClient
+	// Ledger is the client for interacting with the Ledger builders.
+	Ledger *LedgerClient
 	// Profit is the client for interacting with the Profit builders.
 	Profit *ProfitClient
+	// Statement is the client for interacting with the Statement builders.
+	Statement *StatementClient
+	// UnsoldStatement is the client for interacting with the UnsoldStatement builders.
+	UnsoldStatement *UnsoldStatementClient
 	// Withdraw is the client for interacting with the Withdraw builders.
 	Withdraw *WithdrawClient
 
@@ -163,12 +163,12 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.Detail = NewDetailClient(tx.config)
-	tx.General = NewGeneralClient(tx.config)
-	tx.MiningDetail = NewMiningDetailClient(tx.config)
-	tx.MiningGeneral = NewMiningGeneralClient(tx.config)
-	tx.MiningUnsold = NewMiningUnsoldClient(tx.config)
+	tx.GoodLedger = NewGoodLedgerClient(tx.config)
+	tx.GoodStatement = NewGoodStatementClient(tx.config)
+	tx.Ledger = NewLedgerClient(tx.config)
 	tx.Profit = NewProfitClient(tx.config)
+	tx.Statement = NewStatementClient(tx.config)
+	tx.UnsoldStatement = NewUnsoldStatementClient(tx.config)
 	tx.Withdraw = NewWithdrawClient(tx.config)
 }
 
@@ -179,7 +179,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Detail.QueryXXX(), the query will be executed
+// applies a query, for example: GoodLedger.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

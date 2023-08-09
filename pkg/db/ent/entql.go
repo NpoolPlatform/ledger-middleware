@@ -3,12 +3,12 @@
 package ent
 
 import (
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningdetail"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningunsold"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,114 +22,69 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 7)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   detail.Table,
-			Columns: detail.Columns,
+			Table:   goodledger.Table,
+			Columns: goodledger.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: detail.FieldID,
+				Column: goodledger.FieldID,
 			},
 		},
-		Type: "Detail",
+		Type: "GoodLedger",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			detail.FieldCreatedAt:       {Type: field.TypeUint32, Column: detail.FieldCreatedAt},
-			detail.FieldUpdatedAt:       {Type: field.TypeUint32, Column: detail.FieldUpdatedAt},
-			detail.FieldDeletedAt:       {Type: field.TypeUint32, Column: detail.FieldDeletedAt},
-			detail.FieldAppID:           {Type: field.TypeUUID, Column: detail.FieldAppID},
-			detail.FieldUserID:          {Type: field.TypeUUID, Column: detail.FieldUserID},
-			detail.FieldCoinTypeID:      {Type: field.TypeUUID, Column: detail.FieldCoinTypeID},
-			detail.FieldIoType:          {Type: field.TypeString, Column: detail.FieldIoType},
-			detail.FieldIoSubType:       {Type: field.TypeString, Column: detail.FieldIoSubType},
-			detail.FieldAmount:          {Type: field.TypeFloat64, Column: detail.FieldAmount},
-			detail.FieldFromCoinTypeID:  {Type: field.TypeUUID, Column: detail.FieldFromCoinTypeID},
-			detail.FieldCoinUsdCurrency: {Type: field.TypeFloat64, Column: detail.FieldCoinUsdCurrency},
-			detail.FieldIoExtra:         {Type: field.TypeString, Column: detail.FieldIoExtra},
+			goodledger.FieldCreatedAt:  {Type: field.TypeUint32, Column: goodledger.FieldCreatedAt},
+			goodledger.FieldUpdatedAt:  {Type: field.TypeUint32, Column: goodledger.FieldUpdatedAt},
+			goodledger.FieldDeletedAt:  {Type: field.TypeUint32, Column: goodledger.FieldDeletedAt},
+			goodledger.FieldGoodID:     {Type: field.TypeUUID, Column: goodledger.FieldGoodID},
+			goodledger.FieldCoinTypeID: {Type: field.TypeUUID, Column: goodledger.FieldCoinTypeID},
+			goodledger.FieldAmount:     {Type: field.TypeFloat64, Column: goodledger.FieldAmount},
+			goodledger.FieldToPlatform: {Type: field.TypeFloat64, Column: goodledger.FieldToPlatform},
+			goodledger.FieldToUser:     {Type: field.TypeFloat64, Column: goodledger.FieldToUser},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   general.Table,
-			Columns: general.Columns,
+			Table:   goodstatement.Table,
+			Columns: goodstatement.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: general.FieldID,
+				Column: goodstatement.FieldID,
 			},
 		},
-		Type: "General",
+		Type: "GoodStatement",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			general.FieldCreatedAt:  {Type: field.TypeUint32, Column: general.FieldCreatedAt},
-			general.FieldUpdatedAt:  {Type: field.TypeUint32, Column: general.FieldUpdatedAt},
-			general.FieldDeletedAt:  {Type: field.TypeUint32, Column: general.FieldDeletedAt},
-			general.FieldAppID:      {Type: field.TypeUUID, Column: general.FieldAppID},
-			general.FieldUserID:     {Type: field.TypeUUID, Column: general.FieldUserID},
-			general.FieldCoinTypeID: {Type: field.TypeUUID, Column: general.FieldCoinTypeID},
-			general.FieldIncoming:   {Type: field.TypeFloat64, Column: general.FieldIncoming},
-			general.FieldLocked:     {Type: field.TypeFloat64, Column: general.FieldLocked},
-			general.FieldOutcoming:  {Type: field.TypeFloat64, Column: general.FieldOutcoming},
-			general.FieldSpendable:  {Type: field.TypeFloat64, Column: general.FieldSpendable},
+			goodstatement.FieldCreatedAt:   {Type: field.TypeUint32, Column: goodstatement.FieldCreatedAt},
+			goodstatement.FieldUpdatedAt:   {Type: field.TypeUint32, Column: goodstatement.FieldUpdatedAt},
+			goodstatement.FieldDeletedAt:   {Type: field.TypeUint32, Column: goodstatement.FieldDeletedAt},
+			goodstatement.FieldGoodID:      {Type: field.TypeUUID, Column: goodstatement.FieldGoodID},
+			goodstatement.FieldCoinTypeID:  {Type: field.TypeUUID, Column: goodstatement.FieldCoinTypeID},
+			goodstatement.FieldAmount:      {Type: field.TypeFloat64, Column: goodstatement.FieldAmount},
+			goodstatement.FieldBenefitDate: {Type: field.TypeUint32, Column: goodstatement.FieldBenefitDate},
 		},
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   miningdetail.Table,
-			Columns: miningdetail.Columns,
+			Table:   ledger.Table,
+			Columns: ledger.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: miningdetail.FieldID,
+				Column: ledger.FieldID,
 			},
 		},
-		Type: "MiningDetail",
+		Type: "Ledger",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			miningdetail.FieldCreatedAt:   {Type: field.TypeUint32, Column: miningdetail.FieldCreatedAt},
-			miningdetail.FieldUpdatedAt:   {Type: field.TypeUint32, Column: miningdetail.FieldUpdatedAt},
-			miningdetail.FieldDeletedAt:   {Type: field.TypeUint32, Column: miningdetail.FieldDeletedAt},
-			miningdetail.FieldGoodID:      {Type: field.TypeUUID, Column: miningdetail.FieldGoodID},
-			miningdetail.FieldCoinTypeID:  {Type: field.TypeUUID, Column: miningdetail.FieldCoinTypeID},
-			miningdetail.FieldAmount:      {Type: field.TypeFloat64, Column: miningdetail.FieldAmount},
-			miningdetail.FieldBenefitDate: {Type: field.TypeUint32, Column: miningdetail.FieldBenefitDate},
+			ledger.FieldCreatedAt:  {Type: field.TypeUint32, Column: ledger.FieldCreatedAt},
+			ledger.FieldUpdatedAt:  {Type: field.TypeUint32, Column: ledger.FieldUpdatedAt},
+			ledger.FieldDeletedAt:  {Type: field.TypeUint32, Column: ledger.FieldDeletedAt},
+			ledger.FieldAppID:      {Type: field.TypeUUID, Column: ledger.FieldAppID},
+			ledger.FieldUserID:     {Type: field.TypeUUID, Column: ledger.FieldUserID},
+			ledger.FieldCoinTypeID: {Type: field.TypeUUID, Column: ledger.FieldCoinTypeID},
+			ledger.FieldIncoming:   {Type: field.TypeFloat64, Column: ledger.FieldIncoming},
+			ledger.FieldLocked:     {Type: field.TypeFloat64, Column: ledger.FieldLocked},
+			ledger.FieldOutcoming:  {Type: field.TypeFloat64, Column: ledger.FieldOutcoming},
+			ledger.FieldSpendable:  {Type: field.TypeFloat64, Column: ledger.FieldSpendable},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   mininggeneral.Table,
-			Columns: mininggeneral.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: mininggeneral.FieldID,
-			},
-		},
-		Type: "MiningGeneral",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			mininggeneral.FieldCreatedAt:  {Type: field.TypeUint32, Column: mininggeneral.FieldCreatedAt},
-			mininggeneral.FieldUpdatedAt:  {Type: field.TypeUint32, Column: mininggeneral.FieldUpdatedAt},
-			mininggeneral.FieldDeletedAt:  {Type: field.TypeUint32, Column: mininggeneral.FieldDeletedAt},
-			mininggeneral.FieldGoodID:     {Type: field.TypeUUID, Column: mininggeneral.FieldGoodID},
-			mininggeneral.FieldCoinTypeID: {Type: field.TypeUUID, Column: mininggeneral.FieldCoinTypeID},
-			mininggeneral.FieldAmount:     {Type: field.TypeFloat64, Column: mininggeneral.FieldAmount},
-			mininggeneral.FieldToPlatform: {Type: field.TypeFloat64, Column: mininggeneral.FieldToPlatform},
-			mininggeneral.FieldToUser:     {Type: field.TypeFloat64, Column: mininggeneral.FieldToUser},
-		},
-	}
-	graph.Nodes[4] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   miningunsold.Table,
-			Columns: miningunsold.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: miningunsold.FieldID,
-			},
-		},
-		Type: "MiningUnsold",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			miningunsold.FieldCreatedAt:   {Type: field.TypeUint32, Column: miningunsold.FieldCreatedAt},
-			miningunsold.FieldUpdatedAt:   {Type: field.TypeUint32, Column: miningunsold.FieldUpdatedAt},
-			miningunsold.FieldDeletedAt:   {Type: field.TypeUint32, Column: miningunsold.FieldDeletedAt},
-			miningunsold.FieldGoodID:      {Type: field.TypeUUID, Column: miningunsold.FieldGoodID},
-			miningunsold.FieldCoinTypeID:  {Type: field.TypeUUID, Column: miningunsold.FieldCoinTypeID},
-			miningunsold.FieldAmount:      {Type: field.TypeFloat64, Column: miningunsold.FieldAmount},
-			miningunsold.FieldBenefitDate: {Type: field.TypeUint32, Column: miningunsold.FieldBenefitDate},
-		},
-	}
-	graph.Nodes[5] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profit.Table,
 			Columns: profit.Columns,
@@ -147,6 +102,51 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profit.FieldUserID:     {Type: field.TypeUUID, Column: profit.FieldUserID},
 			profit.FieldCoinTypeID: {Type: field.TypeUUID, Column: profit.FieldCoinTypeID},
 			profit.FieldIncoming:   {Type: field.TypeFloat64, Column: profit.FieldIncoming},
+		},
+	}
+	graph.Nodes[4] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   statement.Table,
+			Columns: statement.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: statement.FieldID,
+			},
+		},
+		Type: "Statement",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			statement.FieldCreatedAt:       {Type: field.TypeUint32, Column: statement.FieldCreatedAt},
+			statement.FieldUpdatedAt:       {Type: field.TypeUint32, Column: statement.FieldUpdatedAt},
+			statement.FieldDeletedAt:       {Type: field.TypeUint32, Column: statement.FieldDeletedAt},
+			statement.FieldAppID:           {Type: field.TypeUUID, Column: statement.FieldAppID},
+			statement.FieldUserID:          {Type: field.TypeUUID, Column: statement.FieldUserID},
+			statement.FieldCoinTypeID:      {Type: field.TypeUUID, Column: statement.FieldCoinTypeID},
+			statement.FieldIoType:          {Type: field.TypeString, Column: statement.FieldIoType},
+			statement.FieldIoSubType:       {Type: field.TypeString, Column: statement.FieldIoSubType},
+			statement.FieldAmount:          {Type: field.TypeFloat64, Column: statement.FieldAmount},
+			statement.FieldFromCoinTypeID:  {Type: field.TypeUUID, Column: statement.FieldFromCoinTypeID},
+			statement.FieldCoinUsdCurrency: {Type: field.TypeFloat64, Column: statement.FieldCoinUsdCurrency},
+			statement.FieldIoExtra:         {Type: field.TypeString, Column: statement.FieldIoExtra},
+		},
+	}
+	graph.Nodes[5] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   unsoldstatement.Table,
+			Columns: unsoldstatement.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: unsoldstatement.FieldID,
+			},
+		},
+		Type: "UnsoldStatement",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			unsoldstatement.FieldCreatedAt:   {Type: field.TypeUint32, Column: unsoldstatement.FieldCreatedAt},
+			unsoldstatement.FieldUpdatedAt:   {Type: field.TypeUint32, Column: unsoldstatement.FieldUpdatedAt},
+			unsoldstatement.FieldDeletedAt:   {Type: field.TypeUint32, Column: unsoldstatement.FieldDeletedAt},
+			unsoldstatement.FieldGoodID:      {Type: field.TypeUUID, Column: unsoldstatement.FieldGoodID},
+			unsoldstatement.FieldCoinTypeID:  {Type: field.TypeUUID, Column: unsoldstatement.FieldCoinTypeID},
+			unsoldstatement.FieldAmount:      {Type: field.TypeFloat64, Column: unsoldstatement.FieldAmount},
+			unsoldstatement.FieldBenefitDate: {Type: field.TypeUint32, Column: unsoldstatement.FieldBenefitDate},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -184,33 +184,33 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (dq *DetailQuery) addPredicate(pred func(s *sql.Selector)) {
-	dq.predicates = append(dq.predicates, pred)
+func (glq *GoodLedgerQuery) addPredicate(pred func(s *sql.Selector)) {
+	glq.predicates = append(glq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the DetailQuery builder.
-func (dq *DetailQuery) Filter() *DetailFilter {
-	return &DetailFilter{config: dq.config, predicateAdder: dq}
+// Filter returns a Filter implementation to apply filters on the GoodLedgerQuery builder.
+func (glq *GoodLedgerQuery) Filter() *GoodLedgerFilter {
+	return &GoodLedgerFilter{config: glq.config, predicateAdder: glq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *DetailMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *GoodLedgerMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the DetailMutation builder.
-func (m *DetailMutation) Filter() *DetailFilter {
-	return &DetailFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the GoodLedgerMutation builder.
+func (m *GoodLedgerMutation) Filter() *GoodLedgerFilter {
+	return &GoodLedgerFilter{config: m.config, predicateAdder: m}
 }
 
-// DetailFilter provides a generic filtering capability at runtime for DetailQuery.
-type DetailFilter struct {
+// GoodLedgerFilter provides a generic filtering capability at runtime for GoodLedgerQuery.
+type GoodLedgerFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *DetailFilter) Where(p entql.P) {
+func (f *GoodLedgerFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
 			s.AddError(err)
@@ -219,98 +219,78 @@ func (f *DetailFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *DetailFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(detail.FieldID))
+func (f *GoodLedgerFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(goodledger.FieldID))
 }
 
 // WhereCreatedAt applies the entql uint32 predicate on the created_at field.
-func (f *DetailFilter) WhereCreatedAt(p entql.Uint32P) {
-	f.Where(p.Field(detail.FieldCreatedAt))
+func (f *GoodLedgerFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(goodledger.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
-func (f *DetailFilter) WhereUpdatedAt(p entql.Uint32P) {
-	f.Where(p.Field(detail.FieldUpdatedAt))
+func (f *GoodLedgerFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(goodledger.FieldUpdatedAt))
 }
 
 // WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
-func (f *DetailFilter) WhereDeletedAt(p entql.Uint32P) {
-	f.Where(p.Field(detail.FieldDeletedAt))
+func (f *GoodLedgerFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(goodledger.FieldDeletedAt))
 }
 
-// WhereAppID applies the entql [16]byte predicate on the app_id field.
-func (f *DetailFilter) WhereAppID(p entql.ValueP) {
-	f.Where(p.Field(detail.FieldAppID))
-}
-
-// WhereUserID applies the entql [16]byte predicate on the user_id field.
-func (f *DetailFilter) WhereUserID(p entql.ValueP) {
-	f.Where(p.Field(detail.FieldUserID))
+// WhereGoodID applies the entql [16]byte predicate on the good_id field.
+func (f *GoodLedgerFilter) WhereGoodID(p entql.ValueP) {
+	f.Where(p.Field(goodledger.FieldGoodID))
 }
 
 // WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
-func (f *DetailFilter) WhereCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(detail.FieldCoinTypeID))
-}
-
-// WhereIoType applies the entql string predicate on the io_type field.
-func (f *DetailFilter) WhereIoType(p entql.StringP) {
-	f.Where(p.Field(detail.FieldIoType))
-}
-
-// WhereIoSubType applies the entql string predicate on the io_sub_type field.
-func (f *DetailFilter) WhereIoSubType(p entql.StringP) {
-	f.Where(p.Field(detail.FieldIoSubType))
+func (f *GoodLedgerFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(goodledger.FieldCoinTypeID))
 }
 
 // WhereAmount applies the entql float64 predicate on the amount field.
-func (f *DetailFilter) WhereAmount(p entql.Float64P) {
-	f.Where(p.Field(detail.FieldAmount))
+func (f *GoodLedgerFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(goodledger.FieldAmount))
 }
 
-// WhereFromCoinTypeID applies the entql [16]byte predicate on the from_coin_type_id field.
-func (f *DetailFilter) WhereFromCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(detail.FieldFromCoinTypeID))
+// WhereToPlatform applies the entql float64 predicate on the to_platform field.
+func (f *GoodLedgerFilter) WhereToPlatform(p entql.Float64P) {
+	f.Where(p.Field(goodledger.FieldToPlatform))
 }
 
-// WhereCoinUsdCurrency applies the entql float64 predicate on the coin_usd_currency field.
-func (f *DetailFilter) WhereCoinUsdCurrency(p entql.Float64P) {
-	f.Where(p.Field(detail.FieldCoinUsdCurrency))
-}
-
-// WhereIoExtra applies the entql string predicate on the io_extra field.
-func (f *DetailFilter) WhereIoExtra(p entql.StringP) {
-	f.Where(p.Field(detail.FieldIoExtra))
+// WhereToUser applies the entql float64 predicate on the to_user field.
+func (f *GoodLedgerFilter) WhereToUser(p entql.Float64P) {
+	f.Where(p.Field(goodledger.FieldToUser))
 }
 
 // addPredicate implements the predicateAdder interface.
-func (gq *GeneralQuery) addPredicate(pred func(s *sql.Selector)) {
-	gq.predicates = append(gq.predicates, pred)
+func (gsq *GoodStatementQuery) addPredicate(pred func(s *sql.Selector)) {
+	gsq.predicates = append(gsq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the GeneralQuery builder.
-func (gq *GeneralQuery) Filter() *GeneralFilter {
-	return &GeneralFilter{config: gq.config, predicateAdder: gq}
+// Filter returns a Filter implementation to apply filters on the GoodStatementQuery builder.
+func (gsq *GoodStatementQuery) Filter() *GoodStatementFilter {
+	return &GoodStatementFilter{config: gsq.config, predicateAdder: gsq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *GeneralMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *GoodStatementMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the GeneralMutation builder.
-func (m *GeneralMutation) Filter() *GeneralFilter {
-	return &GeneralFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the GoodStatementMutation builder.
+func (m *GoodStatementMutation) Filter() *GoodStatementFilter {
+	return &GoodStatementFilter{config: m.config, predicateAdder: m}
 }
 
-// GeneralFilter provides a generic filtering capability at runtime for GeneralQuery.
-type GeneralFilter struct {
+// GoodStatementFilter provides a generic filtering capability at runtime for GoodStatementQuery.
+type GoodStatementFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *GeneralFilter) Where(p entql.P) {
+func (f *GoodStatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
@@ -319,88 +299,73 @@ func (f *GeneralFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *GeneralFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(general.FieldID))
+func (f *GoodStatementFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(goodstatement.FieldID))
 }
 
 // WhereCreatedAt applies the entql uint32 predicate on the created_at field.
-func (f *GeneralFilter) WhereCreatedAt(p entql.Uint32P) {
-	f.Where(p.Field(general.FieldCreatedAt))
+func (f *GoodStatementFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(goodstatement.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
-func (f *GeneralFilter) WhereUpdatedAt(p entql.Uint32P) {
-	f.Where(p.Field(general.FieldUpdatedAt))
+func (f *GoodStatementFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(goodstatement.FieldUpdatedAt))
 }
 
 // WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
-func (f *GeneralFilter) WhereDeletedAt(p entql.Uint32P) {
-	f.Where(p.Field(general.FieldDeletedAt))
+func (f *GoodStatementFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(goodstatement.FieldDeletedAt))
 }
 
-// WhereAppID applies the entql [16]byte predicate on the app_id field.
-func (f *GeneralFilter) WhereAppID(p entql.ValueP) {
-	f.Where(p.Field(general.FieldAppID))
-}
-
-// WhereUserID applies the entql [16]byte predicate on the user_id field.
-func (f *GeneralFilter) WhereUserID(p entql.ValueP) {
-	f.Where(p.Field(general.FieldUserID))
+// WhereGoodID applies the entql [16]byte predicate on the good_id field.
+func (f *GoodStatementFilter) WhereGoodID(p entql.ValueP) {
+	f.Where(p.Field(goodstatement.FieldGoodID))
 }
 
 // WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
-func (f *GeneralFilter) WhereCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(general.FieldCoinTypeID))
+func (f *GoodStatementFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(goodstatement.FieldCoinTypeID))
 }
 
-// WhereIncoming applies the entql float64 predicate on the incoming field.
-func (f *GeneralFilter) WhereIncoming(p entql.Float64P) {
-	f.Where(p.Field(general.FieldIncoming))
+// WhereAmount applies the entql float64 predicate on the amount field.
+func (f *GoodStatementFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(goodstatement.FieldAmount))
 }
 
-// WhereLocked applies the entql float64 predicate on the locked field.
-func (f *GeneralFilter) WhereLocked(p entql.Float64P) {
-	f.Where(p.Field(general.FieldLocked))
-}
-
-// WhereOutcoming applies the entql float64 predicate on the outcoming field.
-func (f *GeneralFilter) WhereOutcoming(p entql.Float64P) {
-	f.Where(p.Field(general.FieldOutcoming))
-}
-
-// WhereSpendable applies the entql float64 predicate on the spendable field.
-func (f *GeneralFilter) WhereSpendable(p entql.Float64P) {
-	f.Where(p.Field(general.FieldSpendable))
+// WhereBenefitDate applies the entql uint32 predicate on the benefit_date field.
+func (f *GoodStatementFilter) WhereBenefitDate(p entql.Uint32P) {
+	f.Where(p.Field(goodstatement.FieldBenefitDate))
 }
 
 // addPredicate implements the predicateAdder interface.
-func (mdq *MiningDetailQuery) addPredicate(pred func(s *sql.Selector)) {
-	mdq.predicates = append(mdq.predicates, pred)
+func (lq *LedgerQuery) addPredicate(pred func(s *sql.Selector)) {
+	lq.predicates = append(lq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the MiningDetailQuery builder.
-func (mdq *MiningDetailQuery) Filter() *MiningDetailFilter {
-	return &MiningDetailFilter{config: mdq.config, predicateAdder: mdq}
+// Filter returns a Filter implementation to apply filters on the LedgerQuery builder.
+func (lq *LedgerQuery) Filter() *LedgerFilter {
+	return &LedgerFilter{config: lq.config, predicateAdder: lq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *MiningDetailMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *LedgerMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the MiningDetailMutation builder.
-func (m *MiningDetailMutation) Filter() *MiningDetailFilter {
-	return &MiningDetailFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the LedgerMutation builder.
+func (m *LedgerMutation) Filter() *LedgerFilter {
+	return &LedgerFilter{config: m.config, predicateAdder: m}
 }
 
-// MiningDetailFilter provides a generic filtering capability at runtime for MiningDetailQuery.
-type MiningDetailFilter struct {
+// LedgerFilter provides a generic filtering capability at runtime for LedgerQuery.
+type LedgerFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *MiningDetailFilter) Where(p entql.P) {
+func (f *LedgerFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
@@ -409,198 +374,58 @@ func (f *MiningDetailFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *MiningDetailFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(miningdetail.FieldID))
+func (f *LedgerFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(ledger.FieldID))
 }
 
 // WhereCreatedAt applies the entql uint32 predicate on the created_at field.
-func (f *MiningDetailFilter) WhereCreatedAt(p entql.Uint32P) {
-	f.Where(p.Field(miningdetail.FieldCreatedAt))
+func (f *LedgerFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(ledger.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
-func (f *MiningDetailFilter) WhereUpdatedAt(p entql.Uint32P) {
-	f.Where(p.Field(miningdetail.FieldUpdatedAt))
+func (f *LedgerFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(ledger.FieldUpdatedAt))
 }
 
 // WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
-func (f *MiningDetailFilter) WhereDeletedAt(p entql.Uint32P) {
-	f.Where(p.Field(miningdetail.FieldDeletedAt))
+func (f *LedgerFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(ledger.FieldDeletedAt))
 }
 
-// WhereGoodID applies the entql [16]byte predicate on the good_id field.
-func (f *MiningDetailFilter) WhereGoodID(p entql.ValueP) {
-	f.Where(p.Field(miningdetail.FieldGoodID))
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *LedgerFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(ledger.FieldAppID))
 }
 
-// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
-func (f *MiningDetailFilter) WhereCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(miningdetail.FieldCoinTypeID))
-}
-
-// WhereAmount applies the entql float64 predicate on the amount field.
-func (f *MiningDetailFilter) WhereAmount(p entql.Float64P) {
-	f.Where(p.Field(miningdetail.FieldAmount))
-}
-
-// WhereBenefitDate applies the entql uint32 predicate on the benefit_date field.
-func (f *MiningDetailFilter) WhereBenefitDate(p entql.Uint32P) {
-	f.Where(p.Field(miningdetail.FieldBenefitDate))
-}
-
-// addPredicate implements the predicateAdder interface.
-func (mgq *MiningGeneralQuery) addPredicate(pred func(s *sql.Selector)) {
-	mgq.predicates = append(mgq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the MiningGeneralQuery builder.
-func (mgq *MiningGeneralQuery) Filter() *MiningGeneralFilter {
-	return &MiningGeneralFilter{config: mgq.config, predicateAdder: mgq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *MiningGeneralMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the MiningGeneralMutation builder.
-func (m *MiningGeneralMutation) Filter() *MiningGeneralFilter {
-	return &MiningGeneralFilter{config: m.config, predicateAdder: m}
-}
-
-// MiningGeneralFilter provides a generic filtering capability at runtime for MiningGeneralQuery.
-type MiningGeneralFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *MiningGeneralFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *MiningGeneralFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(mininggeneral.FieldID))
-}
-
-// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
-func (f *MiningGeneralFilter) WhereCreatedAt(p entql.Uint32P) {
-	f.Where(p.Field(mininggeneral.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
-func (f *MiningGeneralFilter) WhereUpdatedAt(p entql.Uint32P) {
-	f.Where(p.Field(mininggeneral.FieldUpdatedAt))
-}
-
-// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
-func (f *MiningGeneralFilter) WhereDeletedAt(p entql.Uint32P) {
-	f.Where(p.Field(mininggeneral.FieldDeletedAt))
-}
-
-// WhereGoodID applies the entql [16]byte predicate on the good_id field.
-func (f *MiningGeneralFilter) WhereGoodID(p entql.ValueP) {
-	f.Where(p.Field(mininggeneral.FieldGoodID))
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *LedgerFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(ledger.FieldUserID))
 }
 
 // WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
-func (f *MiningGeneralFilter) WhereCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(mininggeneral.FieldCoinTypeID))
+func (f *LedgerFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(ledger.FieldCoinTypeID))
 }
 
-// WhereAmount applies the entql float64 predicate on the amount field.
-func (f *MiningGeneralFilter) WhereAmount(p entql.Float64P) {
-	f.Where(p.Field(mininggeneral.FieldAmount))
+// WhereIncoming applies the entql float64 predicate on the incoming field.
+func (f *LedgerFilter) WhereIncoming(p entql.Float64P) {
+	f.Where(p.Field(ledger.FieldIncoming))
 }
 
-// WhereToPlatform applies the entql float64 predicate on the to_platform field.
-func (f *MiningGeneralFilter) WhereToPlatform(p entql.Float64P) {
-	f.Where(p.Field(mininggeneral.FieldToPlatform))
+// WhereLocked applies the entql float64 predicate on the locked field.
+func (f *LedgerFilter) WhereLocked(p entql.Float64P) {
+	f.Where(p.Field(ledger.FieldLocked))
 }
 
-// WhereToUser applies the entql float64 predicate on the to_user field.
-func (f *MiningGeneralFilter) WhereToUser(p entql.Float64P) {
-	f.Where(p.Field(mininggeneral.FieldToUser))
+// WhereOutcoming applies the entql float64 predicate on the outcoming field.
+func (f *LedgerFilter) WhereOutcoming(p entql.Float64P) {
+	f.Where(p.Field(ledger.FieldOutcoming))
 }
 
-// addPredicate implements the predicateAdder interface.
-func (muq *MiningUnsoldQuery) addPredicate(pred func(s *sql.Selector)) {
-	muq.predicates = append(muq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the MiningUnsoldQuery builder.
-func (muq *MiningUnsoldQuery) Filter() *MiningUnsoldFilter {
-	return &MiningUnsoldFilter{config: muq.config, predicateAdder: muq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *MiningUnsoldMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the MiningUnsoldMutation builder.
-func (m *MiningUnsoldMutation) Filter() *MiningUnsoldFilter {
-	return &MiningUnsoldFilter{config: m.config, predicateAdder: m}
-}
-
-// MiningUnsoldFilter provides a generic filtering capability at runtime for MiningUnsoldQuery.
-type MiningUnsoldFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *MiningUnsoldFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *MiningUnsoldFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(miningunsold.FieldID))
-}
-
-// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
-func (f *MiningUnsoldFilter) WhereCreatedAt(p entql.Uint32P) {
-	f.Where(p.Field(miningunsold.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
-func (f *MiningUnsoldFilter) WhereUpdatedAt(p entql.Uint32P) {
-	f.Where(p.Field(miningunsold.FieldUpdatedAt))
-}
-
-// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
-func (f *MiningUnsoldFilter) WhereDeletedAt(p entql.Uint32P) {
-	f.Where(p.Field(miningunsold.FieldDeletedAt))
-}
-
-// WhereGoodID applies the entql [16]byte predicate on the good_id field.
-func (f *MiningUnsoldFilter) WhereGoodID(p entql.ValueP) {
-	f.Where(p.Field(miningunsold.FieldGoodID))
-}
-
-// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
-func (f *MiningUnsoldFilter) WhereCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(miningunsold.FieldCoinTypeID))
-}
-
-// WhereAmount applies the entql float64 predicate on the amount field.
-func (f *MiningUnsoldFilter) WhereAmount(p entql.Float64P) {
-	f.Where(p.Field(miningunsold.FieldAmount))
-}
-
-// WhereBenefitDate applies the entql uint32 predicate on the benefit_date field.
-func (f *MiningUnsoldFilter) WhereBenefitDate(p entql.Uint32P) {
-	f.Where(p.Field(miningunsold.FieldBenefitDate))
+// WhereSpendable applies the entql float64 predicate on the spendable field.
+func (f *LedgerFilter) WhereSpendable(p entql.Float64P) {
+	f.Where(p.Field(ledger.FieldSpendable))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -632,7 +457,7 @@ type ProfitFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfitFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -676,6 +501,181 @@ func (f *ProfitFilter) WhereCoinTypeID(p entql.ValueP) {
 // WhereIncoming applies the entql float64 predicate on the incoming field.
 func (f *ProfitFilter) WhereIncoming(p entql.Float64P) {
 	f.Where(p.Field(profit.FieldIncoming))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (sq *StatementQuery) addPredicate(pred func(s *sql.Selector)) {
+	sq.predicates = append(sq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the StatementQuery builder.
+func (sq *StatementQuery) Filter() *StatementFilter {
+	return &StatementFilter{config: sq.config, predicateAdder: sq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *StatementMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the StatementMutation builder.
+func (m *StatementMutation) Filter() *StatementFilter {
+	return &StatementFilter{config: m.config, predicateAdder: m}
+}
+
+// StatementFilter provides a generic filtering capability at runtime for StatementQuery.
+type StatementFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *StatementFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *StatementFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(statement.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *StatementFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(statement.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *StatementFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(statement.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *StatementFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(statement.FieldDeletedAt))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *StatementFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(statement.FieldAppID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *StatementFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(statement.FieldUserID))
+}
+
+// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
+func (f *StatementFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(statement.FieldCoinTypeID))
+}
+
+// WhereIoType applies the entql string predicate on the io_type field.
+func (f *StatementFilter) WhereIoType(p entql.StringP) {
+	f.Where(p.Field(statement.FieldIoType))
+}
+
+// WhereIoSubType applies the entql string predicate on the io_sub_type field.
+func (f *StatementFilter) WhereIoSubType(p entql.StringP) {
+	f.Where(p.Field(statement.FieldIoSubType))
+}
+
+// WhereAmount applies the entql float64 predicate on the amount field.
+func (f *StatementFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(statement.FieldAmount))
+}
+
+// WhereFromCoinTypeID applies the entql [16]byte predicate on the from_coin_type_id field.
+func (f *StatementFilter) WhereFromCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(statement.FieldFromCoinTypeID))
+}
+
+// WhereCoinUsdCurrency applies the entql float64 predicate on the coin_usd_currency field.
+func (f *StatementFilter) WhereCoinUsdCurrency(p entql.Float64P) {
+	f.Where(p.Field(statement.FieldCoinUsdCurrency))
+}
+
+// WhereIoExtra applies the entql string predicate on the io_extra field.
+func (f *StatementFilter) WhereIoExtra(p entql.StringP) {
+	f.Where(p.Field(statement.FieldIoExtra))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (usq *UnsoldStatementQuery) addPredicate(pred func(s *sql.Selector)) {
+	usq.predicates = append(usq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the UnsoldStatementQuery builder.
+func (usq *UnsoldStatementQuery) Filter() *UnsoldStatementFilter {
+	return &UnsoldStatementFilter{config: usq.config, predicateAdder: usq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *UnsoldStatementMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the UnsoldStatementMutation builder.
+func (m *UnsoldStatementMutation) Filter() *UnsoldStatementFilter {
+	return &UnsoldStatementFilter{config: m.config, predicateAdder: m}
+}
+
+// UnsoldStatementFilter provides a generic filtering capability at runtime for UnsoldStatementQuery.
+type UnsoldStatementFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *UnsoldStatementFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *UnsoldStatementFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(unsoldstatement.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *UnsoldStatementFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(unsoldstatement.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *UnsoldStatementFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(unsoldstatement.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *UnsoldStatementFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(unsoldstatement.FieldDeletedAt))
+}
+
+// WhereGoodID applies the entql [16]byte predicate on the good_id field.
+func (f *UnsoldStatementFilter) WhereGoodID(p entql.ValueP) {
+	f.Where(p.Field(unsoldstatement.FieldGoodID))
+}
+
+// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
+func (f *UnsoldStatementFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(unsoldstatement.FieldCoinTypeID))
+}
+
+// WhereAmount applies the entql float64 predicate on the amount field.
+func (f *UnsoldStatementFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(unsoldstatement.FieldAmount))
+}
+
+// WhereBenefitDate applies the entql uint32 predicate on the benefit_date field.
+func (f *UnsoldStatementFilter) WhereBenefitDate(p entql.Uint32P) {
+	f.Where(p.Field(unsoldstatement.FieldBenefitDate))
 }
 
 // addPredicate implements the predicateAdder interface.

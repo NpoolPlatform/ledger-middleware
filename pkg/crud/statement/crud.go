@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/detail"
+	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 
@@ -28,7 +28,7 @@ type Req struct {
 	DeletedAt       *uint32
 }
 
-func CreateSet(c *ent.DetailCreate, in *Req) *ent.DetailCreate {
+func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -62,7 +62,7 @@ func CreateSet(c *ent.DetailCreate, in *Req) *ent.DetailCreate {
 	return c
 }
 
-func UpdateSet(u *ent.DetailUpdateOne, req *Req) *ent.DetailUpdateOne {
+func UpdateSet(u *ent.StatementUpdateOne, req *Req) *ent.StatementUpdateOne {
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
@@ -82,7 +82,7 @@ type Conds struct {
 	IOExtra         *cruder.Cond
 }
 
-func SetQueryConds(q *ent.DetailQuery, conds *Conds) (*ent.DetailQuery, error) { //nolint
+func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
 	q.Where(entstatement.DeletedAt(0))
 	if conds == nil {
 		return q, nil

@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entgoodledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
+	entgoodledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/google/uuid"
 )
@@ -22,7 +22,7 @@ type Req struct {
 	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.MiningGeneralCreate, in *Req) *ent.MiningGeneralCreate {
+func CreateSet(c *ent.GoodLedgerCreate, in *Req) *ent.GoodLedgerCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -40,7 +40,7 @@ func CreateSet(c *ent.MiningGeneralCreate, in *Req) *ent.MiningGeneralCreate {
 	return c
 }
 
-func UpdateSet(u *ent.MiningGeneralUpdateOne, req *Req) *ent.MiningGeneralUpdateOne {
+func UpdateSet(u *ent.GoodLedgerUpdateOne, req *Req) *ent.GoodLedgerUpdateOne {
 	if req.Amount != nil {
 		u.SetAmount(*req.Amount)
 	}
@@ -65,7 +65,7 @@ type Conds struct {
 	ToUser     *cruder.Cond
 }
 
-func SetQueryConds(q *ent.MiningGeneralQuery, conds *Conds) (*ent.MiningGeneralQuery, error) { //nolint
+func SetQueryConds(q *ent.GoodLedgerQuery, conds *Conds) (*ent.GoodLedgerQuery, error) { //nolint
 	q.Where(entgoodledger.DeletedAt(0))
 	if conds == nil {
 		return q, nil

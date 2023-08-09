@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/general"
+	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/google/uuid"
 )
@@ -24,7 +24,7 @@ type Req struct {
 	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.GeneralCreate, in *Req) *ent.GeneralCreate {
+func CreateSet(c *ent.LedgerCreate, in *Req) *ent.LedgerCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -52,7 +52,7 @@ func CreateSet(c *ent.GeneralCreate, in *Req) *ent.GeneralCreate {
 	return c
 }
 
-func UpdateSet(entity *ent.General, u *ent.GeneralUpdateOne, req *Req) (*ent.GeneralUpdateOne, error) {
+func UpdateSet(entity *ent.Ledger, u *ent.LedgerUpdateOne, req *Req) (*ent.LedgerUpdateOne, error) {
 	incoming := decimal.NewFromInt(0)
 	if req.Incoming != nil {
 		incoming = incoming.Add(*req.Incoming)
@@ -129,7 +129,7 @@ type Conds struct {
 	Locked     *cruder.Cond
 }
 
-func SetQueryConds(q *ent.GeneralQuery, conds *Conds) (*ent.GeneralQuery, error) { //nolint
+func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) { //nolint
 	q.Where(entledger.DeletedAt(0))
 	if conds == nil {
 		return q, nil

@@ -3,11 +3,84 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
+	// MiningGeneralsColumns holds the columns for the "mining_generals" table.
+	MiningGeneralsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "to_platform", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "to_user", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+	}
+	// MiningGeneralsTable holds the schema information for the "mining_generals" table.
+	MiningGeneralsTable = &schema.Table{
+		Name:       "mining_generals",
+		Columns:    MiningGeneralsColumns,
+		PrimaryKey: []*schema.Column{MiningGeneralsColumns[0]},
+	}
+	// MiningDetailsColumns holds the columns for the "mining_details" table.
+	MiningDetailsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "benefit_date", Type: field.TypeUint32, Nullable: true, Default: 0},
+	}
+	// MiningDetailsTable holds the schema information for the "mining_details" table.
+	MiningDetailsTable = &schema.Table{
+		Name:       "mining_details",
+		Columns:    MiningDetailsColumns,
+		PrimaryKey: []*schema.Column{MiningDetailsColumns[0]},
+	}
+	// GeneralsColumns holds the columns for the "generals" table.
+	GeneralsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "locked", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "outcoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "spendable", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+	}
+	// GeneralsTable holds the schema information for the "generals" table.
+	GeneralsTable = &schema.Table{
+		Name:       "generals",
+		Columns:    GeneralsColumns,
+		PrimaryKey: []*schema.Column{GeneralsColumns[0]},
+	}
+	// ProfitsColumns holds the columns for the "profits" table.
+	ProfitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+	}
+	// ProfitsTable holds the schema information for the "profits" table.
+	ProfitsTable = &schema.Table{
+		Name:       "profits",
+		Columns:    ProfitsColumns,
+		PrimaryKey: []*schema.Column{ProfitsColumns[0]},
+	}
 	// DetailsColumns holds the columns for the "details" table.
 	DetailsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -30,61 +103,6 @@ var (
 		Columns:    DetailsColumns,
 		PrimaryKey: []*schema.Column{DetailsColumns[0]},
 	}
-	// GeneralsColumns holds the columns for the "generals" table.
-	GeneralsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "created_at", Type: field.TypeUint32},
-		{Name: "updated_at", Type: field.TypeUint32},
-		{Name: "deleted_at", Type: field.TypeUint32},
-		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "locked", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "outcoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "spendable", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-	}
-	// GeneralsTable holds the schema information for the "generals" table.
-	GeneralsTable = &schema.Table{
-		Name:       "generals",
-		Columns:    GeneralsColumns,
-		PrimaryKey: []*schema.Column{GeneralsColumns[0]},
-	}
-	// MiningDetailsColumns holds the columns for the "mining_details" table.
-	MiningDetailsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "created_at", Type: field.TypeUint32},
-		{Name: "updated_at", Type: field.TypeUint32},
-		{Name: "deleted_at", Type: field.TypeUint32},
-		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "benefit_date", Type: field.TypeUint32, Nullable: true, Default: 0},
-	}
-	// MiningDetailsTable holds the schema information for the "mining_details" table.
-	MiningDetailsTable = &schema.Table{
-		Name:       "mining_details",
-		Columns:    MiningDetailsColumns,
-		PrimaryKey: []*schema.Column{MiningDetailsColumns[0]},
-	}
-	// MiningGeneralsColumns holds the columns for the "mining_generals" table.
-	MiningGeneralsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "created_at", Type: field.TypeUint32},
-		{Name: "updated_at", Type: field.TypeUint32},
-		{Name: "deleted_at", Type: field.TypeUint32},
-		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "to_platform", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "to_user", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-	}
-	// MiningGeneralsTable holds the schema information for the "mining_generals" table.
-	MiningGeneralsTable = &schema.Table{
-		Name:       "mining_generals",
-		Columns:    MiningGeneralsColumns,
-		PrimaryKey: []*schema.Column{MiningGeneralsColumns[0]},
-	}
 	// MiningUnsoldsColumns holds the columns for the "mining_unsolds" table.
 	MiningUnsoldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -101,23 +119,6 @@ var (
 		Name:       "mining_unsolds",
 		Columns:    MiningUnsoldsColumns,
 		PrimaryKey: []*schema.Column{MiningUnsoldsColumns[0]},
-	}
-	// ProfitsColumns holds the columns for the "profits" table.
-	ProfitsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "created_at", Type: field.TypeUint32},
-		{Name: "updated_at", Type: field.TypeUint32},
-		{Name: "deleted_at", Type: field.TypeUint32},
-		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-	}
-	// ProfitsTable holds the schema information for the "profits" table.
-	ProfitsTable = &schema.Table{
-		Name:       "profits",
-		Columns:    ProfitsColumns,
-		PrimaryKey: []*schema.Column{ProfitsColumns[0]},
 	}
 	// WithdrawsColumns holds the columns for the "withdraws" table.
 	WithdrawsColumns = []*schema.Column{
@@ -143,15 +144,30 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		DetailsTable,
-		GeneralsTable,
-		MiningDetailsTable,
 		MiningGeneralsTable,
-		MiningUnsoldsTable,
+		MiningDetailsTable,
+		GeneralsTable,
 		ProfitsTable,
+		DetailsTable,
+		MiningUnsoldsTable,
 		WithdrawsTable,
 	}
 )
 
 func init() {
+	MiningGeneralsTable.Annotation = &entsql.Annotation{
+		Table: "mining_generals",
+	}
+	MiningDetailsTable.Annotation = &entsql.Annotation{
+		Table: "mining_details",
+	}
+	GeneralsTable.Annotation = &entsql.Annotation{
+		Table: "generals",
+	}
+	DetailsTable.Annotation = &entsql.Annotation{
+		Table: "details",
+	}
+	MiningUnsoldsTable.Annotation = &entsql.Annotation{
+		Table: "mining_unsolds",
+	}
 }

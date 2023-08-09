@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entunsoldstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningunsold"
+	entunsoldstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/google/uuid"
 )
@@ -21,7 +21,7 @@ type Req struct {
 	DeletedAt   *uint32
 }
 
-func CreateSet(c *ent.MiningUnsoldCreate, in *Req) *ent.MiningUnsoldCreate {
+func CreateSet(c *ent.UnsoldStatementCreate, in *Req) *ent.UnsoldStatementCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -41,7 +41,7 @@ func CreateSet(c *ent.MiningUnsoldCreate, in *Req) *ent.MiningUnsoldCreate {
 	return c
 }
 
-func UpdateSet(u *ent.MiningUnsoldUpdateOne, req *Req) *ent.MiningUnsoldUpdateOne {
+func UpdateSet(u *ent.UnsoldStatementUpdateOne, req *Req) *ent.UnsoldStatementUpdateOne {
 	if req.Amount != nil {
 		u.SetAmount(*req.Amount)
 	}
@@ -59,7 +59,7 @@ type Conds struct {
 	BenefitDate *cruder.Cond
 }
 
-func SetQueryConds(q *ent.MiningUnsoldQuery, conds *Conds) (*ent.MiningUnsoldQuery, error) { //nolint
+func SetQueryConds(q *ent.UnsoldStatementQuery, conds *Conds) (*ent.UnsoldStatementQuery, error) { //nolint
 	q.Where(entunsoldstatement.DeletedAt(0))
 	if conds == nil {
 		return q, nil
