@@ -135,6 +135,9 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 		if err != nil {
 			return err
 		}
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("amount is less than 0 %v", *amount)
+		}
 		h.Amount = &_amount
 		return nil
 	}
