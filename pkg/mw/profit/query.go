@@ -120,3 +120,40 @@ func (h *Handler) GetProfits(ctx context.Context) ([]*npool.Profit, uint32, erro
 	handler.formalize()
 	return handler.infos, handler.total, nil
 }
+
+func (h *Handler) GetProfitOnly(ctx context.Context) (*npool.Profit, error) {
+	handler := &queryHandler{
+		Handler: h,
+	}
+
+	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
+		if err := handler.queryProfits(_ctx, cli); err != nil {
+			return err
+		}
+
+		_, err := handler.stmSelect.Only(_ctx)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil
+			}
+			return err
+		}
+
+		if err := handler.scan(_ctx); err != nil {
+			return err
+		}
+		handler.formalize()
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(handler.infos) == 0 {
+		return nil, nil
+	}
+	if len(handler.infos) > 1 {
+		return nil, fmt.Errorf("to many record")
+	}
+
+	return handler.infos[0], nil
+}
