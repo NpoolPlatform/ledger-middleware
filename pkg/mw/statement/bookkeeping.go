@@ -14,6 +14,8 @@ import (
 	ledgerhandler "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	profithandler "github.com/NpoolPlatform/ledger-middleware/pkg/mw/profit"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type bookkeepingHandler struct {
@@ -139,4 +141,37 @@ func (h *Handler) BookKeepingV2(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
+	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		_ledgerID, err := h.tryCreateLedger(&h.Req, ctx, tx)
+		if err != nil {
+			return err
+		}
+		ledgerID, err := uuid.Parse(_ledgerID)
+		if err != nil {
+			return err
+		}
+
+		spendable, err := decimal.NewFromString(fmt.Sprintf("-%v", h.Amount.String()))
+		if err != nil {
+			return err
+		}
+
+		ledger1 := &ledgerhandler.Handler{
+			Req: ledgercrud.Req{
+				ID:         &ledgerID,
+				AppID:      h.AppID,
+				UserID:     h.UserID,
+				CoinTypeID: h.CoinTypeID,
+				Locked:     h.Amount,
+				Spendable:  &spendable,
+			},
+		}
+		if _, err := ledger1.UpdateLedger(ctx); err != nil {
+			return err
+		}
+		return nil
+	})
 }
