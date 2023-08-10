@@ -142,8 +142,6 @@ func (h *Handler) GetLedgers(ctx context.Context) ([]*npool.Ledger, uint32, erro
 	if err != nil {
 		return nil, 0, err
 	}
-
 	handler.formalize()
-
 	return handler.infos, handler.total, nil
 }

@@ -16,15 +16,15 @@ func (h *Handler) UpdateLedger(ctx context.Context) (*npool.Ledger, error) {
 		return nil, fmt.Errorf("invalid id")
 	}
 
-	err := db.WithClient(ctx, func(_ctx context.Context, tx *ent.Client) error {
-		entity, err := tx.Ledger.Query().Where(entledger.ID(*h.ID)).Only(_ctx)
+	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
+		entity, err := cli.Ledger.Query().Where(entledger.ID(*h.ID)).Only(_ctx)
 		if err != nil {
 			return err
 		}
 
 		updateOne, err := crud.UpdateSet(
 			entity,
-			tx.Ledger.UpdateOneID(*h.ID),
+			cli.Ledger.UpdateOneID(*h.ID),
 			&crud.Req{
 				Incoming:  h.Incoming,
 				Outcoming: h.Outcoming,
