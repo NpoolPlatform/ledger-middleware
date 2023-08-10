@@ -19,7 +19,7 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		if _, err := crud.UpdateSet(
 			cli.Withdraw.UpdateOneID(*h.ID),
 			&h.Req,
-		); err != nil {
+		).Save(_ctx); err != nil {
 			return err
 		}
 		return nil

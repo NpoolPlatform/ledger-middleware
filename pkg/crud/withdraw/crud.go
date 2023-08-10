@@ -58,7 +58,7 @@ func CreateSet(c *ent.WithdrawCreate, in *Req) *ent.WithdrawCreate {
 	return c
 }
 
-func UpdateSet(u *ent.WithdrawUpdateOne, req *Req) (*ent.WithdrawUpdateOne, error) {
+func UpdateSet(u *ent.WithdrawUpdateOne, req *Req) *ent.WithdrawUpdateOne {
 	if req.PlatformTransactionID != nil {
 		u.SetPlatformTransactionID(*req.PlatformTransactionID)
 	}
@@ -71,7 +71,7 @@ func UpdateSet(u *ent.WithdrawUpdateOne, req *Req) (*ent.WithdrawUpdateOne, erro
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
-	return u, nil
+	return u
 }
 
 type Conds struct {
