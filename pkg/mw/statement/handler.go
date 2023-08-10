@@ -263,6 +263,96 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	}
 }
 
+func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		_reqs := []*crud.Req{}
+		for _, req := range reqs {
+			_req := &crud.Req{}
+			if req.AppID != nil {
+				_id, err := uuid.Parse(*req.AppID)
+				if err != nil {
+					return err
+				}
+				_req.AppID = &_id
+			}
+			if req.UserID != nil {
+				_id, err := uuid.Parse(*req.UserID)
+				if err != nil {
+					return err
+				}
+				_req.UserID = &_id
+			}
+			if req.CoinTypeID != nil {
+				_id, err := uuid.Parse(*req.CoinTypeID)
+				if err != nil {
+					return err
+				}
+				_req.CoinTypeID = &_id
+			}
+			if req.FromCoinTypeID != nil {
+				_id, err := uuid.Parse(*req.FromCoinTypeID)
+				if err != nil {
+					return err
+				}
+				_req.FromCoinTypeID = &_id
+			}
+			if req.Amount != nil {
+				amount, err := decimal.NewFromString(*req.Amount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("amount is less than 0 %v", *req.Amount)
+				}
+				_req.Amount = &amount
+			}
+			if req.CoinUSDCurrency != nil {
+				currency, err := decimal.NewFromString(*req.CoinUSDCurrency)
+				if err != nil {
+					return err
+				}
+				if currency.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("coin usd currency is less than 0 %v", *req.CoinUSDCurrency)
+				}
+				_req.CoinUSDCurrency = &currency
+			}
+
+			if req.IOType == nil || req.IOSubType == nil {
+				return fmt.Errorf("invalid io type or io subtype")
+			}
+			switch *req.IOType {
+			case basetypes.IOType_Incoming:
+				switch *req.IOSubType {
+				case basetypes.IOSubType_Payment:
+				case basetypes.IOSubType_MiningBenefit:
+				case basetypes.IOSubType_Commission:
+				case basetypes.IOSubType_TechniqueFeeCommission:
+				case basetypes.IOSubType_Deposit:
+				case basetypes.IOSubType_Transfer:
+				case basetypes.IOSubType_OrderRevoke:
+				default:
+					return fmt.Errorf("iosubtype not match iotype, iosubtype: %v, iotype: %v", *h.IOSubType, *h.IOType)
+				}
+			case basetypes.IOType_Outcoming:
+				switch *req.IOSubType {
+				case basetypes.IOSubType_Payment:
+				case basetypes.IOSubType_Withdrawal:
+				case basetypes.IOSubType_Transfer:
+				case basetypes.IOSubType_CommissionRevoke:
+				default:
+					return fmt.Errorf("iosubtype not match iotype, iosubtype: %v, iotype: %v", *h.IOSubType, *h.IOType)
+				}
+			default:
+				return fmt.Errorf("invalid io type %v", *h.IOType)
+			}
+			_reqs = append(_reqs, _req)
+		}
+		h.Reqs = _reqs
+		return nil
+
+	}
+}
+
 func WithOffset(offset int32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Offset = offset
