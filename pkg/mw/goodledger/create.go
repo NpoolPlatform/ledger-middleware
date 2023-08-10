@@ -7,6 +7,7 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/goodledger"
 	"github.com/google/uuid"
 )
@@ -18,14 +19,13 @@ func (h *Handler) CreateGoodLedger(ctx context.Context) (*npool.GoodLedger, erro
 	if h.CoinTypeID == nil {
 		return nil, fmt.Errorf("invalid coin type id")
 	}
-	if h.Amount == nil {
-		return nil, fmt.Errorf("invalid coin type id")
+
+	h.Conds = &crud.Conds{
+		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: h.GoodID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
 	}
-	if h.ToPlatform == nil {
-		return nil, fmt.Errorf("invalid coin type id")
-	}
-	if h.ToUser == nil {
-		return nil, fmt.Errorf("invalid coin type id")
+	if _, err := h.GetGoodLedgerOnly(ctx); err != nil {
+		return nil, err
 	}
 
 	id := uuid.New()

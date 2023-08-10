@@ -68,6 +68,18 @@ func (h *queryHandler) formalize() {
 			amount = _amount.String()
 		}
 		info.Amount = amount
+
+		toPlatform := decimal.NewFromInt(0).String()
+		if _toPlatform, err := decimal.NewFromString(info.ToPlatform); err == nil {
+			toPlatform = _toPlatform.String()
+		}
+		info.ToPlatform = toPlatform
+
+		toUser := decimal.NewFromInt(0).String()
+		if _toUser, err := decimal.NewFromString(info.ToPlatform); err == nil {
+			toUser = _toUser.String()
+		}
+		info.ToUser = toUser
 	}
 }
 
@@ -100,26 +112,39 @@ func (h *Handler) GetGoodLedger(ctx context.Context) (*npool.GoodLedger, error) 
 	return handler.infos[0], nil
 }
 
-func (h *Handler) GetGoodLedgers(ctx context.Context) ([]*npool.GoodLedger, uint32, error) {
+func (h *Handler) GetGoodLedgerOnly(ctx context.Context) (*npool.GoodLedger, error) {
 	handler := &queryHandler{
 		Handler: h,
-		infos:   []*npool.GoodLedger{},
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		if err := handler.queryGoodLedgers(ctx, cli); err != nil {
+		if err := handler.queryGoodLedgers(_ctx, cli); err != nil {
 			return err
 		}
-		handler.stmSelect.
-			Offset(int(handler.Offset)).
-			Limit(int(handler.Limit))
-		return handler.scan(_ctx)
+
+		_, err := handler.stmSelect.Only(_ctx)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil
+			}
+			return err
+		}
+
+		if err := handler.scan(_ctx); err != nil {
+			return err
+		}
+		handler.formalize()
+		return nil
 	})
 	if err != nil {
-		return nil, 0, err
+		return nil, err
+	}
+	if len(handler.infos) == 0 {
+		return nil, nil
+	}
+	if len(handler.infos) > 1 {
+		return nil, fmt.Errorf("to many record")
 	}
 
-	handler.formalize()
-
-	return handler.infos, handler.total, nil
+	return handler.infos[0], nil
 }
