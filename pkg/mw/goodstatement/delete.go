@@ -21,7 +21,7 @@ func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement
 		return nil, err
 	}
 	if info == nil {
-		return nil, fmt.Errorf("invalid id %v", *h.ID)
+		return nil, fmt.Errorf("id not exist %v", *h.ID)
 	}
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
