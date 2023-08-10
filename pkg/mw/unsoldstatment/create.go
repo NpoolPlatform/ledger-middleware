@@ -2,6 +2,7 @@ package unsoldstatement
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
@@ -15,8 +16,21 @@ import (
 )
 
 func (h *Handler) CreateUnsoldStatement(ctx context.Context) (*npool.UnsoldStatement, error) {
+	if h.GoodID == nil {
+		return nil, fmt.Errorf("invalid good id")
+	}
+	if h.CoinTypeID == nil {
+		return nil, fmt.Errorf("invalid coin type id")
+	}
+	if h.Amount == nil {
+		return nil, fmt.Errorf("invalid amount")
+	}
+	if h.BenefitIntervalHours == nil {
+		return nil, fmt.Errorf("invalid benefit interval hours")
+	}
+
 	now := uint32(time.Now().Unix())
-	seconds := h.BenefitIntervalHours * timedef.SecondsPerHour
+	seconds := *h.BenefitIntervalHours * timedef.SecondsPerHour
 	timestamp := now / seconds * seconds
 
 	h.Conds = &crud.Conds{

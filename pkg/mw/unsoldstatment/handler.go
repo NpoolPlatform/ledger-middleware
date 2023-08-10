@@ -14,7 +14,7 @@ import (
 
 type Handler struct {
 	crud.Req
-	BenefitIntervalHours uint32
+	BenefitIntervalHours *uint32
 	Reqs                 []*crud.Req
 	Conds                *crud.Conds
 	Offset               int32
@@ -48,7 +48,7 @@ func WithID(id *string) func(context.Context, *Handler) error {
 func WithGoodID(id *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
-			return fmt.Errorf("invalid good id")
+			return nil
 		}
 		_id, err := uuid.Parse(*id)
 		if err != nil {
@@ -62,7 +62,7 @@ func WithGoodID(id *string) func(context.Context, *Handler) error {
 func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
-			return fmt.Errorf("invalid coin type id")
+			return nil
 		}
 		_id, err := uuid.Parse(*id)
 		if err != nil {
@@ -76,7 +76,7 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 func WithAmount(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
-			return fmt.Errorf("invalid amount")
+			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
 		if err != nil {
@@ -90,8 +90,11 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithBenefitIntervalHours(hours uint32) func(context.Context, *Handler) error {
+func WithBenefitIntervalHours(hours *uint32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if hours == nil {
+			return nil
+		}
 		h.BenefitIntervalHours = hours
 		return nil
 	}
