@@ -66,12 +66,11 @@ func (h *queryHandler) scan(ctx context.Context) error {
 
 func (h *queryHandler) formalize() {
 	for _, info := range h.infos {
-		amount, err := decimal.NewFromString(info.Amount)
-		if err != nil {
-			info.Amount = decimal.NewFromInt(0).String()
-		} else {
-			info.Amount = amount.String()
+		amount := decimal.NewFromInt(0).String()
+		if _amount, err := decimal.NewFromString(info.Amount); err == nil {
+			amount = _amount.String()
 		}
+		info.Amount = amount
 	}
 }
 
