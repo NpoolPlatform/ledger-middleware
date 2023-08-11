@@ -198,8 +198,13 @@ func (h *bookkeepingHandler) tryBookKeepingV2(statements []statementInfo, ctx co
 				return nil
 			}
 
+			profitID, err := uuid.Parse(val.ProfitID)
+			if err != nil {
+				return err
+			}
 			profit1 := &profithandler.Handler{
 				Req: profitcrud.Req{
+					ID:         &profitID,
 					AppID:      val.AppID,
 					UserID:     val.UserID,
 					CoinTypeID: val.CoinTypeID,
@@ -255,6 +260,166 @@ func (h *Handler) BookKeepingV2(ctx context.Context) error {
 		}
 	}
 	return handler.tryBookKeepingV2(statements, ctx)
+}
+
+func (h *Handler) BookKeepingV2Out(ctx context.Context) error {
+
+	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		for _, val := range h.Reqs {
+			key := statementKey(val)
+			if err := redis2.TryLock(key, 0); err != nil {
+				return err
+			}
+			defer func() {
+				_ = redis2.Unlock(key)
+			}()
+
+			// deal statement
+			h.Conds = &crud.Conds{
+				AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
+				UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
+				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
+				IOType:     &cruder.Cond{Op: cruder.EQ, Val: val.IOType},
+				IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: val.IOSubType},
+				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: val.IOExtra},
+			}
+
+			info, err := h.GetStatementOnly(ctx)
+			if err != nil {
+				return err
+			}
+			if info != nil {
+				id, err := uuid.Parse(info.ID)
+				if err != nil {
+					return err
+				}
+				h.ID = &id
+				h.DeleteStatement(ctx)
+			}
+
+			// deal ledger
+			incoming := decimal.NewFromInt(0)
+			outcoming := decimal.NewFromInt(0)
+
+			switch *val.IOType {
+			case basetypes.IOType_Incoming:
+				incoming = decimal.RequireFromString(val.Amount.String())
+			case basetypes.IOType_Outcoming:
+				outcoming = decimal.RequireFromString(val.Amount.String())
+			default:
+				return fmt.Errorf("invalid io type %v", *val.IOType)
+			}
+
+			spendable := incoming.Sub(outcoming)
+
+			ledger1 := &ledgerhandler.Handler{
+				Req: ledgercrud.Req{
+					AppID:      val.AppID,
+					UserID:     val.UserID,
+					CoinTypeID: val.CoinTypeID,
+				},
+				Conds: &ledgercrud.Conds{
+					AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
+					UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
+					CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
+				},
+			}
+
+			ledger, err := ledger1.GetLedgerOnly(ctx)
+			if err != nil {
+				return err
+			}
+			if ledger != nil {
+				ledgerID, err := uuid.Parse(ledger.ID)
+				if err != nil {
+					return err
+				}
+
+				_incoming, err := decimal.NewFromString(fmt.Sprintf("-%v", incoming.String()))
+				if err != nil {
+					return err
+				}
+				_outcoming, err := decimal.NewFromString(fmt.Sprintf("-%v", outcoming.String()))
+				if err != nil {
+					return err
+				}
+				_spendable, err := decimal.NewFromString(fmt.Sprintf("-%v", spendable.String()))
+				if err != nil {
+					return err
+				}
+
+				ledger1 := &ledgerhandler.Handler{
+					Req: ledgercrud.Req{
+						ID:         &ledgerID,
+						AppID:      val.AppID,
+						UserID:     val.UserID,
+						CoinTypeID: val.CoinTypeID,
+						Incoming:   &_incoming,
+						Outcoming:  &_outcoming,
+						Spendable:  &_spendable,
+					},
+				}
+				if _, err := ledger1.UpdateLedger(ctx); err != nil {
+					return err
+				}
+			}
+
+			if err != nil {
+				return err
+			}
+
+			// deal profit
+			profitAmount := decimal.NewFromInt(0)
+			if *val.IOType == basetypes.IOType_Incoming {
+				if *val.IOSubType == basetypes.IOSubType_MiningBenefit {
+					profitAmount = incoming
+				}
+			}
+			if profitAmount.Cmp(decimal.NewFromInt(0)) == 0 {
+				return nil
+			}
+
+			profit1 := &profithandler.Handler{
+				Req: profitcrud.Req{
+					AppID:      val.AppID,
+					UserID:     val.UserID,
+					CoinTypeID: val.CoinTypeID,
+				},
+				Conds: &profitcrud.Conds{
+					AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
+					UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
+					CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
+				},
+			}
+			profit, err := profit1.GetProfitOnly(ctx)
+			if err != nil {
+				return err
+			}
+			if profit != nil {
+				profitID, err := uuid.Parse(profit.ID)
+				if err != nil {
+					return err
+				}
+				_profitAmount, err := decimal.NewFromString(fmt.Sprintf("-%v", profitAmount.String()))
+				if err != nil {
+					return err
+				}
+				profit1 = &profithandler.Handler{
+					Req: profitcrud.Req{
+						ID:         &profitID,
+						AppID:      val.AppID,
+						UserID:     val.UserID,
+						CoinTypeID: val.CoinTypeID,
+						Incoming:   &_profitAmount,
+					},
+				}
+			}
+			if _, err := profit1.UpdateProfit(ctx); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
