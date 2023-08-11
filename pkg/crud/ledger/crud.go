@@ -111,10 +111,6 @@ func UpdateSet(entity *ent.Ledger, u *ent.LedgerUpdateOne, req *Req) (*ent.Ledge
 		spendable = spendable.Add(entity.Spendable)
 		u.SetSpendable(spendable)
 	}
-
-	if req.DeletedAt != nil {
-		u.SetDeletedAt(*req.DeletedAt)
-	}
 	return u, nil
 }
 

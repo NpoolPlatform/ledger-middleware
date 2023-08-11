@@ -38,18 +38,6 @@ func (h *Handler) CreateLedger(ctx context.Context) (*npool.Ledger, error) {
 	if h.CoinTypeID == nil {
 		return nil, fmt.Errorf("invalid coin type id")
 	}
-	// if h.Incoming == nil {
-	// 	return nil, fmt.Errorf("invalid incoming")
-	// }
-	// if h.Outcoming == nil {
-	// 	return nil, fmt.Errorf("invalid outcoming")
-	// }
-	// if h.Spendable == nil {
-	// 	return nil, fmt.Errorf("invalid spendable")
-	// }
-	// if h.Locked == nil {
-	// 	return nil, fmt.Errorf("invalid locked")
-	// }
 
 	h.Conds = &crud.Conds{
 		AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},

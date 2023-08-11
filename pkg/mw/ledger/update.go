@@ -17,13 +17,13 @@ func (h *Handler) UpdateLedger(ctx context.Context) (*npool.Ledger, error) {
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		entity, err := cli.Ledger.Query().Where(entledger.ID(*h.ID)).Only(_ctx)
+		line, err := cli.Ledger.Query().Where(entledger.ID(*h.ID)).Only(_ctx)
 		if err != nil {
 			return err
 		}
 
-		updateOne, err := crud.UpdateSet(
-			entity,
+		entity, err := crud.UpdateSet(
+			line,
 			cli.Ledger.UpdateOneID(*h.ID),
 			&crud.Req{
 				Incoming:  h.Incoming,
@@ -35,7 +35,7 @@ func (h *Handler) UpdateLedger(ctx context.Context) (*npool.Ledger, error) {
 		if err != nil {
 			return err
 		}
-		if _, err := updateOne.Save(_ctx); err != nil {
+		if _, err := entity.Save(_ctx); err != nil {
 			return err
 		}
 		return nil

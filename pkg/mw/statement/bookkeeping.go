@@ -116,10 +116,21 @@ func (h *bookkeepingHandler) tryCreateProfit(req *crud.Req, ctx context.Context,
 }
 
 func (h *bookkeepingHandler) tryBookKeepingV2(req *crud.Req, ledgerID, profitID string, ctx context.Context, tx *ent.Tx) error {
+
 	return nil
 }
 
 func (h *Handler) BookKeepingV2(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid app id")
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid user id")
+	}
+	if h.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+
 	handler := &bookkeepingHandler{
 		Handler: h,
 	}
@@ -147,6 +158,19 @@ func (h *Handler) BookKeepingV2(ctx context.Context) error {
 }
 
 func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid app id")
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid user id")
+	}
+	if h.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if h.Amount == nil {
+		return fmt.Errorf("invalid amount in lock balance")
+	}
+
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		_ledgerID, err := h.tryCreateLedger(&h.Req, ctx, tx)
 		if err != nil {
