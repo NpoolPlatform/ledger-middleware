@@ -1,18 +1,18 @@
-package ledger
+package profit
 
 import (
 	"context"
 
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 )
 
-func (h *Handler) ExistLedgerConds(ctx context.Context) (bool, error) {
+func (h *Handler) ExistProfitConds(ctx context.Context) (bool, error) {
 	exist := false
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
 		stm, err := crud.SetQueryConds(
-			cli.Ledger.Query(),
+			cli.Profit.Query(),
 			h.Conds,
 		)
 		if err != nil {

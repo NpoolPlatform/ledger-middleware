@@ -7,6 +7,7 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/profit"
 	"github.com/google/uuid"
 )
@@ -20,6 +21,19 @@ func (h *Handler) CreateProfit(ctx context.Context) (*npool.Profit, error) {
 	}
 	if h.CoinTypeID == nil {
 		return nil, fmt.Errorf("invalid coin type id")
+	}
+
+	h.Conds = &crud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
+	}
+	exist, err := h.ExistProfitConds(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if exist {
+		return nil, fmt.Errorf("profit exist, app id %v, user id %v, cointypeid %v", *h.AppID, *h.UserID, *h.CoinTypeID)
 	}
 
 	id := uuid.New()

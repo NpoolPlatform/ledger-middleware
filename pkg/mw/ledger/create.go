@@ -45,7 +45,7 @@ func (h *Handler) CreateLedger(ctx context.Context) (*npool.Ledger, error) {
 		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
 	}
 
-	exist, err := h.ExistStatementConds(ctx)
+	exist, err := h.ExistLedgerConds(ctx)
 	if err != nil {
 		return nil, err
 	}
