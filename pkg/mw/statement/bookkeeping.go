@@ -409,6 +409,67 @@ func (h *Handler) BookKeepingV2Out(ctx context.Context) error {
 	})
 }
 
+func (h *bookkeepingHandler) LockBalanceOut(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid app id")
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid user id")
+	}
+	if h.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if h.Amount == nil {
+		return fmt.Errorf("invalid amount in lock balance")
+	}
+
+	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		ledger1 := &ledgerhandler.Handler{
+			Req: ledgercrud.Req{
+				AppID:      h.AppID,
+				UserID:     h.UserID,
+				CoinTypeID: h.CoinTypeID,
+			},
+			Conds: &ledgercrud.Conds{
+				AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
+				UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
+				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
+			},
+		}
+		ledger, err := ledger1.GetLedgerOnly(ctx)
+		if err != nil {
+			return err
+		}
+
+		if ledger != nil {
+			ledgerID, err := uuid.Parse(ledger.ID)
+			if err != nil {
+				return err
+			}
+
+			locked, err := decimal.NewFromString(fmt.Sprintf("-%v", h.Amount.String()))
+			if err != nil {
+				return err
+			}
+			ledger1 := &ledgerhandler.Handler{
+				Req: ledgercrud.Req{
+					ID:         &ledgerID,
+					AppID:      h.AppID,
+					UserID:     h.UserID,
+					CoinTypeID: h.CoinTypeID,
+					Locked:     &locked,
+					Spendable:  h.Amount,
+				},
+			}
+			if _, err := ledger1.UpdateLedger(ctx); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
 func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
