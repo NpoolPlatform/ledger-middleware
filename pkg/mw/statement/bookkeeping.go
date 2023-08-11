@@ -222,13 +222,11 @@ func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
 	if h.IOExtra == nil {
 		return fmt.Errorf("invalid extra")
 	}
-
 	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 		return fmt.Errorf("nothing todo")
 	}
 
 	key := statementKey(&h.Req)
-
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
