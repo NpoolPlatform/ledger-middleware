@@ -516,6 +516,97 @@ func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
 	})
 }
 
+func (h *bookkeepingHandler) UnlockBalanceOut(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid app id")
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid user id")
+	}
+	if h.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if h.Unlocked == nil {
+		return fmt.Errorf("invalid unlocked")
+	}
+	if h.Outcoming == nil {
+		return fmt.Errorf("invalid outcoming")
+	}
+	if h.IOExtra == nil {
+		return fmt.Errorf("invalid extra")
+	}
+	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+		return fmt.Errorf("nothing todo")
+	}
+
+	key := statementKey(&h.Req)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
+	ioType := basetypes.IOType_Outcoming
+	h.IOType = &ioType
+
+	h.Conds = &crud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
+		IOType:     &cruder.Cond{Op: cruder.EQ, Val: h.IOType},
+		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: h.IOSubType},
+		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+	}
+	statement, err := h.GetStatementOnly(ctx)
+	if err != nil {
+		return err
+	}
+
+	if statement != nil {
+		statementID, err := uuid.Parse(statement.ID)
+		if err != nil {
+			return err
+		}
+		h.ID = &statementID
+
+		//TODO:
+		spendable := h.Unlocked.Sub(*h.Outcoming)
+
+		_outcoming, err := decimal.NewFromString(fmt.Sprintf("-%v", *h.Outcoming))
+		if err != nil {
+			return err
+		}
+
+		return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+			ledger1 := &ledgerhandler.Handler{
+				Req: ledgercrud.Req{
+					AppID:      h.AppID,
+					UserID:     h.UserID,
+					CoinTypeID: h.CoinTypeID,
+					Locked:     h.Unlocked,
+					Spendable:  &spendable,
+					Outcoming:  &_outcoming,
+				},
+			}
+			if _, err := ledger1.UpdateLedger(ctx); err != nil {
+				return err
+			}
+
+			if h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+				return nil
+			}
+
+			if _, err := h.DeleteStatement(ctx); err != nil {
+				return err
+			}
+
+			return nil
+		})
+	}
+	return nil
+}
+
 func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
