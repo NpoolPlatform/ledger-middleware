@@ -115,9 +115,103 @@ func (h *bookkeepingHandler) tryCreateProfit(req *crud.Req, ctx context.Context,
 	return info.ID, nil
 }
 
-func (h *bookkeepingHandler) tryBookKeepingV2(req *crud.Req, ledgerID, profitID string, ctx context.Context, tx *ent.Tx) error {
+type statementInfo struct {
+	*crud.Req
+	LedgerID string
+	ProfitID string
+}
 
-	return nil
+func (h *bookkeepingHandler) tryBookKeepingV2(statements []statementInfo, ctx context.Context) error {
+	// TODO: Remove duplicate record first
+
+	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		for _, val := range statements {
+			key := statementKey(val.Req)
+			if err := redis2.TryLock(key, 0); err != nil {
+				return err
+			}
+			defer func() {
+				_ = redis2.Unlock(key)
+			}()
+
+			h.Conds = &crud.Conds{
+				AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
+				UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
+				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
+				IOType:     &cruder.Cond{Op: cruder.EQ, Val: val.IOType},
+				IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: val.IOSubType},
+				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: val.IOExtra},
+			}
+			exist, err := h.ExistStatementConds(ctx)
+			if err != nil {
+				return err
+			}
+			// TODO: Return Or Continue
+			if exist {
+				continue
+			}
+
+			if _, err := crud.CreateSet(tx.Statement.Create(), val.Req).Save(ctx); err != nil {
+				return err
+			}
+
+			incoming := decimal.NewFromInt(0)
+			outcoming := decimal.NewFromInt(0)
+
+			switch *val.IOType {
+			case basetypes.IOType_Incoming:
+				incoming = decimal.RequireFromString(val.Amount.String())
+			case basetypes.IOType_Outcoming:
+				outcoming = decimal.RequireFromString(val.Amount.String())
+			default:
+				return fmt.Errorf("invalid io type %v", *val.IOType)
+			}
+
+			spendable := incoming.Sub(outcoming)
+
+			ledgerID, err := uuid.Parse(val.LedgerID)
+			if err != nil {
+				return err
+			}
+			ledger1 := &ledgerhandler.Handler{
+				Req: ledgercrud.Req{
+					ID:         &ledgerID,
+					AppID:      val.AppID,
+					UserID:     val.UserID,
+					CoinTypeID: val.CoinTypeID,
+					Incoming:   &incoming,
+					Outcoming:  &outcoming,
+					Spendable:  &spendable,
+				},
+			}
+			if _, err := ledger1.UpdateLedger(ctx); err != nil {
+				return err
+			}
+
+			profitAmount := decimal.NewFromInt(0)
+			if *val.IOType == basetypes.IOType_Incoming {
+				if *val.IOSubType == basetypes.IOSubType_MiningBenefit {
+					profitAmount = incoming
+				}
+			}
+			if profitAmount.Cmp(decimal.NewFromInt(0)) == 0 {
+				return nil
+			}
+
+			profit1 := &profithandler.Handler{
+				Req: profitcrud.Req{
+					AppID:      val.AppID,
+					UserID:     val.UserID,
+					CoinTypeID: val.CoinTypeID,
+					Incoming:   &profitAmount,
+				},
+			}
+			if _, err := profit1.UpdateProfit(ctx); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (h *Handler) BookKeepingV2(ctx context.Context) error {
@@ -130,11 +224,15 @@ func (h *Handler) BookKeepingV2(ctx context.Context) error {
 	if h.CoinTypeID == nil {
 		return fmt.Errorf("invalid coin type id")
 	}
+	if h.Amount == nil {
+		return fmt.Errorf("invalid amount in book keeping")
+	}
 
 	handler := &bookkeepingHandler{
 		Handler: h,
 	}
 
+	statements := []statementInfo{}
 	for _, req := range h.Reqs {
 		err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 			ledgerID, err := handler.tryCreateLedger(req, _ctx, tx)
@@ -145,16 +243,18 @@ func (h *Handler) BookKeepingV2(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			if err := handler.tryBookKeepingV2(req, ledgerID, profitID, _ctx, tx); err != nil {
-				return err
-			}
+			statements = append(statements, statementInfo{
+				Req:      req,
+				LedgerID: ledgerID,
+				ProfitID: profitID,
+			})
 			return nil
 		})
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return handler.tryBookKeepingV2(statements, ctx)
 }
 
 func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
