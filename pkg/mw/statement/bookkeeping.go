@@ -220,19 +220,6 @@ func (h *bookkeepingHandler) tryBookKeepingV2(statements []statementInfo, ctx co
 }
 
 func (h *Handler) BookKeepingV2(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid app id")
-	}
-	if h.UserID == nil {
-		return fmt.Errorf("invalid user id")
-	}
-	if h.CoinTypeID == nil {
-		return fmt.Errorf("invalid coin type id")
-	}
-	if h.Amount == nil {
-		return fmt.Errorf("invalid amount in book keeping")
-	}
-
 	handler := &bookkeepingHandler{
 		Handler: h,
 	}
