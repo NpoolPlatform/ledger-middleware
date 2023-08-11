@@ -55,7 +55,7 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 		case basetypes.IOSubType_Transfer:
 		case basetypes.IOSubType_OrderRevoke:
 		default:
-			return nil, fmt.Errorf("iosubtype not match iotype, iosubtype: %v, iotype: %v", *h.IOSubType, *h.IOType)
+			return nil, fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *h.IOSubType, *h.IOType)
 		}
 	case basetypes.IOType_Outcoming:
 		switch *h.IOSubType {
@@ -64,7 +64,7 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 		case basetypes.IOSubType_Transfer:
 		case basetypes.IOSubType_CommissionRevoke:
 		default:
-			return nil, fmt.Errorf("iosubtype not match iotype, iosubtype: %v, iotype: %v", *h.IOSubType, *h.IOType)
+			return nil, fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *h.IOSubType, *h.IOType)
 		}
 	default:
 		return nil, fmt.Errorf("invalid io type %v", *h.IOType)

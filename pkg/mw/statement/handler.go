@@ -331,7 +331,7 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				case basetypes.IOSubType_Transfer:
 				case basetypes.IOSubType_OrderRevoke:
 				default:
-					return fmt.Errorf("iosubtype not match iotype, iosubtype: %v, iotype: %v", *h.IOSubType, *h.IOType)
+					return fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *req.IOSubType, *req.IOType)
 				}
 			case basetypes.IOType_Outcoming:
 				switch *req.IOSubType {
@@ -340,10 +340,10 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				case basetypes.IOSubType_Transfer:
 				case basetypes.IOSubType_CommissionRevoke:
 				default:
-					return fmt.Errorf("iosubtype not match iotype, iosubtype: %v, iotype: %v", *h.IOSubType, *h.IOType)
+					return fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *req.IOSubType, *req.IOType)
 				}
 			default:
-				return fmt.Errorf("invalid io type %v", *h.IOType)
+				return fmt.Errorf("invalid io type %v", *req.IOType)
 			}
 			_reqs = append(_reqs, _req)
 		}
