@@ -316,7 +316,12 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				}
 				_req.CoinUSDCurrency = &currency
 			}
-
+			if req.IOExtra != nil {
+				if !json.Valid([]byte(*req.IOExtra)) {
+					return fmt.Errorf("io extra is invalid json str %v", *req.IOExtra)
+				}
+				_req.IOExtra = req.IOExtra
+			}
 			if req.IOType == nil || req.IOSubType == nil {
 				return fmt.Errorf("invalid io type or io subtype")
 			}
