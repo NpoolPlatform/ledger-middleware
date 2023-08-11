@@ -204,13 +204,40 @@ func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
 }
 
 func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid app id")
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid user id")
+	}
+	if h.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if h.Unlocked == nil {
+		return fmt.Errorf("invalid unlocked")
+	}
+	if h.Outcoming == nil {
+		return fmt.Errorf("invalid outcoming")
+	}
+	if h.IOExtra == nil {
+		return fmt.Errorf("invalid extra")
+	}
+
+	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+		return fmt.Errorf("nothing todo")
+	}
+
 	key := statementKey(&h.Req)
+
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
+
+	ioType := basetypes.IOType_Outcoming
+	h.IOType = &ioType
 
 	h.Conds = &crud.Conds{
 		AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
@@ -228,48 +255,37 @@ func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
 		return fmt.Errorf("statement already exist, app id %v, user id %v, coin type id %v", *h.AppID, *h.UserID, *h.CoinTypeID)
 	}
 
-	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
-		return fmt.Errorf("nothing todo")
-	}
-
 	spendable := h.Unlocked.Sub(*h.Outcoming)
-	unlockedS, err := decimal.NewFromString(fmt.Sprintf("-%v", *h.Unlocked))
+	h.Amount = h.Outcoming
+	_unlocked, err := decimal.NewFromString(fmt.Sprintf("-%v", *h.Unlocked))
 	if err != nil {
 		return err
 	}
-	outcomingS := h.Outcoming
-	spendableS := spendable
 
-	ioType := basetypes.IOType_Outcoming
+	ledger1 := &ledgerhandler.Handler{
+		Req: ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &_unlocked,
+			Spendable:  &spendable,
+			Outcoming:  h.Outcoming,
+		},
+	}
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if _, err := h.tryCreateLedger(&h.Req, ctx, tx); err != nil {
 			return err
 		}
 
-		ledger1 := &ledgerhandler.Handler{
-			Req: ledgercrud.Req{
-				AppID:      h.AppID,
-				UserID:     h.UserID,
-				CoinTypeID: h.CoinTypeID,
-				Locked:     &unlockedS,
-				Spendable:  &spendableS,
-				Outcoming:  outcomingS,
-			},
-		}
 		if _, err := ledger1.UpdateLedger(ctx); err != nil {
 			return err
 		}
 
-		h.Req = crud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			IOType:     &ioType,
-			IOSubType:  h.IOSubType,
-			Amount:     outcomingS,
-			IOExtra:    h.IOExtra,
+		if h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+			return nil
 		}
+
 		if _, err := h.CreateStatement(ctx); err != nil {
 			return err
 		}
