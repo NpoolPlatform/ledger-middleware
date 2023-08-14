@@ -6,7 +6,7 @@ import (
 	"time"
 
 	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/unsoldstatement"
+	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -38,8 +38,17 @@ func (h *Handler) CreateUnsoldStatement(ctx context.Context) (*npool.UnsoldState
 		CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
 		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: timestamp},
 	}
-	if _, err := h.GetUnsoldStatementOnly(ctx); err != nil {
+	info, err := h.GetUnsoldStatementOnly(ctx)
+	if err != nil {
 		return nil, err
+	}
+	if info != nil {
+		id, err := uuid.Parse(info.ID)
+		if err != nil {
+			return nil, err
+		}
+		h.ID = &id
+		return h.GetUnsoldStatement(ctx)
 	}
 
 	id := uuid.New()

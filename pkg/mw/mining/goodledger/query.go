@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/goodledger"
+	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entgoodledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"

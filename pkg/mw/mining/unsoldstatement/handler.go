@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/unsoldstatement"
+	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 	"github.com/google/uuid"

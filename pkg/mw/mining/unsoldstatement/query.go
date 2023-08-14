@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/unsoldstatement"
+	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entunsoldstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"

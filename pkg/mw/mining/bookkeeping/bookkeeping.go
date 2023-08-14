@@ -2,123 +2,98 @@ package bookkeeping
 
 import (
 	"context"
+	"fmt"
 
+	goodledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodstatement"
+	unsoldstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-
-	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
-	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
-	unsoldmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
-
-	detailcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/detail"
-	generalcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/general"
-	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsold"
-
-	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
-
-	"github.com/shopspring/decimal"
+	goodledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/mining/goodledger"
+	goodstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/mining/goodstatement"
+	unsoldstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/mining/unsoldstatement"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	"github.com/google/uuid"
 )
 
-func BookKeeping(
-	ctx context.Context,
-	goodID, coinTypeID string,
-	total, unsold, techniqueServiceFee decimal.Decimal,
-	benefitDate uint32,
-) error {
-	totalS := total.String()
-	unsoldS := unsold.String()
+func (h *Handler) BookKeeping(ctx context.Context) error {
+	if h.UnsoldAmount == nil {
+		return fmt.Errorf("invalid unsold amount")
+	}
+	if h.TotalAmount == nil {
+		return fmt.Errorf("invalid total amount")
+	}
 
-	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		stm1, err := detailcrud.CreateSet(
-			tx.MiningDetail.Create(),
-			&detailmgrpb.DetailReq{
-				GoodID:      &goodID,
-				CoinTypeID:  &coinTypeID,
-				Amount:      &totalS,
-				BenefitDate: &benefitDate,
-			})
-		if err != nil {
-			return err
-		}
-
-		_, err = stm1.Save(_ctx)
-		if err != nil {
-			return err
-		}
-
-		stm2, err := generalcrud.SetQueryConds(&generalmgrpb.Conds{
-			GoodID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: goodID,
+	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		goodstatementHandler := &goodstatement1.Handler{
+			Req: goodstatement.Req{
+				GoodID:      h.GoodID,
+				CoinTypeID:  h.CoinTypeID,
+				Amount:      h.TotalAmount,
+				BenefitDate: h.BenefitDate,
 			},
-			CoinTypeID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: coinTypeID,
-			},
-		}, tx.MiningGeneral.Query())
-		if err != nil {
+		}
+		if _, err := goodstatementHandler.CreateGoodStatement(ctx); err != nil {
 			return err
 		}
 
-		g, err := stm2.ForUpdate().Only(_ctx)
-		if err != nil {
-			if !ent.IsNotFound(err) {
-				return err
-			}
+		goodledgerHandler := &goodledger1.Handler{
+			Conds: &goodledgercrud.Conds{
+				GoodID:     &cruder.Cond{Op: cruder.EQ, Val: h.GoodID},
+				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
+			},
+			Req: goodledgercrud.Req{
+				GoodID:     h.GoodID,
+				CoinTypeID: h.CoinTypeID,
+			},
 		}
-		if g == nil {
-			c, err := generalcrud.CreateSet(
-				tx.MiningGeneral.Create(),
-				&generalmgrpb.GeneralReq{
-					GoodID:     &goodID,
-					CoinTypeID: &coinTypeID,
-				})
+
+		goodledger, err := goodledgerHandler.GetGoodLedgerOnly(ctx)
+		if err != nil {
+			return err
+		}
+		goodledgerID := ""
+
+		if goodledger == nil {
+			_goodledger, err := goodledgerHandler.CreateGoodLedger(ctx)
 			if err != nil {
 				return err
 			}
-
-			g, err = c.Save(_ctx)
-			if err != nil {
-				return err
-			}
+			goodledgerID = _goodledger.ID
+		} else {
+			goodledgerID = goodledger.ID
 		}
 
-		toPlatform := unsold.Add(techniqueServiceFee)
-		toUserS := total.Sub(toPlatform).String()
-		toPlatformS := toPlatform.String()
+		toPlatform := h.UnsoldAmount.Add(*h.TechniqueServiceFeeAmount)
+		toUser := h.TotalAmount.Sub(toPlatform)
 
-		stm3, err := generalcrud.AddFieldsSet(g, &generalmgrpb.GeneralReq{
-			Amount:     &totalS,
-			ToPlatform: &toPlatformS,
-			ToUser:     &toUserS,
-		})
+		_goodLedgerID, err := uuid.Parse(goodledgerID)
 		if err != nil {
 			return err
 		}
-
-		_, err = stm3.Save(_ctx)
-		if err != nil {
+		goodledgerHandler = &goodledger1.Handler{
+			Req: goodledgercrud.Req{
+				ID:         &_goodLedgerID,
+				ToPlatform: &toPlatform,
+				ToUser:     &toUser,
+				Amount:     h.TotalAmount,
+			},
+		}
+		if _, err := goodledgerHandler.UpdateGoodLedger(ctx); err != nil {
 			return err
 		}
 
-		stm4, err := unsoldcrud.CreateSet(
-			tx.MiningUnsold.Create(),
-			&unsoldmgrpb.UnsoldReq{
-				GoodID:      &goodID,
-				CoinTypeID:  &coinTypeID,
-				Amount:      &unsoldS,
-				BenefitDate: &benefitDate,
-			})
-		if err != nil {
+		unsoldHandler := unsoldstatement1.Handler{
+			Req: unsoldstatementcrud.Req{
+				GoodID:      h.GoodID,
+				CoinTypeID:  h.CoinTypeID,
+				Amount:      h.TotalAmount,
+				BenefitDate: h.BenefitDate,
+			},
+		}
+		if _, err := unsoldHandler.CreateUnsoldStatement(ctx); err != nil {
 			return err
 		}
-
-		_, err = stm4.Save(_ctx)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	})
 }
