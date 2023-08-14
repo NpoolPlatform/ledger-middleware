@@ -4,12 +4,12 @@ import (
 	"context"
 
 	bookkeeping "github.com/NpoolPlatform/ledger-middleware/api/bookkeeping"
-	goodledger "github.com/NpoolPlatform/ledger-middleware/api/goodledger"
-	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/goodstatement"
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
+	goodledger "github.com/NpoolPlatform/ledger-middleware/api/mining/goodledger"
+	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/mining/goodstatement"
+	unsold "github.com/NpoolPlatform/ledger-middleware/api/mining/unsoldstatement"
 	profit "github.com/NpoolPlatform/ledger-middleware/api/profit"
 	statement "github.com/NpoolPlatform/ledger-middleware/api/statement"
-	unsold "github.com/NpoolPlatform/ledger-middleware/api/unsoldstatement"
 	withdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw"
 
 	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v1"

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	unsoldstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/unsoldstatement"
+	unsoldstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/mining/unsoldstatement"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
