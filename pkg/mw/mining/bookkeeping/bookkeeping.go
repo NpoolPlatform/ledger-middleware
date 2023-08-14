@@ -17,11 +17,37 @@ import (
 )
 
 func (h *Handler) BookKeeping(ctx context.Context) error {
+	if h.GoodID == nil {
+		return fmt.Errorf("invalid good id")
+	}
+	if h.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
 	if h.UnsoldAmount == nil {
 		return fmt.Errorf("invalid unsold amount")
 	}
 	if h.TotalAmount == nil {
 		return fmt.Errorf("invalid total amount")
+	}
+	if h.TechniqueServiceFeeAmount == nil {
+		return fmt.Errorf("invalid fee amount")
+	}
+	if h.BenefitDate == nil {
+		return fmt.Errorf("invalid benefit date")
+	}
+
+	goodstatementHandler := &goodstatement1.Handler{
+		Conds: &goodstatement.Conds{
+			GoodID:      &cruder.Cond{Op: cruder.EQ, Val: h.GoodID},
+			BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: h.BenefitDate},
+		},
+	}
+	info, err := goodstatementHandler.GetGoodStatementOnly(ctx)
+	if err != nil {
+		return err
+	}
+	if info != nil {
+		return fmt.Errorf("benefit exist, good id: %v, benefit date: %v", *h.GoodID, *h.BenefitDate)
 	}
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {

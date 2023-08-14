@@ -66,8 +66,8 @@ func WithTotalAmount(amount *string) func(context.Context, *Handler) error {
 		if err != nil {
 			return err
 		}
-		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("total amount is less than 0 %v", *amount)
+		if _amount.Cmp(decimal.NewFromInt(0)) <= 0 {
+			return fmt.Errorf("total amount is less than equal 0 %v", *amount)
 		}
 		h.TotalAmount = &_amount
 		return nil
@@ -112,6 +112,9 @@ func WithBenefitDate(date *uint32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if date == nil {
 			return nil
+		}
+		if *date == 0 {
+			return fmt.Errorf("invalid benefit date %v", *date)
 		}
 		h.BenefitDate = date
 		return nil

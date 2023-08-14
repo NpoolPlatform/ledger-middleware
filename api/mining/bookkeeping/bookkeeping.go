@@ -3,82 +3,43 @@ package mining
 import (
 	"context"
 
-	bookkeeping1 "github.com/NpoolPlatform/ledger-middleware/pkg/mining/bookkeeping"
+	bookkeeping1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/mining/bookkeeping"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/bookkeeping"
 
-	mdetailmgrcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/mining/detail"
-	mdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
-
-	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
-
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
-func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) (*npool.BookKeepingResponse, error) {
-	if _, err := uuid.Parse(in.GetGoodID()); err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if _, err := uuid.Parse(in.GetCoinTypeID()); err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	totalAmount, err := decimal.NewFromString(in.GetTotalAmount())
-	if err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if totalAmount.Cmp(decimal.NewFromInt(0)) <= 0 {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, "TotalAmount is invalid")
-	}
-	unsoldAmount, err := decimal.NewFromString(in.GetUnsoldAmount())
-	if err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if unsoldAmount.Cmp(decimal.NewFromInt(0)) < 0 {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, "UnsoldAmount is invalid")
-	}
-	feeAmount, err := decimal.NewFromString(in.GetTechniqueServiceFeeAmount())
-	if err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if feeAmount.Cmp(decimal.NewFromInt(0)) < 0 {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, "FeeAmount is invalid")
-	}
-	if in.GetBenefitDate() == 0 {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, "BenefitDate is invalid")
-	}
-
-	detail, err := mdetailmgrcli.GetDetailOnly(ctx, &mdetailmgrpb.Conds{
-		GoodID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetGoodID(),
-		},
-		BenefitDate: &commonpb.Uint32Val{
-			Op:    cruder.EQ,
-			Value: in.GetBenefitDate(),
-		},
-	})
-	if err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if detail != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.InvalidArgument, "Benefit exist")
-	}
-
-	err = bookkeeping1.BookKeeping(
+func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) (
+	*npool.BookKeepingResponse,
+	error,
+) {
+	handler, err := bookkeeping1.NewHandler(
 		ctx,
-		in.GetGoodID(),
-		in.GetCoinTypeID(),
-		totalAmount,
-		unsoldAmount,
-		feeAmount,
-		in.GetBenefitDate(),
+		bookkeeping1.WithGoodID(&in.GoodID),
+		bookkeeping1.WithCoinTypeID(&in.CoinTypeID),
+		bookkeeping1.WithTotalAmount(&in.TotalAmount),
+		bookkeeping1.WithUnsoldAmount(&in.UnsoldAmount),
+		bookkeeping1.WithTechniqueServiceFeeAmount(&in.TechniqueServiceFeeAmount),
+		bookkeeping1.WithBenefitDate(&in.BenefitDate),
 	)
 	if err != nil {
-		return &npool.BookKeepingResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"BookKeeping",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+
+	if err := handler.BookKeeping(ctx); err != nil {
+		logger.Sugar().Errorw(
+			"BookKeeping",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
 	return &npool.BookKeepingResponse{}, nil
