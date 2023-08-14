@@ -16,7 +16,7 @@ package unsold
 // 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 // 	unsold "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/miningunsold"
 // 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
+// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 
 // 	"github.com/google/uuid"
 // )

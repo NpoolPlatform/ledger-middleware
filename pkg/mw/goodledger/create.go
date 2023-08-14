@@ -8,7 +8,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/goodledger"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
 	"github.com/google/uuid"
 )
 

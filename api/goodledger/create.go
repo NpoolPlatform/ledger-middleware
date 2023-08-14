@@ -5,7 +5,7 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	goodledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/goodledger"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/goodledger"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

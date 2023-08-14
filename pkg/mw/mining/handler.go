@@ -1,4 +1,4 @@
-package unsoldstatement
+package mining
 
 import (
 	"context"

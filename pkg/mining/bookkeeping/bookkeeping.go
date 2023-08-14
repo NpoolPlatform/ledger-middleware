@@ -6,9 +6,9 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 
-	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
-	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/general"
-	unsoldmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
+	generalmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
+	detailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
+	unsoldmgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 
 	detailcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/detail"
 	generalcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/general"

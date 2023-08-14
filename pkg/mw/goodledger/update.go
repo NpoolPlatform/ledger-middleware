@@ -7,7 +7,7 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/goodledger"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
 )
 
 func (h *Handler) UpdateGoodLedger(ctx context.Context) (*npool.GoodLedger, error) {

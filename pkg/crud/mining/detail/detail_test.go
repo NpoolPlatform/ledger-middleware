@@ -15,7 +15,7 @@ package detail
 
 // 	testinit "github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 // 	valuedef "github.com/NpoolPlatform/message/npool"
-// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
+// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
 // 	"github.com/google/uuid"
 
 // 	"github.com/stretchr/testify/assert"

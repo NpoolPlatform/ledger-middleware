@@ -2,7 +2,7 @@ package unsold
 
 import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsold"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 )
 
 func Ent2Grpc(row *ent.MiningUnsold) *npool.Unsold {

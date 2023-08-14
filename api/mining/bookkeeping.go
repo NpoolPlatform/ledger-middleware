@@ -1,4 +1,4 @@
-package bookkeeping
+package mining
 
 import (
 	"context"

@@ -2,7 +2,7 @@ package detail
 
 import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
 )
 
 func Ent2Grpc(row *ent.MiningDetail) *npool.Detail {

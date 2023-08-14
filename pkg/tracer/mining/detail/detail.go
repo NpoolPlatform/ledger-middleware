@@ -6,7 +6,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	trace1 "go.opentelemetry.io/otel/trace"
 
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/detail"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
 )
 
 func trace(span trace1.Span, in *npool.DetailReq, index int) trace1.Span {

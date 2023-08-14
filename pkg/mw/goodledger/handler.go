@@ -7,7 +7,7 @@ import (
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/goodledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/goodledger"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )

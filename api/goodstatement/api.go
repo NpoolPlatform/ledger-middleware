@@ -1,7 +1,7 @@
 package goodstatement
 
 import (
-	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/goodstatement"
+	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

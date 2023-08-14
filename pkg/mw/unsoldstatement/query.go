@@ -8,7 +8,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entunsoldstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/unsoldstatement"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 	"github.com/shopspring/decimal"
 )
 

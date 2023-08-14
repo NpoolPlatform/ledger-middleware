@@ -16,7 +16,7 @@ package general
 // 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 // 	general "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/mininggeneral"
 // 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/general"
+// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
 
 // 	"github.com/google/uuid"
 // )
