@@ -491,7 +491,14 @@ func (h *Handler) LockBalance(ctx context.Context) error {
 		Handler: h,
 	}
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		_ledgerID, err := handler.tryCreateLedger(&h.Req, ctx, tx)
+		_ledgerID, err := handler.tryCreateLedger(&crud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			IOType:     h.IOType,
+			IOSubType:  h.IOSubType,
+			IOExtra:    h.IOExtra,
+		}, ctx, tx)
 		if err != nil {
 			return err
 		}
@@ -545,16 +552,23 @@ func (h *Handler) UnlockBalanceOut(ctx context.Context) error {
 		return fmt.Errorf("nothing todo")
 	}
 
-	key := statementKey(&h.Req)
+	ioType := basetypes.IOType_Outcoming
+	h.IOType = &ioType
+
+	key := statementKey(&crud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     h.IOType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+	})
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
-
-	ioType := basetypes.IOType_Outcoming
-	h.IOType = &ioType
 
 	handler := &statementhandler.Handler{
 		Conds: &crud.Conds{
@@ -638,7 +652,14 @@ func (h *Handler) UnlockBalance(ctx context.Context) error {
 		return fmt.Errorf("nothing todo")
 	}
 
-	key := statementKey(&h.Req)
+	key := statementKey(&crud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     h.IOType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+	})
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
@@ -678,7 +699,14 @@ func (h *Handler) UnlockBalance(ctx context.Context) error {
 		bookkeeping1 := &bookkeepingHandler{
 			Handler: h,
 		}
-		if _, err := bookkeeping1.tryCreateLedger(&h.Req, ctx, tx); err != nil {
+		if _, err := bookkeeping1.tryCreateLedger(&crud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			IOType:     h.IOType,
+			IOSubType:  h.IOSubType,
+			IOExtra:    h.IOExtra,
+		}, ctx, tx); err != nil {
 			return err
 		}
 

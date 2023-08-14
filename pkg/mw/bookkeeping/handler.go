@@ -14,6 +14,7 @@ import (
 )
 
 type Handler struct {
+	ID              *uuid.UUID
 	AppID           *uuid.UUID
 	UserID          *uuid.UUID
 	CoinTypeID      *uuid.UUID
