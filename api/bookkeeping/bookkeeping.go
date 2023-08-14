@@ -27,7 +27,7 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"BookKeepingV2",
+			"BookKeeping",
 			"In", in,
 			"Error", err,
 		)
@@ -36,7 +36,7 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 
 	if err := handler.BookKeeping(ctx); err != nil {
 		logger.Sugar().Errorw(
-			"BookKeepingV2",
+			"BookKeeping",
 			"In", in,
 			"Error", err,
 		)
@@ -46,7 +46,7 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 	return &npool.BookKeepingResponse{}, nil
 }
 
-func (s *Server) BookKeepingV2Out(ctx context.Context, in *npool.BookKeepingRequest) (
+func (s *Server) BookKeepingOut(ctx context.Context, in *npool.BookKeepingRequest) (
 	*npool.BookKeepingResponse,
 	error,
 ) {
@@ -63,16 +63,16 @@ func (s *Server) BookKeepingV2Out(ctx context.Context, in *npool.BookKeepingRequ
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"BookKeepingV2Out",
+			"BookKeepingOut",
 			"In", in,
 			"Error", err,
 		)
 		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if err := handler.BookKeepingV2Out(ctx); err != nil {
+	if err := handler.BookKeepingOut(ctx); err != nil {
 		logger.Sugar().Errorw(
-			"BookKeepingV2Out",
+			"BookKeepingOut",
 			"In", in,
 			"Error", err,
 		)

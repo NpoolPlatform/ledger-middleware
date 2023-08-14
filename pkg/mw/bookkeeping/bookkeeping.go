@@ -250,7 +250,7 @@ func (h *Handler) BookKeeping(ctx context.Context) error {
 	return handler.tryBookKeeping(statements, ctx)
 }
 
-func (h *Handler) BookKeepingV2Out(ctx context.Context) error {
+func (h *Handler) BookKeepingOut(ctx context.Context) error {
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, val := range h.Reqs {
