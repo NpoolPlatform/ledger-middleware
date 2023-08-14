@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -15,13 +14,18 @@ import (
 )
 
 type Handler struct {
-	crud.Req
-	Unlocked  *decimal.Decimal
-	Outcoming *decimal.Decimal
-	Reqs      []*crud.Req
-	Conds     *crud.Conds
-	Offset    int32
-	Limit     int32
+	AppID           *uuid.UUID
+	UserID          *uuid.UUID
+	CoinTypeID      *uuid.UUID
+	IOType          *basetypes.IOType
+	IOSubType       *basetypes.IOSubType
+	Amount          *decimal.Decimal
+	FromCoinTypeID  *uuid.UUID
+	CoinUSDCurrency *decimal.Decimal
+	IOExtra         *string
+	Unlocked        *decimal.Decimal
+	Outcoming       *decimal.Decimal
+	Reqs            []*crud.Req
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -32,20 +36,6 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 		}
 	}
 	return handler, nil
-}
-
-func WithID(id *string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			return nil
-		}
-		_id, err := uuid.Parse(*id)
-		if err != nil {
-			return err
-		}
-		h.ID = &_id
-		return nil
-	}
 }
 
 func WithAppID(id *string) func(context.Context, *Handler) error {
@@ -403,22 +393,5 @@ func WithReqs(reqs []*statementpb.StatementReq) func(context.Context, *Handler) 
 		h.Reqs = _reqs
 		return nil
 
-	}
-}
-
-func WithOffset(offset int32) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		h.Offset = offset
-		return nil
-	}
-}
-
-func WithLimit(limit int32) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if limit == 0 {
-			limit = constant.DefaultRowLimit
-		}
-		h.Limit = limit
-		return nil
 	}
 }
