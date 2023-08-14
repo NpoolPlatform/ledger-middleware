@@ -14,19 +14,13 @@ import (
 )
 
 type Handler struct {
-	ID              *uuid.UUID
-	AppID           *uuid.UUID
-	UserID          *uuid.UUID
-	CoinTypeID      *uuid.UUID
-	IOType          *basetypes.IOType
-	IOSubType       *basetypes.IOSubType
-	Amount          *decimal.Decimal
-	FromCoinTypeID  *uuid.UUID
-	CoinUSDCurrency *decimal.Decimal
-	IOExtra         *string
-	Unlocked        *decimal.Decimal
-	Outcoming       *decimal.Decimal
-	Reqs            []*crud.Req
+	crud.Req
+	Unlocked  *decimal.Decimal
+	Outcoming *decimal.Decimal
+	Reqs      []*crud.Req
+	Conds     *crud.Conds
+	Offset    int32
+	Limit     int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -37,6 +31,20 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 		}
 	}
 	return handler, nil
+}
+
+func WithID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		_id, err := uuid.Parse(*id)
+		if err != nil {
+			return err
+		}
+		h.ID = &_id
+		return nil
+	}
 }
 
 func WithAppID(id *string) func(context.Context, *Handler) error {
