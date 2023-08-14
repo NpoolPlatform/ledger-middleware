@@ -3,12 +3,14 @@ package api
 import (
 	"context"
 
-	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/v1/ledger"
-	ledger2 "github.com/NpoolPlatform/ledger-middleware/api/v2/ledger"
-	mbookkeeping "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/bookkeeping"
-	mdetail "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/detail"
-	mgeneral "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/general"
-	unsold "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/unsold"
+	bookkeeping "github.com/NpoolPlatform/ledger-middleware/api/bookkeeping"
+	goodledger "github.com/NpoolPlatform/ledger-middleware/api/goodledger"
+	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/goodstatement"
+	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
+	profit "github.com/NpoolPlatform/ledger-middleware/api/profit"
+	statement "github.com/NpoolPlatform/ledger-middleware/api/statement"
+	unsold "github.com/NpoolPlatform/ledger-middleware/api/unsoldstatement"
+	withdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw"
 
 	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v1"
 
@@ -23,10 +25,12 @@ type Server struct {
 func Register(server grpc.ServiceRegistrar) {
 	ledger.RegisterMiddlewareServer(server, &Server{})
 	ledger1.Register(server)
-	ledger2.Register(server)
-	mdetail.Register(server)
-	mbookkeeping.Register(server)
-	mgeneral.Register(server)
+	goodledger.Register(server)
+	statement.Register(server)
+	profit.Register(server)
+	bookkeeping.Register(server)
+	withdraw.Register(server)
+	goodstatement.Register(server)
 	unsold.Register(server)
 }
 
