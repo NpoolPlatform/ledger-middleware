@@ -80,6 +80,8 @@ type Conds struct {
 	FromCoinTypeID  *cruder.Cond
 	CoinUSDCurrency *cruder.Cond
 	IOExtra         *cruder.Cond
+	StartAt         *cruder.Cond
+	EndAT           *cruder.Cond
 }
 
 func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
@@ -213,6 +215,34 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			q.Where(entstatement.IoExtraContains(extra))
 		default:
 			return nil, fmt.Errorf("invalid io extra op field %v", conds.IOExtra.Op)
+		}
+	}
+	if conds.StartAt != nil {
+		startAt, ok := conds.StartAt.Val.(uint32)
+		if !ok {
+			return nil, fmt.Errorf("invalid start  %v", conds.StartAt)
+		}
+		switch conds.StartAt.Op {
+		case cruder.GT:
+			q.Where(entstatement.CreatedAtGTE(startAt))
+		case cruder.LT:
+			q.Where(entstatement.CreatedAtLTE(startAt))
+		default:
+			return nil, fmt.Errorf("invalid start at op field %v", conds.StartAt.Op)
+		}
+	}
+	if conds.EndAT != nil {
+		endAT, ok := conds.EndAT.Val.(uint32)
+		if !ok {
+			return nil, fmt.Errorf("invalid end at  %v", conds.EndAT)
+		}
+		switch conds.EndAT.Op {
+		case cruder.GT:
+			q.Where(entstatement.CreatedAtGTE(endAT))
+		case cruder.LT:
+			q.Where(entstatement.CreatedAtLTE(endAT))
+		default:
+			return nil, fmt.Errorf("invalid end at op field %v", conds.EndAT.Op)
 		}
 	}
 	return q, nil

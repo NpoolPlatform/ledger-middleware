@@ -16,10 +16,12 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs   []*crud.Req
-	Conds  *crud.Conds
-	Offset int32
-	Limit  int32
+	StartAt uint32
+	EndAT   uint32
+	Reqs    []*crud.Req
+	Conds   *crud.Conds
+	Offset  int32
+	Limit   int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -185,6 +187,19 @@ func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 	}
 }
 
+func WithStartAt(startAt uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.StartAt = startAt
+		return nil
+	}
+}
+
+func WithEndAt(endAt uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.EndAT = endAt
+		return nil
+	}
+}
 func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Conds = &crud.Conds{}

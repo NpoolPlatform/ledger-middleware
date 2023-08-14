@@ -138,7 +138,6 @@ func (h *Handler) GetStatements(ctx context.Context) ([]*npool.Statement, uint32
 	return handler.infos, handler.total, nil
 }
 
-
 func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error) {
 	handler := &queryHandler{
 		Handler: h,
