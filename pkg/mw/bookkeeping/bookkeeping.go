@@ -120,7 +120,7 @@ type statementInfo struct {
 	ProfitID string
 }
 
-func (h *bookkeepingHandler) tryBookKeepingV2(statements []statementInfo, ctx context.Context) error {
+func (h *bookkeepingHandler) tryBookKeeping(statements []statementInfo, ctx context.Context) error {
 	// TODO: Remove duplicate record first
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
@@ -220,7 +220,7 @@ func (h *bookkeepingHandler) tryBookKeepingV2(statements []statementInfo, ctx co
 	})
 }
 
-func (h *Handler) BookKeepingV2(ctx context.Context) error {
+func (h *Handler) BookKeeping(ctx context.Context) error {
 	handler := &bookkeepingHandler{
 		Handler: h,
 	}
@@ -247,7 +247,7 @@ func (h *Handler) BookKeepingV2(ctx context.Context) error {
 			return err
 		}
 	}
-	return handler.tryBookKeepingV2(statements, ctx)
+	return handler.tryBookKeeping(statements, ctx)
 }
 
 func (h *Handler) BookKeepingV2Out(ctx context.Context) error {

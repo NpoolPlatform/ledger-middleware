@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) BookKeepingV2(ctx context.Context, in *npool.BookKeepingRequest) (
+func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) (
 	*npool.BookKeepingResponse,
 	error,
 ) {
@@ -34,7 +34,7 @@ func (s *Server) BookKeepingV2(ctx context.Context, in *npool.BookKeepingRequest
 		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if err := handler.BookKeepingV2(ctx); err != nil {
+	if err := handler.BookKeeping(ctx); err != nil {
 		logger.Sugar().Errorw(
 			"BookKeepingV2",
 			"In", in,
