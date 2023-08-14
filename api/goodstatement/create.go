@@ -18,7 +18,7 @@ func (s *Server) CreateGoodStatement(ctx context.Context, in *npool.CreateGoodSt
 		goodstatement1.WithGoodID(req.GoodID),
 		goodstatement1.WithCoinTypeID(req.CoinTypeID),
 		goodstatement1.WithAmount(req.Amount),
-		goodstatement1.WithBenefitDate(req.BenefitDate),
+		goodstatement1.WithBenefitIntervalHours(req.BenefitIntervalHours),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
