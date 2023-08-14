@@ -1,4 +1,4 @@
-package statement
+package bookkeeping
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	ledgerhandler "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	profithandler "github.com/NpoolPlatform/ledger-middleware/pkg/mw/profit"
+	statementhandler "github.com/NpoolPlatform/ledger-middleware/pkg/mw/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	"github.com/google/uuid"
@@ -21,8 +22,6 @@ import (
 
 type bookkeepingHandler struct {
 	*Handler
-	Unlocked  *decimal.Decimal
-	Outcoming *decimal.Decimal
 }
 
 func statementKey(in *crud.Req) string {
@@ -134,15 +133,17 @@ func (h *bookkeepingHandler) tryBookKeepingV2(statements []statementInfo, ctx co
 				_ = redis2.Unlock(key)
 			}()
 
-			h.Conds = &crud.Conds{
-				AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
-				UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
-				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
-				IOType:     &cruder.Cond{Op: cruder.EQ, Val: val.IOType},
-				IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: val.IOSubType},
-				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: val.IOExtra},
+			handler := &statementhandler.Handler{
+				Conds: &crud.Conds{
+					AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
+					UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
+					CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
+					IOType:     &cruder.Cond{Op: cruder.EQ, Val: val.IOType},
+					IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: val.IOSubType},
+					IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: val.IOExtra},
+				},
 			}
-			exist, err := h.ExistStatementConds(ctx)
+			exist, err := handler.ExistStatementConds(ctx)
 			if err != nil {
 				return err
 			}
@@ -262,16 +263,18 @@ func (h *Handler) BookKeepingV2Out(ctx context.Context) error {
 			}()
 
 			// deal statement
-			h.Conds = &crud.Conds{
-				AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
-				UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
-				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
-				IOType:     &cruder.Cond{Op: cruder.EQ, Val: val.IOType},
-				IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: val.IOSubType},
-				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: val.IOExtra},
+			handler := &statementhandler.Handler{
+				Conds: &crud.Conds{
+					AppID:      &cruder.Cond{Op: cruder.EQ, Val: val.AppID},
+					UserID:     &cruder.Cond{Op: cruder.EQ, Val: val.UserID},
+					CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: val.CoinTypeID},
+					IOType:     &cruder.Cond{Op: cruder.EQ, Val: val.IOType},
+					IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: val.IOSubType},
+					IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: val.IOExtra},
+				},
 			}
 
-			info, err := h.GetStatementOnly(ctx)
+			info, err := handler.GetStatementOnly(ctx)
 			if err != nil {
 				return err
 			}
@@ -281,7 +284,7 @@ func (h *Handler) BookKeepingV2Out(ctx context.Context) error {
 					return err
 				}
 				h.ID = &id
-				h.DeleteStatement(ctx)
+				handler.DeleteStatement(ctx)
 			}
 
 			// deal ledger
@@ -409,7 +412,7 @@ func (h *Handler) BookKeepingV2Out(ctx context.Context) error {
 	})
 }
 
-func (h *bookkeepingHandler) LockBalanceOut(ctx context.Context) error {
+func (h *Handler) LockBalanceOut(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
 	}
@@ -470,7 +473,7 @@ func (h *bookkeepingHandler) LockBalanceOut(ctx context.Context) error {
 	})
 }
 
-func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
+func (h *Handler) LockBalance(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
 	}
@@ -484,8 +487,11 @@ func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
 		return fmt.Errorf("invalid amount in lock balance")
 	}
 
+	handler := &bookkeepingHandler{
+		Handler: h,
+	}
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		_ledgerID, err := h.tryCreateLedger(&h.Req, ctx, tx)
+		_ledgerID, err := handler.tryCreateLedger(&h.Req, ctx, tx)
 		if err != nil {
 			return err
 		}
@@ -516,7 +522,7 @@ func (h *bookkeepingHandler) LockBalance(ctx context.Context) error {
 	})
 }
 
-func (h *bookkeepingHandler) UnlockBalanceOut(ctx context.Context) error {
+func (h *Handler) UnlockBalanceOut(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
 	}
@@ -550,15 +556,17 @@ func (h *bookkeepingHandler) UnlockBalanceOut(ctx context.Context) error {
 	ioType := basetypes.IOType_Outcoming
 	h.IOType = &ioType
 
-	h.Conds = &crud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
-		IOType:     &cruder.Cond{Op: cruder.EQ, Val: h.IOType},
-		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: h.IOSubType},
-		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+	handler := &statementhandler.Handler{
+		Conds: &crud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
+			IOType:     &cruder.Cond{Op: cruder.EQ, Val: h.IOType},
+			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: h.IOSubType},
+			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+		},
 	}
-	statement, err := h.GetStatementOnly(ctx)
+	statement, err := handler.GetStatementOnly(ctx)
 	if err != nil {
 		return err
 	}
@@ -597,7 +605,7 @@ func (h *bookkeepingHandler) UnlockBalanceOut(ctx context.Context) error {
 				return nil
 			}
 
-			if _, err := h.DeleteStatement(ctx); err != nil {
+			if _, err := handler.DeleteStatement(ctx); err != nil {
 				return err
 			}
 
@@ -607,7 +615,7 @@ func (h *bookkeepingHandler) UnlockBalanceOut(ctx context.Context) error {
 	return nil
 }
 
-func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
+func (h *Handler) UnlockBalance(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
 	}
@@ -641,15 +649,17 @@ func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
 	ioType := basetypes.IOType_Outcoming
 	h.IOType = &ioType
 
-	h.Conds = &crud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
-		IOType:     &cruder.Cond{Op: cruder.EQ, Val: h.IOType},
-		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: h.IOSubType},
-		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+	handler := &statementhandler.Handler{
+		Conds: &crud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
+			IOType:     &cruder.Cond{Op: cruder.EQ, Val: h.IOType},
+			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: h.IOSubType},
+			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+		},
 	}
-	exist, err := h.ExistStatementConds(ctx)
+	exist, err := handler.ExistStatementConds(ctx)
 	if err != nil {
 		return err
 	}
@@ -664,22 +674,24 @@ func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
 		return err
 	}
 
-	ledger1 := &ledgerhandler.Handler{
-		Req: ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &_unlocked,
-			Spendable:  &spendable,
-			Outcoming:  h.Outcoming,
-		},
-	}
-
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if _, err := h.tryCreateLedger(&h.Req, ctx, tx); err != nil {
+		bookkeeping1 := &bookkeepingHandler{
+			Handler: h,
+		}
+		if _, err := bookkeeping1.tryCreateLedger(&h.Req, ctx, tx); err != nil {
 			return err
 		}
 
+		ledger1 := &ledgerhandler.Handler{
+			Req: ledgercrud.Req{
+				AppID:      h.AppID,
+				UserID:     h.UserID,
+				CoinTypeID: h.CoinTypeID,
+				Locked:     &_unlocked,
+				Spendable:  &spendable,
+				Outcoming:  h.Outcoming,
+			},
+		}
 		if _, err := ledger1.UpdateLedger(ctx); err != nil {
 			return err
 		}
@@ -688,7 +700,7 @@ func (h *bookkeepingHandler) UnlockBalance(ctx context.Context) error {
 			return nil
 		}
 
-		if _, err := h.CreateStatement(ctx); err != nil {
+		if _, err := handler.CreateStatement(ctx); err != nil {
 			return err
 		}
 		return nil
