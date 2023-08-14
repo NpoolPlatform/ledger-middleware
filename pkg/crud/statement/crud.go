@@ -81,7 +81,7 @@ type Conds struct {
 	CoinUSDCurrency *cruder.Cond
 	IOExtra         *cruder.Cond
 	StartAt         *cruder.Cond
-	EndAT           *cruder.Cond
+	EndAt           *cruder.Cond
 }
 
 func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
@@ -231,18 +231,18 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			return nil, fmt.Errorf("invalid start at op field %v", conds.StartAt.Op)
 		}
 	}
-	if conds.EndAT != nil {
-		endAT, ok := conds.EndAT.Val.(uint32)
+	if conds.EndAt != nil {
+		endAT, ok := conds.EndAt.Val.(uint32)
 		if !ok {
-			return nil, fmt.Errorf("invalid end at  %v", conds.EndAT)
+			return nil, fmt.Errorf("invalid end at  %v", conds.EndAt)
 		}
-		switch conds.EndAT.Op {
+		switch conds.EndAt.Op {
 		case cruder.GT:
 			q.Where(entstatement.CreatedAtGTE(endAT))
 		case cruder.LT:
 			q.Where(entstatement.CreatedAtLTE(endAT))
 		default:
-			return nil, fmt.Errorf("invalid end at op field %v", conds.EndAT.Op)
+			return nil, fmt.Errorf("invalid end at op field %v", conds.EndAt.Op)
 		}
 	}
 	return q, nil
