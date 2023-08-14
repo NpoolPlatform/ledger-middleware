@@ -115,6 +115,16 @@ func WithPlatformTransactionID(id *string) func(context.Context, *Handler) error
 	}
 }
 
+func WithChainTransactionID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		h.ChainTransactionID = id
+		return nil
+	}
+}
+
 func WithAmount(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -128,6 +138,16 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 			return fmt.Errorf("amount is less than 0 %v", *amount)
 		}
 		h.Amount = &_amount
+		return nil
+	}
+}
+
+func WithAddress(address *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if address == nil {
+			return nil
+		}
+		h.Address = address
 		return nil
 	}
 }
