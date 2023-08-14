@@ -44,3 +44,36 @@ func (s *Server) GetStatements(ctx context.Context, in *npool.GetStatementsReque
 		Total: total,
 	}, nil
 }
+
+//nolint
+func (s *Server) GetStatementOnly(ctx context.Context, in *npool.GetStatementOnlyRequest) (
+	*npool.GetStatementOnlyResponse,
+	error,
+) {
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithConds(in.GetConds()),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetStatementOnly",
+			"In", in,
+			"error", err,
+		)
+		return &npool.GetStatementOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.GetStatementOnly(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetStatementOnly",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.GetStatementOnlyResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetStatementOnlyResponse{
+		Info: info,
+	}, nil
+}
