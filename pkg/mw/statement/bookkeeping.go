@@ -1,4 +1,4 @@
-package bookkeeping
+package statement
 
 import (
 	"context"
@@ -47,7 +47,6 @@ func (h *bookkeepingHandler) tryCreateLedger(req *crud.Req, ctx context.Context,
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
-
 
 	handler := &ledger1.Handler{
 		Req: ledgercrud.Req{
@@ -118,7 +117,7 @@ func (h *bookkeepingHandler) tryCreateProfit(req *crud.Req, ctx context.Context,
 }
 
 func (h *bookkeepingHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) (string, error) {
-	
+
 	return "", nil
 }
 

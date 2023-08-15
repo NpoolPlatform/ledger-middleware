@@ -16,6 +16,7 @@ import (
 
 type Handler struct {
 	crud.Req
+	Reqs    []*crud.Req
 	StartAt uint32
 	EndAT   uint32
 	Conds   *crud.Conds
@@ -287,6 +288,122 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: conds.GetEndAt().GetValue(),
 			}
 		}
+		return nil
+	}
+}
+
+//nolint
+func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		_reqs := []*crud.Req{}
+		for _, req := range reqs {
+			_req := &crud.Req{}
+			if req.AppID == nil {
+				return fmt.Errorf("invalid app id ")
+			}
+			if req.UserID == nil {
+				return fmt.Errorf("invalid user id ")
+			}
+			if req.CoinTypeID == nil {
+				return fmt.Errorf("invalid coin type id ")
+			}
+			if req.Amount == nil {
+				return fmt.Errorf("invalid app id ")
+			}
+			if req.IOExtra == nil {
+				return fmt.Errorf("invalid app id ")
+			}
+			if req.IOType == nil {
+				return fmt.Errorf("invalid io type")
+			}
+			if req.IOSubType == nil {
+				return fmt.Errorf("invalid io sub type")
+			}
+			if req.AppID != nil {
+				_id, err := uuid.Parse(*req.AppID)
+				if err != nil {
+					return err
+				}
+				_req.AppID = &_id
+			}
+			if req.UserID != nil {
+				_id, err := uuid.Parse(*req.UserID)
+				if err != nil {
+					return err
+				}
+				_req.UserID = &_id
+			}
+			if req.CoinTypeID != nil {
+				_id, err := uuid.Parse(*req.CoinTypeID)
+				if err != nil {
+					return err
+				}
+				_req.CoinTypeID = &_id
+			}
+			if req.FromCoinTypeID != nil {
+				_id, err := uuid.Parse(*req.FromCoinTypeID)
+				if err != nil {
+					return err
+				}
+				_req.FromCoinTypeID = &_id
+			}
+			if req.Amount != nil {
+				amount, err := decimal.NewFromString(*req.Amount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("amount is less than 0 %v", *req.Amount)
+				}
+				_req.Amount = &amount
+			}
+			if req.CoinUSDCurrency != nil {
+				currency, err := decimal.NewFromString(*req.CoinUSDCurrency)
+				if err != nil {
+					return err
+				}
+				if currency.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("coin usd currency is less than 0 %v", *req.CoinUSDCurrency)
+				}
+				_req.CoinUSDCurrency = &currency
+			}
+			if req.IOExtra != nil {
+				if !json.Valid([]byte(*req.IOExtra)) {
+					return fmt.Errorf("io extra is invalid json str %v", *req.IOExtra)
+				}
+				_req.IOExtra = req.IOExtra
+			}
+			if req.IOType == nil || req.IOSubType == nil {
+				return fmt.Errorf("invalid io type or io subtype")
+			}
+			switch *req.IOType {
+			case basetypes.IOType_Incoming:
+				switch *req.IOSubType {
+				case basetypes.IOSubType_Payment:
+				case basetypes.IOSubType_MiningBenefit:
+				case basetypes.IOSubType_Commission:
+				case basetypes.IOSubType_TechniqueFeeCommission:
+				case basetypes.IOSubType_Deposit:
+				case basetypes.IOSubType_Transfer:
+				case basetypes.IOSubType_OrderRevoke:
+				default:
+					return fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *req.IOSubType, *req.IOType)
+				}
+			case basetypes.IOType_Outcoming:
+				switch *req.IOSubType {
+				case basetypes.IOSubType_Payment:
+				case basetypes.IOSubType_Withdrawal:
+				case basetypes.IOSubType_Transfer:
+				case basetypes.IOSubType_CommissionRevoke:
+				default:
+					return fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *req.IOSubType, *req.IOType)
+				}
+			default:
+				return fmt.Errorf("invalid io type %v", *req.IOType)
+			}
+			_reqs = append(_reqs, _req)
+		}
+		h.Reqs = _reqs
 		return nil
 	}
 }

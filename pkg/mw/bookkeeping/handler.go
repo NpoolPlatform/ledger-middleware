@@ -317,6 +317,27 @@ func WithReqs(reqs []*statementpb.StatementReq) func(context.Context, *Handler) 
 		_reqs := []*crud.Req{}
 		for _, req := range reqs {
 			_req := &crud.Req{}
+			if req.AppID == nil {
+				return fmt.Errorf("invalid app id ")
+			}
+			if req.UserID == nil {
+				return fmt.Errorf("invalid user id ")
+			}
+			if req.CoinTypeID == nil {
+				return fmt.Errorf("invalid coin type id ")
+			}
+			if req.Amount == nil {
+				return fmt.Errorf("invalid app id ")
+			}
+			if req.IOExtra == nil {
+				return fmt.Errorf("invalid app id ")
+			}
+			if req.IOType == nil {
+				return fmt.Errorf("invalid io type")
+			}
+			if req.IOSubType == nil {
+				return fmt.Errorf("invalid io sub type")
+			}
 			if req.AppID != nil {
 				_id, err := uuid.Parse(*req.AppID)
 				if err != nil {
