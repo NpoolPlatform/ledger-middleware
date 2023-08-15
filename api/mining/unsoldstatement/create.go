@@ -21,7 +21,7 @@ func (s *Server) CreateUnsoldStatement(ctx context.Context, in *npool.CreateUnso
 		unsoldstatement1.WithGoodID(req.GoodID),
 		unsoldstatement1.WithCoinTypeID(req.CoinTypeID),
 		unsoldstatement1.WithAmount(req.Amount),
-		unsoldstatement1.WithBenefitIntervalHours(req.BenefitIntervalHours),
+		unsoldstatement1.WithBenefitDate(req.BenefitIntervalHours),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
