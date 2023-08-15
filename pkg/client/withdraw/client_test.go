@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	withdraw1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/withdraw"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -102,19 +101,17 @@ func getWithdraws(t *testing.T) {
 }
 
 func deleteWithdraw(t *testing.T) {
-	id, err := uuid.Parse(ret.ID)
+	handler, err := withdraw1.NewHandler(
+		context.Background(),
+		withdraw1.WithID(&ret.ID),
+	)
 	assert.Nil(t, err)
 
-	handler := withdraw1.Handler{
-		Req: crud.Req{
-			ID: &id,
-		},
-	}
 	info, err := handler.DeleteWithdraw(context.Background())
 	assert.Nil(t, err)
 	assert.NotNil(t, info)
 
-	info, err = GetWithdraw(context.Background(), ret.ID)
+	info, err = handler.GetWithdraw(context.Background())
 	assert.Nil(t, err)
 	assert.Nil(t, info)
 }
