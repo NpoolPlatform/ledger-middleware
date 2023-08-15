@@ -88,6 +88,7 @@ func getStatementOnly(t *testing.T) {
 		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.IOType)},
 		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.IOSubType)},
 		Amount:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.Amount},
+		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: ret.IOExtra},
 	})
 	assert.Nil(t, err)
 }
