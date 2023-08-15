@@ -9,33 +9,27 @@ import (
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
+	"github.com/NpoolPlatform/ledger-middleware/pkg/servicename"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/bookkeeping"
-
-	constant "github.com/NpoolPlatform/ledger-middleware/pkg/message/const"
 )
 
-var timeout = 10 * time.Second
-
-type handler func(context.Context, npool.MiddlewareClient) (cruder.Any, error)
-
-func withCRUD(ctx context.Context, handler handler) (cruder.Any, error) {
-	_ctx, cancel := context.WithTimeout(ctx, timeout)
+func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error)) (cruder.Any, error) {
+	_ctx, cancel := context.WithTimeout(ctx, 10*time.Second) //nolint
 	defer cancel()
 
-	conn, err := grpc2.GetGRPCConn(constant.ServiceName, grpc2.GRPCTAG)
+	conn, err := grpc2.GetGRPCConn(servicename.ServiceDomain, grpc2.GRPCTAG)
 	if err != nil {
-		return nil, fmt.Errorf("fail get bookkeeping connection: %v", err)
+		return nil, err
 	}
-
 	defer conn.Close()
 
 	cli := npool.NewMiddlewareClient(conn)
 
-	return handler(_ctx, cli)
+	return fn(_ctx, cli)
 }
 
 func BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) error {
-	_, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+	_, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		_, err := cli.BookKeeping(ctx, in)
 		if err != nil {
 			return nil, fmt.Errorf("fail bookkeeping: %v", err)
