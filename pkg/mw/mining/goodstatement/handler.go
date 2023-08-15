@@ -14,11 +14,10 @@ import (
 
 type Handler struct {
 	crud.Req
-	BenefitIntervalHours *uint32
-	Reqs                 []*crud.Req
-	Conds                *crud.Conds
-	Offset               int32
-	Limit                int32
+	Reqs   []*crud.Req
+	Conds  *crud.Conds
+	Offset int32
+	Limit  int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -90,12 +89,12 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithBenefitIntervalHours(hours *uint32) func(context.Context, *Handler) error {
+func WithBenefitDate(date *uint32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if hours == nil {
+		if date == nil {
 			return nil
 		}
-		h.BenefitIntervalHours = hours
+		h.BenefitDate = date
 		return nil
 	}
 }
