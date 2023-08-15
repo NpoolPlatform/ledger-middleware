@@ -14,16 +14,9 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 	*npool.BookKeepingResponse,
 	error,
 ) {
-	req := in.GetInfo()
 	handler, err := bookkeeping1.NewHandler(
 		ctx,
-		bookkeeping1.WithAppID(req.AppID),
-		bookkeeping1.WithUserID(req.UserID),
-		bookkeeping1.WithCoinTypeID(req.CoinTypeID),
-		bookkeeping1.WithIOExtra(req.IOExtra),
-		bookkeeping1.WithIOType(req.IOType),
-		bookkeeping1.WithIOSubType(req.IOSubType),
-		bookkeeping1.WithAmount(req.Amount),
+		bookkeeping1.WithReqs(in.GetInfos()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -50,16 +43,9 @@ func (s *Server) BookKeepingOut(ctx context.Context, in *npool.BookKeepingReques
 	*npool.BookKeepingResponse,
 	error,
 ) {
-	req := in.GetInfo()
 	handler, err := bookkeeping1.NewHandler(
 		ctx,
-		bookkeeping1.WithAppID(req.AppID),
-		bookkeeping1.WithUserID(req.UserID),
-		bookkeeping1.WithCoinTypeID(req.CoinTypeID),
-		bookkeeping1.WithIOExtra(req.IOExtra),
-		bookkeeping1.WithIOType(req.IOType),
-		bookkeeping1.WithIOSubType(req.IOSubType),
-		bookkeeping1.WithAmount(req.Amount),
+		bookkeeping1.WithReqs(in.GetInfos()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
