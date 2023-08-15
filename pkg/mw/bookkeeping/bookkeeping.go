@@ -37,6 +37,7 @@ func statementKey(in *crud.Req) string {
 	)
 }
 
+//nolint
 func (h *bookkeepingHandler) tryCreateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) (string, error) {
 	key := fmt.Sprintf("ledger-ledger:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
 
@@ -75,6 +76,7 @@ func (h *bookkeepingHandler) tryCreateLedger(req *crud.Req, ctx context.Context,
 	return info.ID, nil
 }
 
+// nolint
 func (h *bookkeepingHandler) tryCreateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) (string, error) {
 	key := fmt.Sprintf("ledger-profit:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
 
@@ -120,6 +122,7 @@ type statementInfo struct {
 	ProfitID string
 }
 
+//nolint
 func (h *bookkeepingHandler) tryBookKeeping(statements []statementInfo, ctx context.Context) error {
 	// TODO: Remove duplicate record first
 
@@ -129,6 +132,7 @@ func (h *bookkeepingHandler) tryBookKeeping(statements []statementInfo, ctx cont
 			if err := redis2.TryLock(key, 0); err != nil {
 				return err
 			}
+			//TODO: defer in for loop
 			defer func() {
 				_ = redis2.Unlock(key)
 			}()

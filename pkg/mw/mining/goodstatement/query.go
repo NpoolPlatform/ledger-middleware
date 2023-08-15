@@ -123,7 +123,6 @@ func (h *Handler) GetGoodStatements(ctx context.Context) ([]*npool.GoodStatement
 	return handler.infos, handler.total, nil
 }
 
-
 func (h *Handler) GetGoodStatementOnly(ctx context.Context) (*npool.GoodStatement, error) {
 	handler := &queryHandler{
 		Handler: h,

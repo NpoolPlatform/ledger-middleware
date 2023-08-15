@@ -122,5 +122,4 @@ func TestClient(t *testing.T) {
 	t.Run("getProfit", getProfit)
 	t.Run("getProfits", getProfits)
 	t.Run("deleteProfit", deleteProfit)
-
 }

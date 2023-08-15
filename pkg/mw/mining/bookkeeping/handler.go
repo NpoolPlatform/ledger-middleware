@@ -63,6 +63,7 @@ func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
+//nolint
 func WithTotalAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -83,6 +84,7 @@ func WithTotalAmount(amount *string, must bool) func(context.Context, *Handler) 
 	}
 }
 
+//nolint
 func WithUnsoldAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -103,6 +105,7 @@ func WithUnsoldAmount(amount *string, must bool) func(context.Context, *Handler)
 	}
 }
 
+//nolint
 func WithTechniqueServiceFeeAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {

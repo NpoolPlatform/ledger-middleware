@@ -135,6 +135,7 @@ func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceReques
 	return &npool.LockBalanceResponse{}, nil
 }
 
+//nolint
 func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceRequest) (
 	*npool.UnlockBalanceResponse,
 	error,
@@ -167,6 +168,7 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 	return &npool.UnlockBalanceResponse{}, nil
 }
 
+//nolint
 func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceRequest) (
 	*npool.UnlockBalanceResponse,
 	error,
