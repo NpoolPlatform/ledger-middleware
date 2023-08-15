@@ -74,7 +74,6 @@ func (s *Server) GetWithdraw(ctx context.Context, in *npool.GetWithdrawRequest) 
 	}, nil
 }
 
-
 //nolint
 func (s *Server) GetWithdrawOnly(ctx context.Context, in *npool.GetWithdrawOnlyRequest) (
 	*npool.GetWithdrawOnlyResponse,
