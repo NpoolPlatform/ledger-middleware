@@ -1,5 +1,5 @@
 //nolint:dupl
-package unsold
+package unsoldstatement
 
 import (
 	"context"
@@ -7,38 +7,29 @@ import (
 	"time"
 
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
-
+	"github.com/NpoolPlatform/ledger-middleware/pkg/servicename"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-
-	mgrpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/unsoldstatement"
-
-	constant "github.com/NpoolPlatform/ledger-middleware/pkg/message/const"
 )
 
-var timeout = 10 * time.Second
-
-type handler func(context.Context, npool.MiddlewareClient) (cruder.Any, error)
-
-func withCRUD(ctx context.Context, handler handler) (cruder.Any, error) {
-	_ctx, cancel := context.WithTimeout(ctx, timeout)
+func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error)) (cruder.Any, error) {
+	_ctx, cancel := context.WithTimeout(ctx, 10*time.Second) //nolint
 	defer cancel()
 
-	conn, err := grpc2.GetGRPCConn(constant.ServiceName, grpc2.GRPCTAG)
+	conn, err := grpc2.GetGRPCConn(servicename.ServiceDomain, grpc2.GRPCTAG)
 	if err != nil {
-		return nil, fmt.Errorf("fail get unsold connection: %v", err)
+		return nil, err
 	}
-
 	defer conn.Close()
 
 	cli := npool.NewMiddlewareClient(conn)
 
-	return handler(_ctx, cli)
+	return fn(_ctx, cli)
 }
 
-func CreateUnsold(ctx context.Context, in *npool.UnsoldReq) (*mgrpb.Unsold, error) {
-	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.CreateUnsold(ctx, &npool.CreateUnsoldRequest{
+func CreateUnsoldStatement(ctx context.Context, in *npool.UnsoldStatementReq) (*npool.UnsoldStatement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.CreateUnsoldStatement(ctx, &npool.CreateUnsoldStatementRequest{
 			Info: in,
 		})
 		if err != nil {
@@ -49,12 +40,12 @@ func CreateUnsold(ctx context.Context, in *npool.UnsoldReq) (*mgrpb.Unsold, erro
 	if err != nil {
 		return nil, fmt.Errorf("fail create unsold: %v", err)
 	}
-	return info.(*mgrpb.Unsold), nil
+	return info.(*npool.UnsoldStatement), nil
 }
 
-func GetUnsoldOnly(ctx context.Context, conds *mgrpb.Conds) (*mgrpb.Unsold, error) {
-	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetUnsoldOnly(ctx, &npool.GetUnsoldOnlyRequest{
+func GetUnsoldStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.UnsoldStatement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetUnsoldStatementOnly(ctx, &npool.GetUnsoldStatementOnlyRequest{
 			Conds: conds,
 		})
 		if err != nil {
@@ -65,5 +56,5 @@ func GetUnsoldOnly(ctx context.Context, conds *mgrpb.Conds) (*mgrpb.Unsold, erro
 	if err != nil {
 		return nil, fmt.Errorf("fail get unsold: %v", err)
 	}
-	return info.(*mgrpb.Unsold), nil
+	return info.(*npool.UnsoldStatement), nil
 }
