@@ -73,3 +73,37 @@ func (s *Server) GetWithdraw(ctx context.Context, in *npool.GetWithdrawRequest) 
 		Info: info,
 	}, nil
 }
+
+
+//nolint
+func (s *Server) GetWithdrawOnly(ctx context.Context, in *npool.GetWithdrawOnlyRequest) (
+	*npool.GetWithdrawOnlyResponse,
+	error,
+) {
+	handler, err := withdraw1.NewHandler(
+		ctx,
+		withdraw1.WithConds(in.GetConds()),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetWithdrawOnly",
+			"In", in,
+			"error", err,
+		)
+		return &npool.GetWithdrawOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.GetWithdrawOnly(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetWithdrawOnly",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.GetWithdrawOnlyResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetWithdrawOnlyResponse{
+		Info: info,
+	}, nil
+}
