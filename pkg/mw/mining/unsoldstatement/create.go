@@ -3,9 +3,7 @@ package unsoldstatement
 import (
 	"context"
 	"fmt"
-	"time"
 
-	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
@@ -25,30 +23,21 @@ func (h *Handler) CreateUnsoldStatement(ctx context.Context) (*npool.UnsoldState
 	if h.Amount == nil {
 		return nil, fmt.Errorf("invalid amount")
 	}
-	if h.BenefitIntervalHours == nil {
-		return nil, fmt.Errorf("invalid benefit interval hours")
+	if h.BenefitDate == nil {
+		return nil, fmt.Errorf("invalid benefit date")
 	}
-
-	now := uint32(time.Now().Unix())
-	seconds := *h.BenefitIntervalHours * timedef.SecondsPerHour
-	timestamp := now / seconds * seconds
 
 	h.Conds = &crud.Conds{
 		GoodID:      &cruder.Cond{Op: cruder.EQ, Val: h.GoodID},
 		CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
-		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: timestamp},
+		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: h.BenefitDate},
 	}
-	info, err := h.GetUnsoldStatementOnly(ctx)
+	exist, err := h.ExistUnsoldStatementConds(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if info != nil {
-		id, err := uuid.Parse(info.ID)
-		if err != nil {
-			return nil, err
-		}
-		h.ID = &id
-		return h.GetUnsoldStatement(ctx)
+	if exist {
+		return nil, fmt.Errorf("unsold statement exist, goodid(%v), cointypeid(%v), benefitdate(%v)", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
 	}
 
 	id := uuid.New()
@@ -64,7 +53,7 @@ func (h *Handler) CreateUnsoldStatement(ctx context.Context) (*npool.UnsoldState
 				GoodID:      h.GoodID,
 				CoinTypeID:  h.CoinTypeID,
 				Amount:      h.Amount,
-				BenefitDate: &timestamp,
+				BenefitDate: h.BenefitDate,
 			},
 		).Save(_ctx); err != nil {
 			return err

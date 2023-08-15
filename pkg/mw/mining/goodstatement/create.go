@@ -29,18 +29,12 @@ func (h *Handler) CreateGoodStatement(ctx context.Context) (*npool.GoodStatement
 		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: h.BenefitDate},
 	}
 
-	info, err := h.GetGoodStatementOnly(ctx)
+	exist, err := h.ExistGoodStatementConds(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if info != nil {
-		id, err := uuid.Parse(info.ID)
-		if err != nil {
-			return nil, err
-		}
-		h.ID = &id
-		h.GetGoodStatement(ctx)
-		return h.GetGoodStatement(ctx)
+	if exist {
+		return nil, fmt.Errorf("statement exist, goodid(%v), cointypeid(%v), benefitdate(%v)", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
 	}
 
 	id := uuid.New()
