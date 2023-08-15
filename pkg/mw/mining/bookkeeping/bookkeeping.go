@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	goodledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodledger"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodstatement"
 	goodstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodstatement"
 	unsoldstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -38,7 +37,7 @@ func (h *createHandler) tryCreateUnsoldStatement(ctx context.Context) error {
 
 func (h *createHandler) tryCreateGoodStatement(ctx context.Context) error {
 	handler := &goodstatement1.Handler{
-		Req: goodstatement.Req{
+		Req: goodstatementcrud.Req{
 			GoodID:      h.GoodID,
 			CoinTypeID:  h.CoinTypeID,
 			Amount:      h.TotalAmount,
@@ -84,7 +83,7 @@ func (h *createHandler) tryCreateOrAddGoodLedger(ctx context.Context, tx *ent.Tx
 		return nil
 	}
 
-	//update
+	// update
 	id, err := uuid.Parse(info.ID)
 	if err != nil {
 		return err

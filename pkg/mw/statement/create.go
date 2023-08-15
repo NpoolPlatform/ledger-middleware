@@ -28,6 +28,7 @@ func (h *createHandler) createStatement(ctx context.Context) error {
 	})
 }
 
+//nolint
 func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
 	if h.AppID == nil {
 		return nil, fmt.Errorf("invalid app id")

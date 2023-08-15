@@ -45,7 +45,6 @@ func (s *Server) GetStatements(ctx context.Context, in *npool.GetStatementsReque
 	}, nil
 }
 
-//nolint
 func (s *Server) GetStatementOnly(ctx context.Context, in *npool.GetStatementOnlyRequest) (
 	*npool.GetStatementOnlyResponse,
 	error,

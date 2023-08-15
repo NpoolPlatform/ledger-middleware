@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//nolint
 func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) (
 	*npool.BookKeepingResponse,
 	error,
@@ -39,6 +40,7 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 	return &npool.BookKeepingResponse{}, nil
 }
 
+//nolint
 func (s *Server) BookKeepingOut(ctx context.Context, in *npool.BookKeepingRequest) (
 	*npool.BookKeepingResponse,
 	error,
@@ -68,6 +70,7 @@ func (s *Server) BookKeepingOut(ctx context.Context, in *npool.BookKeepingReques
 	return &npool.BookKeepingResponse{}, nil
 }
 
+//nolint
 func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) (
 	*npool.LockBalanceResponse,
 	error,
@@ -100,6 +103,7 @@ func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) 
 	return &npool.LockBalanceResponse{}, nil
 }
 
+//nolint
 func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceRequest) (
 	*npool.LockBalanceResponse,
 	error,
@@ -128,7 +132,6 @@ func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceReques
 		)
 		return &npool.LockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
-
 	return &npool.LockBalanceResponse{}, nil
 }
 
@@ -161,7 +164,6 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 		)
 		return &npool.UnlockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
-
 	return &npool.UnlockBalanceResponse{}, nil
 }
 

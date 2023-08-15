@@ -74,7 +74,6 @@ func (s *Server) GetLedger(ctx context.Context, in *npool.GetLedgerRequest) (*np
 	}, nil
 }
 
-//nolint
 func (s *Server) GetLedgerOnly(ctx context.Context, in *npool.GetLedgerOnlyRequest) (
 	*npool.GetLedgerOnlyResponse,
 	error,

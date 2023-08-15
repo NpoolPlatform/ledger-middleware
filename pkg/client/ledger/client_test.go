@@ -147,5 +147,4 @@ func TestClient(t *testing.T) {
 	t.Run("getLedgerOnly", getLedgerOnly)
 	t.Run("getLedgers", getLedgers)
 	t.Run("deleteLedger", deleteLedger)
-
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -182,7 +181,7 @@ func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, erro
 		}
 		switch conds.State.Op {
 		case cruder.EQ:
-			q.Where(withdraw.State(state.String()))
+			q.Where(entwithdraw.State(state.String()))
 		default:
 			return nil, fmt.Errorf("invalid state op field %v", conds.State.Op)
 		}

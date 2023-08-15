@@ -10,7 +10,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateGoodStatement(ctx context.Context, in *npool.CreateGoodStatementRequest) (*npool.CreateGoodStatementResponse, error) {
+func (s *Server) CreateGoodStatement(ctx context.Context, in *npool.CreateGoodStatementRequest) (
+	*npool.CreateGoodStatementResponse,
+	error,
+) {
 	req := in.GetInfo()
 	handler, err := goodstatement1.NewHandler(
 		ctx,

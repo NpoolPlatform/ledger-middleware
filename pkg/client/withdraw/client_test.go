@@ -132,5 +132,4 @@ func TestClient(t *testing.T) {
 	t.Run("getWithdraw", getWithdraw)
 	t.Run("getWithdraws", getWithdraws)
 	t.Run("deleteWithdraw", deleteWithdraw)
-
 }

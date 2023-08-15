@@ -220,6 +220,7 @@ func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 	}
 }
 
+//nolint
 func WithConds(conds *statementpb.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Conds = &crud.Conds{}
@@ -310,6 +311,7 @@ func WithConds(conds *statementpb.Conds) func(context.Context, *Handler) error {
 	}
 }
 
+//nolint
 func WithReqs(reqs []*statementpb.StatementReq) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		_reqs := []*crud.Req{}
@@ -401,6 +403,5 @@ func WithReqs(reqs []*statementpb.StatementReq) func(context.Context, *Handler) 
 		}
 		h.Reqs = _reqs
 		return nil
-
 	}
 }

@@ -250,6 +250,7 @@ func (h *Handler) BookKeeping(ctx context.Context) error {
 	return handler.tryBookKeeping(statements, ctx)
 }
 
+//nolint
 func (h *Handler) BookKeepingOut(ctx context.Context) error {
 
 	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
@@ -284,7 +285,9 @@ func (h *Handler) BookKeepingOut(ctx context.Context) error {
 					return err
 				}
 				h.ID = &id
-				handler.DeleteStatement(ctx)
+				if _, err := handler.DeleteStatement(ctx); err != nil {
+					return err
+				}
 			}
 
 			// deal ledger
@@ -529,6 +532,7 @@ func (h *Handler) LockBalance(ctx context.Context) error {
 	})
 }
 
+//nolint
 func (h *Handler) UnlockBalanceOut(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
@@ -629,6 +633,7 @@ func (h *Handler) UnlockBalanceOut(ctx context.Context) error {
 	return nil
 }
 
+//nolint
 func (h *Handler) UnlockBalance(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid app id")
