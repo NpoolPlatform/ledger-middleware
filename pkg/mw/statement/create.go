@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"entgo.io/ent/entc/integration/edgefield/ent/info"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	profitcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/profit"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -15,6 +15,7 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type createHandler struct {
@@ -46,49 +47,93 @@ func (h *createHandler) tryCreateProfit(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	if _, err := crud.CreateSet(tx.Statement.Create(), req).Save(ctx); err != nil {
+	if _, err := crud.CreateSet(
+		tx.Statement.Create(),
+		req,
+	).Save(ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (h *createHandler) tryCreateOrAddLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: req.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: req.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: req.CoinTypeID},
+	})
+	if err != nil {
+		return err
+	}
+	info, err := stm.Only(ctx)
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return err
+		}
+		return err
+	}
 
-	// tx.Ledger.Query().Where(entledger.)
-	toPlatform := h.UnsoldAmount.Add(*h.TechniqueServiceFeeAmount)
-	toUser := h.TotalAmount.Sub(toPlatform)
+	id := uuid.New()
+	if req.ID == nil {
+		req.ID = &id
+	}
+
+	incoming := decimal.NewFromInt(0)
+	outcoming := decimal.NewFromInt(0)
+	switch *req.IOType {
+	case basetypes.IOType_Incoming:
+		incoming = decimal.RequireFromString(req.Amount.String())
+	case basetypes.IOType_Outcoming:
+		outcoming = decimal.RequireFromString(req.Amount.String())
+	default:
+		return fmt.Errorf("invalid io type %v", *req.IOType)
+	}
+	spendable := incoming.Sub(outcoming)
 
 	// create
 	if info == nil {
-		if _, err := goodledgercrud.CreateSet(
-			tx.GoodLedger.Create(),
-			&goodledgercrud.Req{
-				GoodID:     h.GoodID,
+		stm, err := ledgercrud.CreateSet(
+			tx.Ledger.Create(),
+			&ledgercrud.Req{
+				ID:         req.ID,
+				UserID:     req.UserID,
 				CoinTypeID: h.CoinTypeID,
-				ToPlatform: &toPlatform,
-				ToUser:     &toUser,
-				Amount:     h.TotalAmount,
+				Incoming:   &incoming,
+				Outcoming:  &outcoming,
+				Spendable:  &spendable,
 			},
-		).Save(ctx); err != nil {
-			return nil
+		)
+		if err != nil {
+			return err
+		}
+		if _, err := stm.Save(ctx); err != nil {
+			return err
 		}
 		return nil
 	}
 
 	// update
-	id, err := uuid.Parse(info.ID)
+	old, err := tx.Ledger.Get(ctx, info.ID)
 	if err != nil {
 		return err
 	}
-	handler = &goodledger1.Handler{
-		Req: goodledgercrud.Req{
-			ID:         &id,
-			ToPlatform: &toPlatform,
-			ToUser:     &toUser,
-			Amount:     h.TotalAmount,
-		},
+	if old == nil {
+		return fmt.Errorf("ledger not exist, id %v", info.ID)
 	}
-	if _, err := handler.UpdateGoodLedger(ctx); err != nil {
+
+	stm1, err := ledgercrud.UpdateSet(
+		old,
+		tx.Ledger.UpdateOneID(info.ID),
+		&ledgercrud.Req{
+			Incoming:  &incoming,
+			Outcoming: &outcoming,
+			Spendable: &spendable,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm1.Save(ctx); err != nil {
 		return err
 	}
 
@@ -129,9 +174,6 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 
 	handler := &createHandler{
 		Handler: h,
-	}
-	if err := handler.createStatement(ctx); err != nil {
-		return nil, err
 	}
 
 	return h.GetStatement(ctx)
@@ -192,13 +234,13 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 			if err := _fn(); err != nil {
 				return err
 			}
-
 		}
-
+		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	// Get Statements
 	return nil, nil
 }

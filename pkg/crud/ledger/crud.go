@@ -23,7 +23,7 @@ type Req struct {
 	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.LedgerCreate, in *Req) *ent.LedgerCreate {
+func CreateSet(c *ent.LedgerCreate, in *Req) (*ent.LedgerCreate, error) {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -36,7 +36,45 @@ func CreateSet(c *ent.LedgerCreate, in *Req) *ent.LedgerCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-	return c
+
+	incoming := decimal.NewFromInt(0)
+	if in.Incoming != nil {
+		incoming = incoming.Add(*in.Incoming)
+	}
+	locked := decimal.NewFromInt(0)
+	if in.Locked != nil {
+		locked = locked.Add(*in.Locked)
+	}
+	outcoming := decimal.NewFromInt(0)
+	if in.Outcoming != nil {
+		outcoming = outcoming.Add(*in.Outcoming)
+	}
+	spendable := decimal.NewFromInt(0)
+	if in.Spendable != nil {
+		spendable = spendable.Add(*in.Spendable)
+	}
+
+	if incoming.Cmp(
+		outcoming.Add(locked).
+			Add(spendable),
+	) != 0 {
+		return nil, fmt.Errorf("outcoming (%v) + locked (%v) + spendable (%v) != incoming (%v)",
+			outcoming, locked, spendable, incoming)
+	}
+
+	if in.Incoming != nil {
+		c.SetIncoming(incoming)
+	}
+	if in.Outcoming != nil {
+		c.SetOutcoming(outcoming)
+	}
+	if in.Locked != nil {
+		c.SetLocked(locked)
+	}
+	if in.Spendable != nil {
+		c.SetSpendable(spendable)
+	}
+	return c, nil
 }
 
 func UpdateSet(entity *ent.Ledger, u *ent.LedgerUpdateOne, req *Req) (*ent.LedgerUpdateOne, error) {
