@@ -17,12 +17,12 @@ func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) 
 ) {
 	handler, err := bookkeeping1.NewHandler(
 		ctx,
-		bookkeeping1.WithGoodID(&in.GoodID),
-		bookkeeping1.WithCoinTypeID(&in.CoinTypeID),
-		bookkeeping1.WithTotalAmount(&in.TotalAmount),
-		bookkeeping1.WithUnsoldAmount(&in.UnsoldAmount),
-		bookkeeping1.WithTechniqueServiceFeeAmount(&in.TechniqueServiceFeeAmount),
-		bookkeeping1.WithBenefitDate(&in.BenefitDate),
+		bookkeeping1.WithGoodID(&in.GoodID, true),
+		bookkeeping1.WithCoinTypeID(&in.CoinTypeID, true),
+		bookkeeping1.WithTotalAmount(&in.TotalAmount, true),
+		bookkeeping1.WithUnsoldAmount(&in.UnsoldAmount, true),
+		bookkeeping1.WithTechniqueServiceFeeAmount(&in.TechniqueServiceFeeAmount, true),
+		bookkeeping1.WithBenefitDate(&in.BenefitDate, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

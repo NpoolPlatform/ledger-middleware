@@ -29,9 +29,12 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithGoodID(id *string) func(context.Context, *Handler) error {
+func WithGoodID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid good id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -43,9 +46,12 @@ func WithGoodID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
+func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid coin type id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -57,9 +63,12 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithTotalAmount(amount *string) func(context.Context, *Handler) error {
+func WithTotalAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid total amount")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
@@ -74,9 +83,12 @@ func WithTotalAmount(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUnsoldAmount(amount *string) func(context.Context, *Handler) error {
+func WithUnsoldAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid unsold amount")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
@@ -91,9 +103,12 @@ func WithUnsoldAmount(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithTechniqueServiceFeeAmount(amount *string) func(context.Context, *Handler) error {
+func WithTechniqueServiceFeeAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid technique service fee amount")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
@@ -108,13 +123,13 @@ func WithTechniqueServiceFeeAmount(amount *string) func(context.Context, *Handle
 	}
 }
 
-func WithBenefitDate(date *uint32) func(context.Context, *Handler) error {
+func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if date == nil {
+			if must {
+				return fmt.Errorf("invalid benefit date is must")
+			}
 			return nil
-		}
-		if *date == 0 {
-			return fmt.Errorf("invalid benefit date %v", *date)
 		}
 		h.BenefitDate = date
 		return nil

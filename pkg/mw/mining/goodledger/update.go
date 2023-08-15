@@ -7,6 +7,7 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	entgoodledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodledger"
 )
 
@@ -16,14 +17,23 @@ func (h *Handler) UpdateGoodLedger(ctx context.Context) (*npool.GoodLedger, erro
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		if _, err := crud.UpdateSet(
+		line, err := cli.GoodLedger.Query().Where(entgoodledger.ID(*h.ID)).Only(_ctx)
+		if err != nil {
+			return err
+		}
+		entity, err := crud.UpdateSet(
+			line,
 			cli.GoodLedger.UpdateOneID(*h.ID),
 			&crud.Req{
 				ToPlatform: h.ToPlatform,
 				ToUser:     h.ToUser,
 				Amount:     h.Amount,
 			},
-		).Save(_ctx); err != nil {
+		)
+		if err != nil {
+			return err
+		}
+		if _, err := entity.Save(_ctx); err != nil {
 			return err
 		}
 		return nil

@@ -3,9 +3,7 @@ package goodstatement
 import (
 	"context"
 	"fmt"
-	"time"
 
-	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
@@ -21,15 +19,14 @@ func (h *Handler) CreateGoodStatement(ctx context.Context) (*npool.GoodStatement
 	if h.CoinTypeID == nil {
 		return nil, fmt.Errorf("invalid coin type id")
 	}
-
-	now := uint32(time.Now().Unix())
-	seconds := *h.BenefitIntervalHours * timedef.SecondsPerHour
-	timestamp := now / seconds * seconds
+	if h.BenefitDate == nil {
+		return nil, fmt.Errorf("invalid benefit date")
+	}
 
 	h.Conds = &crud.Conds{
 		GoodID:      &cruder.Cond{Op: cruder.EQ, Val: h.GoodID},
 		CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
-		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: timestamp},
+		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: h.BenefitDate},
 	}
 
 	info, err := h.GetGoodStatementOnly(ctx)

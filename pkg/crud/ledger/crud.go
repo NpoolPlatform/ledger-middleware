@@ -20,7 +20,6 @@ type Req struct {
 	Outcoming  *decimal.Decimal
 	Locked     *decimal.Decimal
 	Spendable  *decimal.Decimal
-	CreatedAt  *uint32
 	DeletedAt  *uint32
 }
 
@@ -36,18 +35,6 @@ func CreateSet(c *ent.LedgerCreate, in *Req) *ent.LedgerCreate {
 	}
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
-	}
-	if in.Incoming != nil {
-		c.SetIncoming(*in.Incoming)
-	}
-	if in.Outcoming != nil {
-		c.SetOutcoming(*in.Outcoming)
-	}
-	if in.Spendable != nil {
-		c.SetSpendable(*in.Spendable)
-	}
-	if in.Locked != nil {
-		c.SetLocked(*in.Locked)
 	}
 	return c
 }

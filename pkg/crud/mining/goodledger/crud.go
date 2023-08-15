@@ -32,28 +32,57 @@ func CreateSet(c *ent.GoodLedgerCreate, in *Req) *ent.GoodLedgerCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-
-	c.SetAmount(decimal.NewFromInt(0))
-	c.SetToPlatform(decimal.NewFromInt(0))
-	c.SetToUser(decimal.NewFromInt(0))
-
+	if in.Amount != nil {
+		c.SetAmount(*in.Amount)
+	}
+	if in.ToPlatform != nil {
+		c.SetToPlatform(*in.ToPlatform)
+	}
+	if in.ToUser != nil {
+		c.SetToUser(*in.ToUser)
+	}
 	return c
 }
 
-func UpdateSet(u *ent.GoodLedgerUpdateOne, req *Req) *ent.GoodLedgerUpdateOne {
+func UpdateSet(entity *ent.GoodLedger, u *ent.GoodLedgerUpdateOne, req *Req) (*ent.GoodLedgerUpdateOne, error) {
+	amount := decimal.NewFromInt(0)
 	if req.Amount != nil {
-		u.SetAmount(*req.Amount)
+		amount = amount.Add(*req.Amount)
+	}
+	toPlatform := decimal.NewFromInt(0)
+	if req.ToPlatform != nil {
+		toPlatform = toPlatform.Add(*req.ToPlatform)
+	}
+	toUser := decimal.NewFromInt(0)
+	if req.ToUser != nil {
+		toUser = toUser.Add(*req.ToUser)
+	}
+
+	if amount.Cmp(toPlatform.Add(toUser)) < 0 {
+		return nil, fmt.Errorf("amount %v < toplatform %v + touser %v", amount.String(), toPlatform.String(), toUser.String())
+	}
+	if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("amount less 0 %v", amount.String())
+	}
+	if toPlatform.Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("toplatform less 0 %v", toPlatform.String())
+	}
+	if toUser.Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("touser less 0 %v", toUser.String())
+	}
+	if req.Amount != nil {
+		amount = amount.Add(entity.Amount)
+		u.SetAmount(amount)
 	}
 	if req.ToPlatform != nil {
-		u.SetToPlatform(*req.ToPlatform)
+		toPlatform = toPlatform.Add(entity.ToPlatform)
+		u.SetToPlatform(toPlatform)
 	}
 	if req.ToUser != nil {
-		u.SetToUser(*req.ToUser)
+		toUser = toUser.Add(entity.ToUser)
+		u.SetToUser(toUser)
 	}
-	if req.DeletedAt != nil {
-		u.SetDeletedAt(*req.DeletedAt)
-	}
-	return u
+	return u, nil
 }
 
 type Conds struct {
