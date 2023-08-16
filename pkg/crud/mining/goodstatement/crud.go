@@ -42,9 +42,6 @@ func CreateSet(c *ent.GoodStatementCreate, in *Req) *ent.GoodStatementCreate {
 }
 
 func UpdateSet(u *ent.GoodStatementUpdateOne, req *Req) *ent.GoodStatementUpdateOne {
-	if req.Amount != nil {
-		u.SetAmount(*req.Amount)
-	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
