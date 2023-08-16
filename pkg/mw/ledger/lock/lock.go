@@ -29,6 +29,14 @@ func (h *Handler) LockBalanceOut(ctx context.Context) (info *ledgerpb.Ledger, er
 		Handler: h,
 	}
 
+	key := fmt.Sprintf("ledger-lock-balance-out:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
 			AppID:      h.AppID,
@@ -108,6 +116,13 @@ func (h *Handler) LockBalance(ctx context.Context) (info *ledgerpb.Ledger, err e
 	handler := &lockHandler{
 		Handler: h,
 	}
+	key := fmt.Sprintf("ledger-lock-balance:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
@@ -131,24 +146,7 @@ func (h *Handler) LockBalance(ctx context.Context) (info *ledgerpb.Ledger, err e
 
 //nolint
 func (h *Handler) UnlockBalanceOut(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid app id")
-	}
-	if h.UserID == nil {
-		return fmt.Errorf("invalid user id")
-	}
-	if h.CoinTypeID == nil {
-		return fmt.Errorf("invalid coin type id")
-	}
-	if h.Unlocked == nil {
-		return fmt.Errorf("invalid unlocked")
-	}
-	if h.Outcoming == nil {
-		return fmt.Errorf("invalid outcoming")
-	}
-	if h.IOExtra == nil {
-		return fmt.Errorf("invalid extra")
-	}
+
 	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 		return fmt.Errorf("nothing todo")
 	}
