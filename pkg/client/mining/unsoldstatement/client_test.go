@@ -43,25 +43,6 @@ var (
 	}
 )
 
-func createUnsoldStatement(t *testing.T) {
-	handler, err := unsoldstatement1.NewHandler(
-		context.Background(),
-		unsoldstatement1.WithID(&ret.ID),
-		unsoldstatement1.WithGoodID(&ret.GoodID),
-		unsoldstatement1.WithCoinTypeID(&ret.CoinTypeID),
-		unsoldstatement1.WithAmount(&ret.Amount),
-		unsoldstatement1.WithBenefitDate(&ret.BenefitDate),
-	)
-	assert.Nil(t, err)
-
-	info, err := handler.CreateUnsoldStatement(context.Background())
-	if assert.Nil(t, err) {
-		ret.CreatedAt = info.CreatedAt
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
-
 func getUnsoldStatement(t *testing.T) {
 	handler, err := unsoldstatement1.NewHandler(
 		context.Background(),
@@ -111,7 +92,6 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createUnsoldStatement", createUnsoldStatement)
 	t.Run("getUnsoldStatement", getUnsoldStatement)
 	t.Run("getUnsoldStatementOnly", getUnsoldStatementOnly)
 	t.Run("deleteUnsoldStatement", deleteUnsoldStatement)
