@@ -2,6 +2,7 @@ package statement
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -13,6 +14,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -167,16 +169,68 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 		return nil, fmt.Errorf("invalid io type %v", *h.IOType)
 	}
 
+	h.Conds = &crud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
+		IOType:     &cruder.Cond{Op: cruder.EQ, Val: *h.IOType},
+		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
+		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra},
+	}
+	exist, err := h.ExistStatementConds(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if exist {
+		msg := fmt.Sprintf(
+			"statement exist! AppID(%v), UserID(%v), CoinTypeID(%v), IOType(%v), IOSubType(%v), IOExtra(%v)",
+			*h.AppID, *h.UserID, *h.CoinTypeID, *h.IOType, *h.IOSubType, *h.IOExtra,
+		)
+		logger.Sugar().Errorf(msg)
+		return nil, fmt.Errorf("statement exist")
+	}
+
 	id := uuid.New()
 	if h.ID == nil {
 		h.ID = &id
 	}
 
-	handler := &createHandler{
-		Handler: h,
+	h.Reqs = append(h.Reqs, &crud.Req{
+		ID:         h.ID,
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     h.IOType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+	})
+
+	infos, err := h.CreateStatements(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(infos) == 0 {
+		return nil, nil
+	}
+	if len(infos) > 1 {
+		return nil, fmt.Errorf("to many records")
 	}
 
-	return h.GetStatement(ctx)
+	return infos[0], nil
+}
+
+func statementKey(in *crud.Req) string {
+	extra := sha256.Sum256([]byte(*in.IOExtra))
+	return fmt.Sprintf("%v:%v:%v:%v:%v:%v:%v:%v",
+		commonpb.Prefix_PrefixCreateStatement,
+		*in.AppID,
+		*in.UserID,
+		*in.CoinTypeID,
+		in.IOType.String(),
+		in.IOSubType.String(),
+		*in.IOExtra,
+		extra,
+	)
 }
 
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
@@ -200,7 +254,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				"statement exist! AppID(%v), UserID(%v), CoinTypeID(%v), IOType(%v), IOSubType(%v), IOExtra(%v)",
 				*req.AppID, *req.UserID, *req.CoinTypeID, *req.IOType, *req.IOSubType, *req.IOExtra,
 			)
-			logger.Sugar().Infof(msg)
+			logger.Sugar().Errorf(msg)
 			continue
 		}
 		reqs = append(reqs, req)
@@ -218,6 +272,15 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if req.ID == nil {
 					req.ID = &id
 				}
+
+				key := statementKey(req)
+				if err := redis2.TryLock(key, 0); err != nil {
+					return err
+				}
+				defer func() {
+					_ = redis2.Unlock(key)
+				}()
+
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
 				}

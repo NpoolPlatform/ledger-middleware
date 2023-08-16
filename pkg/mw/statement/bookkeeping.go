@@ -24,18 +24,18 @@ type bookkeepingHandler struct {
 	*Handler
 }
 
-func statementKey(in *crud.Req) string {
-	extra := sha256.Sum256([]byte(*in.IOExtra))
-	return fmt.Sprintf("ledger-statement:%v:%v:%v:%v:%v:%v:%v",
-		*in.AppID,
-		*in.UserID,
-		*in.CoinTypeID,
-		in.IOType.String(),
-		in.IOSubType.String(),
-		*in.IOExtra,
-		extra,
-	)
-}
+// func statementKey(in *crud.Req) string {
+// 	extra := sha256.Sum256([]byte(*in.IOExtra))
+// 	return fmt.Sprintf("ledger-statement:%v:%v:%v:%v:%v:%v:%v",
+// 		*in.AppID,
+// 		*in.UserID,
+// 		*in.CoinTypeID,
+// 		in.IOType.String(),
+// 		in.IOSubType.String(),
+// 		*in.IOExtra,
+// 		extra,
+// 	)
+// }
 
 //nolint
 func (h *bookkeepingHandler) tryCreateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) (string, error) {
