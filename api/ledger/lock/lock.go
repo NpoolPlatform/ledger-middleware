@@ -32,7 +32,8 @@ func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) 
 		return &npool.LockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if err := handler.LockBalance(ctx); err != nil {
+	info, err := handler.LockBalance(ctx)
+	if err != nil {
 		logger.Sugar().Errorw(
 			"LockBalance",
 			"In", in,
@@ -41,12 +42,14 @@ func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) 
 		return &npool.LockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.LockBalanceResponse{}, nil
+	return &npool.LockBalanceResponse{
+		Info: info,
+	}, nil
 }
 
 //nolint
-func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceRequest) (
-	*npool.LockBalanceResponse,
+func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceOutRequest) (
+	*npool.LockBalanceOutResponse,
 	error,
 ) {
 	req := in.GetInfo()
@@ -63,18 +66,21 @@ func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceReques
 			"In", in,
 			"Error", err,
 		)
-		return &npool.LockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.LockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if err := handler.LockBalanceOut(ctx); err != nil {
+	info, err := handler.LockBalanceOut(ctx)
+	if err != nil {
 		logger.Sugar().Errorw(
 			"LockBalanceOut",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.LockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.LockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
 	}
-	return &npool.LockBalanceResponse{}, nil
+	return &npool.LockBalanceOutResponse{
+		Info: info,
+	}, nil
 }
 
 //nolint
@@ -90,7 +96,7 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 		lock1.WithCoinTypeID(&req.CoinTypeID, true),
 		lock1.WithUnlocked(&req.Unlocked, true),
 		lock1.WithOutcoming(&req.Outcoming, true),
-		lock1.WithIOSubType(req.IOSubType, false),
+		lock1.WithIOSubType(&req.IOSubType, true),
 		lock1.WithIOExtra(&req.IOExtra, true),
 	)
 	if err != nil {
@@ -102,7 +108,8 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 		return &npool.UnlockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if err := handler.UnlockBalance(ctx); err != nil {
+	info, err := handler.UnlockBalance(ctx)
+	if err != nil {
 		logger.Sugar().Errorw(
 			"UnLockBalance",
 			"In", in,
@@ -110,12 +117,14 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 		)
 		return &npool.UnlockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
-	return &npool.UnlockBalanceResponse{}, nil
+	return &npool.UnlockBalanceResponse{
+		Info: info,
+	}, nil
 }
 
 //nolint
-func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceRequest) (
-	*npool.UnlockBalanceResponse,
+func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceOutRequest) (
+	*npool.UnlockBalanceOutResponse,
 	error,
 ) {
 	req := in.GetInfo()
@@ -126,7 +135,7 @@ func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceRe
 		lock1.WithCoinTypeID(&req.CoinTypeID, true),
 		lock1.WithUnlocked(&req.Unlocked, true),
 		lock1.WithOutcoming(&req.Outcoming, true),
-		lock1.WithIOSubType(req.IOSubType, false),
+		lock1.WithIOSubType(&req.IOSubType, false),
 		lock1.WithIOExtra(&req.IOExtra, true),
 	)
 	if err != nil {
@@ -135,7 +144,7 @@ func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceRe
 			"In", in,
 			"Error", err,
 		)
-		return &npool.UnlockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.UnlockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
 	if err := handler.UnlockBalanceOut(ctx); err != nil {
@@ -144,8 +153,8 @@ func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceRe
 			"In", in,
 			"Error", err,
 		)
-		return &npool.UnlockBalanceResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.UnlockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.UnlockBalanceResponse{}, nil
+	return &npool.UnlockBalanceOutResponse{}, nil
 }
