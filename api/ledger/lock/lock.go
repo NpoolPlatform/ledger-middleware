@@ -1,86 +1,27 @@
-package bookkeeping
+package lock
 
 import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	bookkeeping1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/bookkeeping"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/bookkeeping"
+	lock1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/lock"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/lock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-//nolint
-func (s *Server) BookKeeping(ctx context.Context, in *npool.BookKeepingRequest) (
-	*npool.BookKeepingResponse,
-	error,
-) {
-	handler, err := bookkeeping1.NewHandler(
-		ctx,
-		bookkeeping1.WithReqs(in.GetInfos()),
-	)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"BookKeeping",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
-	}
-
-	if err := handler.BookKeeping(ctx); err != nil {
-		logger.Sugar().Errorw(
-			"BookKeeping",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
-	}
-
-	return &npool.BookKeepingResponse{}, nil
-}
-
-//nolint
-func (s *Server) BookKeepingOut(ctx context.Context, in *npool.BookKeepingRequest) (
-	*npool.BookKeepingResponse,
-	error,
-) {
-	handler, err := bookkeeping1.NewHandler(
-		ctx,
-		bookkeeping1.WithReqs(in.GetInfos()),
-	)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"BookKeepingOut",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
-	}
-
-	if err := handler.BookKeepingOut(ctx); err != nil {
-		logger.Sugar().Errorw(
-			"BookKeepingOut",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.BookKeepingResponse{}, status.Error(codes.Aborted, err.Error())
-	}
-
-	return &npool.BookKeepingResponse{}, nil
-}
 
 //nolint
 func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) (
 	*npool.LockBalanceResponse,
 	error,
 ) {
-	handler, err := bookkeeping1.NewHandler(
+	req := in.GetInfo()
+	handler, err := lock1.NewHandler(
 		ctx,
-		bookkeeping1.WithAppID(&in.AppID),
-		bookkeeping1.WithUserID(&in.UserID),
-		bookkeeping1.WithCoinTypeID(&in.CoinTypeID),
-		bookkeeping1.WithAmount(&in.Amount),
+		lock1.WithAppID(&req.AppID, true),
+		lock1.WithUserID(&req.UserID, true),
+		lock1.WithCoinTypeID(&req.CoinTypeID, true),
+		lock1.WithAmount(&req.Amount, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -108,12 +49,13 @@ func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceReques
 	*npool.LockBalanceResponse,
 	error,
 ) {
-	handler, err := bookkeeping1.NewHandler(
+	req := in.GetInfo()
+	handler, err := lock1.NewHandler(
 		ctx,
-		bookkeeping1.WithAppID(&in.AppID),
-		bookkeeping1.WithUserID(&in.UserID),
-		bookkeeping1.WithCoinTypeID(&in.CoinTypeID),
-		bookkeeping1.WithAmount(&in.Amount),
+		lock1.WithAppID(&req.AppID, true),
+		lock1.WithUserID(&req.UserID, true),
+		lock1.WithCoinTypeID(&req.CoinTypeID, true),
+		lock1.WithAmount(&req.Amount, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -140,13 +82,16 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 	*npool.UnlockBalanceResponse,
 	error,
 ) {
-	handler, err := bookkeeping1.NewHandler(
+	req := in.GetInfo()
+	handler, err := lock1.NewHandler(
 		ctx,
-		bookkeeping1.WithAppID(&in.AppID),
-		bookkeeping1.WithUserID(&in.UserID),
-		bookkeeping1.WithCoinTypeID(&in.CoinTypeID),
-		bookkeeping1.WithUnlocked(&in.Unlocked),
-		bookkeeping1.WithOutcoming(&in.Outcoming),
+		lock1.WithAppID(&req.AppID, true),
+		lock1.WithUserID(&req.UserID, true),
+		lock1.WithCoinTypeID(&req.CoinTypeID, true),
+		lock1.WithUnlocked(&req.Unlocked, true),
+		lock1.WithOutcoming(&req.Outcoming, true),
+		lock1.WithIOSubType(req.IOSubType, false),
+		lock1.WithIOExtra(&req.IOExtra, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -173,13 +118,16 @@ func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceRe
 	*npool.UnlockBalanceResponse,
 	error,
 ) {
-	handler, err := bookkeeping1.NewHandler(
+	req := in.GetInfo()
+	handler, err := lock1.NewHandler(
 		ctx,
-		bookkeeping1.WithAppID(&in.AppID),
-		bookkeeping1.WithUserID(&in.UserID),
-		bookkeeping1.WithCoinTypeID(&in.CoinTypeID),
-		bookkeeping1.WithUnlocked(&in.Unlocked),
-		bookkeeping1.WithOutcoming(&in.Outcoming),
+		lock1.WithAppID(&req.AppID, true),
+		lock1.WithUserID(&req.UserID, true),
+		lock1.WithCoinTypeID(&req.CoinTypeID, true),
+		lock1.WithUnlocked(&req.Unlocked, true),
+		lock1.WithOutcoming(&req.Outcoming, true),
+		lock1.WithIOSubType(req.IOSubType, false),
+		lock1.WithIOExtra(&req.IOExtra, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

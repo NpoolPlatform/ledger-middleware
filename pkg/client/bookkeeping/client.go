@@ -9,7 +9,6 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/servicename"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/bookkeeping"
 )
 
 func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error)) (cruder.Any, error) {

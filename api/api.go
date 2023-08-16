@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
-	bookkeeping "github.com/NpoolPlatform/ledger-middleware/api/bookkeeping"
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
+	lock "github.com/NpoolPlatform/ledger-middleware/api/ledger/lock"
 	goodledger "github.com/NpoolPlatform/ledger-middleware/api/mining/goodledger"
 	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/mining/goodstatement"
 	unsold "github.com/NpoolPlatform/ledger-middleware/api/mining/unsoldstatement"
@@ -28,7 +28,7 @@ func Register(server grpc.ServiceRegistrar) {
 	goodledger.Register(server)
 	statement.Register(server)
 	profit.Register(server)
-	bookkeeping.Register(server)
+	lock.Register(server)
 	withdraw.Register(server)
 	goodstatement.Register(server)
 	unsold.Register(server)
