@@ -18,10 +18,10 @@ func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) 
 	req := in.GetInfo()
 	handler, err := lock1.NewHandler(
 		ctx,
-		lock1.WithAppID(&req.AppID, true),
-		lock1.WithUserID(&req.UserID, true),
-		lock1.WithCoinTypeID(&req.CoinTypeID, true),
-		lock1.WithAmount(&req.Amount, true),
+		lock1.WithAppID(&req.AppID),
+		lock1.WithUserID(&req.UserID),
+		lock1.WithCoinTypeID(&req.CoinTypeID),
+		lock1.WithAmount(&req.Amount),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -48,60 +48,21 @@ func (s *Server) LockBalance(ctx context.Context, in *npool.LockBalanceRequest) 
 }
 
 //nolint
-func (s *Server) LockBalanceOut(ctx context.Context, in *npool.LockBalanceOutRequest) (
-	*npool.LockBalanceOutResponse,
-	error,
-) {
-	req := in.GetInfo()
-	handler, err := lock1.NewHandler(
-		ctx,
-		lock1.WithAppID(&req.AppID, true),
-		lock1.WithUserID(&req.UserID, true),
-		lock1.WithCoinTypeID(&req.CoinTypeID, true),
-		lock1.WithAmount(&req.Amount, true),
-	)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"LockBalanceOut",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.LockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
-	}
-
-	info, err := handler.LockBalanceOut(ctx)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"LockBalanceOut",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.LockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
-	}
-	return &npool.LockBalanceOutResponse{
-		Info: info,
-	}, nil
-}
-
-//nolint
-func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceRequest) (
+func (s *Server) UnlockBalance(ctx context.Context, in *npool.UnlockBalanceRequest) (
 	*npool.UnlockBalanceResponse,
 	error,
 ) {
 	req := in.GetInfo()
 	handler, err := lock1.NewHandler(
 		ctx,
-		lock1.WithAppID(&req.AppID, true),
-		lock1.WithUserID(&req.UserID, true),
-		lock1.WithCoinTypeID(&req.CoinTypeID, true),
-		lock1.WithUnlocked(&req.Unlocked, true),
-		lock1.WithOutcoming(&req.Outcoming, true),
-		lock1.WithIOSubType(&req.IOSubType, true),
-		lock1.WithIOExtra(&req.IOExtra, true),
+		lock1.WithAppID(&req.AppID),
+		lock1.WithUserID(&req.UserID),
+		lock1.WithCoinTypeID(&req.CoinTypeID),
+		lock1.WithAmount(&req.Amount),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UnLockBalance",
+			"UnlockBalance",
 			"In", in,
 			"Error", err,
 		)
@@ -111,7 +72,7 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 	info, err := handler.UnlockBalance(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UnLockBalance",
+			"UnlockBalance",
 			"In", in,
 			"Error", err,
 		)
@@ -123,38 +84,81 @@ func (s *Server) UnLockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 }
 
 //nolint
-func (s *Server) UnLockBalanceOut(ctx context.Context, in *npool.UnlockBalanceOutRequest) (
-	*npool.UnlockBalanceOutResponse,
+func (s *Server) SpendBalance(ctx context.Context, in *npool.SpendBalanceRequest) (
+	*npool.SpendBalanceResponse,
 	error,
 ) {
 	req := in.GetInfo()
 	handler, err := lock1.NewHandler(
 		ctx,
-		lock1.WithAppID(&req.AppID, true),
-		lock1.WithUserID(&req.UserID, true),
-		lock1.WithCoinTypeID(&req.CoinTypeID, true),
-		lock1.WithUnlocked(&req.Unlocked, true),
-		lock1.WithOutcoming(&req.Outcoming, true),
-		lock1.WithIOSubType(&req.IOSubType, false),
-		lock1.WithIOExtra(&req.IOExtra, true),
+		lock1.WithAppID(&req.AppID),
+		lock1.WithUserID(&req.UserID),
+		lock1.WithCoinTypeID(&req.CoinTypeID),
+		lock1.WithUnlocked(&req.Unlocked),
+		lock1.WithOutcoming(&req.Outcoming),
+		lock1.WithIOSubType(&req.IOSubType),
+		lock1.WithIOExtra(&req.IOExtra),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UnlockBalanceOut",
+			"SpendBalance",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.UnlockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.SpendBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if err := handler.UnlockBalanceOut(ctx); err != nil {
+	info, err := handler.UnlockBalance(ctx)
+	if err != nil {
 		logger.Sugar().Errorw(
-			"UnlockBalanceOut",
+			"SpendBalance",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.UnlockBalanceOutResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.SpendBalanceResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+	return &npool.SpendBalanceResponse{
+		Info: info,
+	}, nil
+}
+
+//nolint
+func (s *Server) UnspendBalance(ctx context.Context, in *npool.UnspendBalanceRequest) (
+	*npool.UnspendBalanceResponse,
+	error,
+) {
+	req := in.GetInfo()
+	handler, err := lock1.NewHandler(
+		ctx,
+		lock1.WithID(&req.AppID),
+		lock1.WithAppID(&req.AppID),
+		lock1.WithUserID(&req.UserID),
+		lock1.WithCoinTypeID(&req.CoinTypeID),
+		lock1.WithUnlocked(&req.Unlocked),
+		lock1.WithOutcoming(&req.Outcoming),
+		lock1.WithIOSubType(&req.IOSubType),
+		lock1.WithIOExtra(&req.IOExtra),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UnspendBalance",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UnspendBalanceResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.UnlockBalanceOutResponse{}, nil
+	info, err := handler.UnspendBalance(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UnspendBalance",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UnspendBalanceResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+
+	return &npool.UnspendBalanceResponse{
+		Info: info,
+	}, nil
 }
