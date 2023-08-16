@@ -130,7 +130,6 @@ func (s *Server) UnspendBalance(ctx context.Context, in *npool.UnspendBalanceReq
 	req := in.GetInfo()
 	handler, err := lock1.NewHandler(
 		ctx,
-		lock1.WithID(&req.AppID),
 		lock1.WithAppID(&req.AppID),
 		lock1.WithUserID(&req.UserID),
 		lock1.WithCoinTypeID(&req.CoinTypeID),
