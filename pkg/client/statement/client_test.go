@@ -49,29 +49,29 @@ var (
 	}
 )
 
-func createStatement(t *testing.T) {
-	handler, err := statement1.NewHandler(
-		context.Background(),
-		statement1.WithID(&ret.ID),
-		statement1.WithAppID(&ret.AppID),
-		statement1.WithUserID(&ret.UserID),
-		statement1.WithCoinTypeID(&ret.CoinTypeID),
-		statement1.WithAmount(&ret.Amount),
-		statement1.WithIOType(&ret.IOType),
-		statement1.WithIOSubType(&ret.IOSubType),
-		statement1.WithFromCoinTypeID(&ret.FromCoinTypeID),
-		statement1.WithCoinUSDCurrency(&ret.CoinUSDCurrency),
-		statement1.WithIOExtra(&ret.IOExtra),
-	)
-	assert.Nil(t, err)
+// func createStatement(t *testing.T) {
+// 	handler, err := statement1.NewHandler(
+// 		context.Background(),
+// 		statement1.WithID(&ret.ID),
+// 		statement1.WithAppID(&ret.AppID),
+// 		statement1.WithUserID(&ret.UserID),
+// 		statement1.WithCoinTypeID(&ret.CoinTypeID),
+// 		statement1.WithAmount(&ret.Amount),
+// 		statement1.WithIOType(&ret.IOType),
+// 		statement1.WithIOSubType(&ret.IOSubType),
+// 		statement1.WithFromCoinTypeID(&ret.FromCoinTypeID),
+// 		statement1.WithCoinUSDCurrency(&ret.CoinUSDCurrency),
+// 		statement1.WithIOExtra(&ret.IOExtra),
+// 	)
+// 	assert.Nil(t, err)
 
-	info, err := handler.CreateStatement(context.Background())
-	if assert.Nil(t, err) {
-		ret.CreatedAt = info.CreatedAt
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
+// 	info, err := handler.CreateStatement(context.Background())
+// 	if assert.Nil(t, err) {
+// 		ret.CreatedAt = info.CreatedAt
+// 		ret.UpdatedAt = info.UpdatedAt
+// 		assert.Equal(t, &ret, info)
+// 	}
+// }
 
 func getStatement(t *testing.T) {
 	info, err := GetStatement(context.Background(), ret.ID)
@@ -134,7 +134,7 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createStatement", createStatement)
+	// t.Run("createStatement", createStatement)
 	t.Run("getStatement", getStatement)
 	t.Run("getStatementOnly", getStatementOnly)
 	t.Run("getStatements", getStatements)

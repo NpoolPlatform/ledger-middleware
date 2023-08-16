@@ -28,38 +28,6 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 	return fn(_ctx, cli)
 }
 
-func CreateProfit(ctx context.Context, in *npool.ProfitReq) (*npool.Profit, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.CreateProfit(ctx, &npool.CreateProfitRequest{
-			Info: in,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail create profit: %v", err)
-		}
-		return resp.GetInfo(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fail create profit: %v", err)
-	}
-	return info.(*npool.Profit), nil
-}
-
-func CreateProfits(ctx context.Context, in []*npool.ProfitReq) ([]*npool.Profit, error) {
-	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.CreateProfits(ctx, &npool.CreateProfitsRequest{
-			Infos: in,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail create profits: %v", err)
-		}
-		return resp.GetInfos(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fail create profits: %v", err)
-	}
-	return infos.([]*npool.Profit), nil
-}
-
 func GetProfit(ctx context.Context, id string) (*npool.Profit, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetProfit(ctx, &npool.GetProfitRequest{

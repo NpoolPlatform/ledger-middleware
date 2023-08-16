@@ -27,22 +27,6 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 	return fn(_ctx, cli)
 }
 
-func CreateUnsoldStatement(ctx context.Context, in *npool.UnsoldStatementReq) (*npool.UnsoldStatement, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.CreateUnsoldStatement(ctx, &npool.CreateUnsoldStatementRequest{
-			Info: in,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail create unsold: %v", err)
-		}
-		return resp.GetInfo(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fail create unsold: %v", err)
-	}
-	return info.(*npool.UnsoldStatement), nil
-}
-
 func GetUnsoldStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.UnsoldStatement, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetUnsoldStatementOnly(ctx, &npool.GetUnsoldStatementOnlyRequest{

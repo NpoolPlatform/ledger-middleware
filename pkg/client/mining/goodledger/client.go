@@ -29,22 +29,6 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 	return fn(_ctx, cli)
 }
 
-func CreateGoodLedger(ctx context.Context, in *npool.GoodLedgerReq) (*npool.GoodLedger, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.CreateGoodLedger(ctx, &npool.CreateGoodLedgerRequest{
-			Info: in,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail create general: %v", err)
-		}
-		return resp.GetInfo(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fail create general: %v", err)
-	}
-	return info.(*npool.GoodLedger), nil
-}
-
 func GetGoodLedgerOnly(ctx context.Context, conds *npool.Conds) (*npool.GoodLedger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetGoodLedgerOnly(ctx, &npool.GetGoodLedgerOnlyRequest{
@@ -57,22 +41,6 @@ func GetGoodLedgerOnly(ctx context.Context, conds *npool.Conds) (*npool.GoodLedg
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fail get general: %v", err)
-	}
-	return info.(*npool.GoodLedger), nil
-}
-
-func AddGoodLedger(ctx context.Context, in *npool.GoodLedgerReq) (*npool.GoodLedger, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.AddGoodLedger(ctx, &npool.AddGoodLedgerRequest{
-			Info: in,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail add general: %v", err)
-		}
-		return resp.GetInfo(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fail add general: %v", err)
 	}
 	return info.(*npool.GoodLedger), nil
 }

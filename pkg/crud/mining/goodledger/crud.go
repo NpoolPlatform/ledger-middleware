@@ -22,7 +22,7 @@ type Req struct {
 	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.GoodLedgerCreate, in *Req) *ent.GoodLedgerCreate {
+func CreateSet(c *ent.GoodLedgerCreate, in *Req) (*ent.GoodLedgerCreate, error) {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -32,16 +32,37 @@ func CreateSet(c *ent.GoodLedgerCreate, in *Req) *ent.GoodLedgerCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
+
+	amount := decimal.NewFromInt(0)
 	if in.Amount != nil {
-		c.SetAmount(*in.Amount)
+		amount = amount.Add(*in.Amount)
+	}
+	toPlatform := decimal.NewFromInt(0)
+	if in.ToPlatform != nil {
+		toPlatform = toPlatform.Add(*in.ToPlatform)
+	}
+	toUser := decimal.NewFromInt(0)
+	if in.ToUser != nil {
+		toUser = toUser.Add(*in.ToUser)
+	}
+
+	if amount.Cmp(
+		toUser.Add(toPlatform),
+	) != 0 {
+		return nil, fmt.Errorf("toPlatform (%v) + toUser (%v) != amount (%v)",
+			toPlatform.String(), toUser.String(), amount.String())
+	}
+
+	if in.Amount != nil {
+		c.SetAmount(amount)
 	}
 	if in.ToPlatform != nil {
-		c.SetToPlatform(*in.ToPlatform)
+		c.SetToPlatform(toPlatform)
 	}
 	if in.ToUser != nil {
-		c.SetToUser(*in.ToUser)
+		c.SetToUser(toUser)
 	}
-	return c
+	return c, nil
 }
 
 func UpdateSet(entity *ent.GoodLedger, u *ent.GoodLedgerUpdateOne, req *Req) (*ent.GoodLedgerUpdateOne, error) {

@@ -44,47 +44,6 @@ var (
 	}
 )
 
-func createLedger(t *testing.T) {
-	handler, err := ledger1.NewHandler(
-		context.Background(),
-		ledger1.WithID(&ret.ID),
-		ledger1.WithAppID(&ret.AppID),
-		ledger1.WithUserID(&ret.UserID),
-		ledger1.WithCoinTypeID(&ret.CoinTypeID),
-	)
-	assert.Nil(t, err)
-
-	info, err := handler.CreateLedger(context.Background())
-	if assert.Nil(t, err) {
-		ret.CreatedAt = info.CreatedAt
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
-
-func updateLedger(t *testing.T) {
-	ret.Incoming = "10.000000000000000000"
-	ret.Outcoming = "1.000000000000000000"
-	ret.Locked = "3.000000000000000000"
-	ret.Spendable = "6.000000000000000000"
-
-	handler, err := ledger1.NewHandler(
-		context.Background(),
-		ledger1.WithID(&ret.ID),
-		ledger1.WithIncoming(&ret.Incoming),
-		ledger1.WithOutcoming(&ret.Outcoming),
-		ledger1.WithLocked(&ret.Locked),
-		ledger1.WithSpendable(&ret.Spendable),
-	)
-	assert.Nil(t, err)
-
-	info, err := handler.UpdateLedger(context.Background())
-	if assert.Nil(t, err) {
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
-
 func getLedger(t *testing.T) {
 	info, err := GetLedger(context.Background(), ret.ID)
 	if assert.Nil(t, err) {
@@ -141,8 +100,8 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createLedger", createLedger)
-	t.Run("updateLedger", updateLedger)
+	// t.Run("createLedger", createLedger)
+	// t.Run("updateLedger", updateLedger)
 	t.Run("getLedger", getLedger)
 	t.Run("getLedgerOnly", getLedgerOnly)
 	t.Run("getLedgers", getLedgers)

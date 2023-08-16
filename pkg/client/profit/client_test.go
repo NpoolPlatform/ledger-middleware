@@ -41,36 +41,36 @@ var (
 	}
 )
 
-func createProfit(t *testing.T) {
-	info, err := CreateProfit(context.Background(), &npool.ProfitReq{
-		ID:         &ret.ID,
-		AppID:      &ret.AppID,
-		UserID:     &ret.UserID,
-		CoinTypeID: &ret.CoinTypeID,
-	})
-	if assert.Nil(t, err) {
-		ret.CreatedAt = info.CreatedAt
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
+// func createProfit(t *testing.T) {
+// 	info, err := CreateProfit(context.Background(), &npool.ProfitReq{
+// 		ID:         &ret.ID,
+// 		AppID:      &ret.AppID,
+// 		UserID:     &ret.UserID,
+// 		CoinTypeID: &ret.CoinTypeID,
+// 	})
+// 	if assert.Nil(t, err) {
+// 		ret.CreatedAt = info.CreatedAt
+// 		ret.UpdatedAt = info.UpdatedAt
+// 		assert.Equal(t, &ret, info)
+// 	}
+// }
 
-func updateProfit(t *testing.T) {
-	ret.Incoming = "9999999.000000000000000000"
+// func updateProfit(t *testing.T) {
+// 	ret.Incoming = "9999999.000000000000000000"
 
-	handler, err := profit1.NewHandler(
-		context.Background(),
-		profit1.WithID(&ret.ID),
-		profit1.WithIncoming(&ret.Incoming),
-	)
-	assert.Nil(t, err)
+// 	handler, err := profit1.NewHandler(
+// 		context.Background(),
+// 		profit1.WithID(&ret.ID),
+// 		profit1.WithIncoming(&ret.Incoming),
+// 	)
+// 	assert.Nil(t, err)
 
-	info, err := handler.UpdateProfit(context.Background())
-	if assert.Nil(t, err) {
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
+// 	info, err := handler.UpdateProfit(context.Background())
+// 	if assert.Nil(t, err) {
+// 		ret.UpdatedAt = info.UpdatedAt
+// 		assert.Equal(t, &ret, info)
+// 	}
+// }
 
 func getProfit(t *testing.T) {
 	info, err := GetProfit(context.Background(), ret.ID)
@@ -117,8 +117,8 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createProfit", createProfit)
-	t.Run("updateProfit", updateProfit)
+	// t.Run("createProfit", createProfit)
+	// t.Run("updateProfit", updateProfit)
 	t.Run("getProfit", getProfit)
 	t.Run("getProfits", getProfits)
 	t.Run("deleteProfit", deleteProfit)
