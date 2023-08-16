@@ -20,41 +20,6 @@ type createHandler struct {
 	*Handler
 }
 
-func (h *Handler) CreateGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	h.Conds = &crud.Conds{
-		GoodID:      &cruder.Cond{Op: cruder.EQ, Val: h.GoodID},
-		CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
-		BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: h.BenefitDate},
-	}
-
-	exist, err := h.ExistGoodStatementConds(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if exist {
-		return nil, fmt.Errorf("statement exist, goodid(%v), cointypeid(%v), benefitdate(%v)", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
-	}
-
-	// id := uuid.New()
-	// if h.ID == nil {
-	// 	h.ID = &id
-	// }
-
-	// if err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-	// 	if _, err := crud.CreateSet(
-	// 		cli.GoodStatement.Create(),
-	// 		&h.Req,
-	// 	).Save(_ctx); err != nil {
-	// 		return err
-	// 	}
-	// 	return nil
-	// }); err != nil {
-	// 	return nil, err
-	// }
-
-	return h.GetGoodStatement(ctx)
-}
-
 func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := goodledgercrud.SetQueryConds(tx.GoodLedger.Query(), &goodledgercrud.Conds{
 		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: req.GoodID},
@@ -131,8 +96,8 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 }
 
 func (h *createHandler) tryCreateUnsoldStatement(req *unsoldcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	if _, err := crud.CreateSet(
-		tx.GoodStatement.Create(),
+	if _, err := unsoldcrud.CreateSet(
+		tx.UnsoldStatement.Create(),
 		req,
 	).Save(ctx); err != nil {
 		return err
@@ -233,14 +198,12 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 			if err := _fn(); err != nil {
 				return err
 			}
-			return nil
 		}
-
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return nil, nil
 }
