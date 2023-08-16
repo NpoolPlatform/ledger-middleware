@@ -82,6 +82,7 @@ type Conds struct {
 	IOExtra         *cruder.Cond
 	StartAt         *cruder.Cond
 	EndAt           *cruder.Cond
+	IDs             *cruder.Cond
 }
 
 func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
@@ -243,6 +244,18 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			q.Where(entstatement.CreatedAtLTE(endAT))
 		default:
 			return nil, fmt.Errorf("invalid end at op field %v", conds.EndAt.Op)
+		}
+	}
+	if conds.IDs != nil {
+		ids, ok := conds.IDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid ids %v", conds.IDs.Val)
+		}
+		switch conds.IDs.Op {
+		case cruder.IN:
+			q.Where(entstatement.IDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid statement op field %v", conds.IDs.Op)
 		}
 	}
 	return q, nil

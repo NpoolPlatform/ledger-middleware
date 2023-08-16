@@ -304,6 +304,15 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 		return nil, err
 	}
 
-	// Get Statements
-	return nil, nil
+	h.Conds = &crud.Conds{
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	}
+	h.Offset = 0
+	h.Limit = int32(len(ids))
+
+	infos, _, err := h.GetStatements(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return infos, nil
 }
