@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
@@ -58,7 +59,7 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 	return nil
 }
 
-func (h *createHandler) tryCreateOrAddLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
 		AppID:      &cruder.Cond{Op: cruder.EQ, Val: req.AppID},
 		UserID:     &cruder.Cond{Op: cruder.EQ, Val: req.UserID},
@@ -75,23 +76,6 @@ func (h *createHandler) tryCreateOrAddLedger(req *crud.Req, ctx context.Context,
 		return err
 	}
 
-	id := uuid.New()
-	if req.ID == nil {
-		req.ID = &id
-	}
-
-	incoming := decimal.NewFromInt(0)
-	outcoming := decimal.NewFromInt(0)
-	switch *req.IOType {
-	case basetypes.IOType_Incoming:
-		incoming = decimal.RequireFromString(req.Amount.String())
-	case basetypes.IOType_Outcoming:
-		outcoming = decimal.RequireFromString(req.Amount.String())
-	default:
-		return fmt.Errorf("invalid io type %v", *req.IOType)
-	}
-	spendable := incoming.Sub(outcoming)
-
 	// create
 	if info == nil {
 		stm, err := ledgercrud.CreateSet(
@@ -100,9 +84,9 @@ func (h *createHandler) tryCreateOrAddLedger(req *crud.Req, ctx context.Context,
 				ID:         req.ID,
 				UserID:     req.UserID,
 				CoinTypeID: h.CoinTypeID,
-				Incoming:   &incoming,
-				Outcoming:  &outcoming,
-				Spendable:  &spendable,
+				Incoming:   req.Incoming,
+				Outcoming:  req.Outcoming,
+				Spendable:  req.Spendable,
 			},
 		)
 		if err != nil {
@@ -127,9 +111,9 @@ func (h *createHandler) tryCreateOrAddLedger(req *crud.Req, ctx context.Context,
 		old,
 		tx.Ledger.UpdateOneID(info.ID),
 		&ledgercrud.Req{
-			Incoming:  &incoming,
-			Outcoming: &outcoming,
-			Spendable: &spendable,
+			Incoming:  req.Incoming,
+			Outcoming: req.Outcoming,
+			Spendable: req.Spendable,
 		},
 	)
 	if err != nil {
@@ -287,7 +271,27 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.tryCreateProfit(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryCreateOrAddLedger(req, ctx, tx); err != nil {
+
+				incoming := decimal.NewFromInt(0)
+				outcoming := decimal.NewFromInt(0)
+				switch *req.IOType {
+				case basetypes.IOType_Incoming:
+					incoming = decimal.RequireFromString(req.Amount.String())
+				case basetypes.IOType_Outcoming:
+					outcoming = decimal.RequireFromString(req.Amount.String())
+				default:
+					return fmt.Errorf("invalid io type %v", *req.IOType)
+				}
+				spendable := incoming.Sub(outcoming)
+
+				if err := handler.tryCreateOrUpdateLedger(&ledgercrud.Req{
+					AppID:      req.AppID,
+					UserID:     req.UserID,
+					CoinTypeID: req.CoinTypeID,
+					Incoming:   &incoming,
+					Outcoming:  &outcoming,
+					Spendable:  &spendable,
+				}, ctx, tx); err != nil {
 					return err
 				}
 
@@ -314,5 +318,113 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	if err != nil {
 		return nil, err
 	}
+	return infos, nil
+}
+
+func (h *createHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	now := uint32(time.Now().Unix())
+	if _, err := crud.UpdateSet(
+		tx.Statement.UpdateOneID(*req.ID),
+		&crud.Req{
+			DeletedAt: &now,
+		},
+	).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, error) {
+	ids := []uuid.UUID{}
+	for _, req := range h.Reqs {
+		if req.ID == nil {
+			return nil, fmt.Errorf("invalid id in uncrate statements")
+		}
+		ids = append(ids, *req.ID)
+	}
+
+	h.Conds = &crud.Conds{
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	}
+	h.Offset = 0
+	h.Limit = int32(len(ids))
+
+	infos, _, err := h.GetStatements(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	statementMap := map[string]*npool.Statement{}
+	for _, info := range infos {
+		statementMap[info.ID] = info
+	}
+
+	reqs := []*crud.Req{}
+	for _, req := range h.Reqs {
+		_, ok := statementMap[req.ID.String()]
+		if !ok {
+			logger.Sugar().Errorf("statement not exist, id %v", req.ID)
+			continue
+		}
+		reqs = append(reqs, req)
+	}
+
+	handler := &createHandler{
+		Handler: h,
+	}
+
+	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		for _, req := range reqs {
+			_fn := func() error {
+				key := fmt.Sprintf("ledger-uncreate-statement:%v:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID, *h.IOExtra)
+				if err := redis2.TryLock(key, 0); err != nil {
+					return err
+				}
+				defer func() {
+					_ = redis2.Unlock(key)
+				}()
+
+				if err := handler.tryDeleteStatement(req, ctx, tx); err != nil {
+					return err
+				}
+
+				if err := handler.tryCreateProfit(req, ctx, tx); err != nil {
+					return err
+				}
+
+				incoming := decimal.NewFromInt(0)
+				outcoming := decimal.NewFromInt(0)
+				switch *req.IOType {
+				case basetypes.IOType_Incoming:
+					incoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
+				case basetypes.IOType_Outcoming:
+					outcoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
+				default:
+					return fmt.Errorf("invalid io type %v", *req.IOType)
+				}
+				spendable := incoming.Sub(outcoming)
+
+				if err := handler.tryCreateOrUpdateLedger(&ledgercrud.Req{
+					AppID:      req.AppID,
+					UserID:     req.UserID,
+					CoinTypeID: req.CoinTypeID,
+					Incoming:   &incoming,
+					Outcoming:  &outcoming,
+					Spendable:  &spendable,
+				}, ctx, tx); err != nil {
+					return err
+				}
+				return nil
+			}
+			if err := _fn(); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return infos, nil
 }
