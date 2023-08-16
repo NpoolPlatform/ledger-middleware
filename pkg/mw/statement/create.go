@@ -234,7 +234,7 @@ func statementKey(in *crud.Req) string {
 }
 
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
-	// Remove duplicate record first
+	// to ensure the accuracy of the ledger, the same batch of data cannot be written repeatedly.
 	reqs := []*crud.Req{}
 	for _, req := range h.Reqs {
 		h.Conds = &crud.Conds{
