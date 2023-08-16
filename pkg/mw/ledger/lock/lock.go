@@ -21,52 +21,33 @@ type lockHandler struct {
 	*Handler
 }
 
-func (h *Handler) LockBalanceOut(ctx context.Context) error {
-	return db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		ledger1 := &ledger1.Handler{
-			Req: ledgercrud.Req{
-				AppID:      h.AppID,
-				UserID:     h.UserID,
-				CoinTypeID: h.CoinTypeID,
-			},
-			Conds: &ledgercrud.Conds{
-				AppID:      &cruder.Cond{Op: cruder.EQ, Val: h.AppID},
-				UserID:     &cruder.Cond{Op: cruder.EQ, Val: h.UserID},
-				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: h.CoinTypeID},
-			},
-		}
-		ledger, err := ledger1.GetLedgerOnly(ctx)
+func (h *Handler) LockBalanceOut(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+	locked := decimal.RequireFromString(fmt.Sprintf("-%v", h.Amount.String()))
+	spendable := h.Amount
+
+	handler := &lockHandler{
+		Handler: h,
+	}
+
+	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		info, err = handler.tryUpdateLedger(ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Spendable:  spendable,
+		}, ctx, tx)
 		if err != nil {
 			return err
 		}
-
-		if ledger != nil {
-			ledgerID, err := uuid.Parse(ledger.ID)
-			if err != nil {
-				return err
-			}
-
-			locked, err := decimal.NewFromString(fmt.Sprintf("-%v", h.Amount.String()))
-			if err != nil {
-				return err
-			}
-			ledger1 := &ledger1.Handler{
-				Req: ledgercrud.Req{
-					ID:         &ledgerID,
-					AppID:      h.AppID,
-					UserID:     h.UserID,
-					CoinTypeID: h.CoinTypeID,
-					Locked:     &locked,
-					Spendable:  h.Amount,
-				},
-			}
-			if _, err := ledger1.UpdateLedger(ctx); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return info, err
+
 }
 
 func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
