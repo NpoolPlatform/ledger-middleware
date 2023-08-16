@@ -14,7 +14,6 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -164,8 +163,7 @@ func (h *Handler) UnCreateGoodStatements(ctx context.Context) ([]*npool.GoodStat
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range reqs {
 			_fn := func() error {
-				id := uuid.New()
-				key := fmt.Sprintf("ledger-delete-goodstatement:%v:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate, id)
+				key := fmt.Sprintf("ledger-delete-goodstatement:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
 				if err := redis2.TryLock(key, 0); err != nil {
 					return err
 				}

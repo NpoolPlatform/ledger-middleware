@@ -150,7 +150,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 			_fn := func() error {
 				goodStatementID := uuid.New()
 
-				key := fmt.Sprintf("ledger-create-goodstatement:%v:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate, goodStatementID)
+				key := fmt.Sprintf("ledger-create-goodstatement:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
 				if err := redis2.TryLock(key, 0); err != nil {
 					return err
 				}
