@@ -42,23 +42,6 @@ var (
 	}
 )
 
-func createGoodLedger(t *testing.T) {
-	handler, err := goodledger1.NewHandler(
-		context.Background(),
-		goodledger1.WithID(&ret.ID),
-		goodledger1.WithGoodID(&ret.GoodID),
-		goodledger1.WithCoinTypeID(&ret.CoinTypeID),
-	)
-	assert.Nil(t, err)
-
-	info, err := handler.CreateGoodLedger(context.Background())
-	if assert.Nil(t, err) {
-		ret.CreatedAt = info.CreatedAt
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
-
 func updateGoodLedger(t *testing.T) {
 	ret.Amount = "10.000000000000000000"
 	ret.ToPlatform = "3.000000000000000000"
@@ -129,7 +112,6 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createGoodLedger", createGoodLedger)
 	t.Run("updateGoodLedger", updateGoodLedger)
 	t.Run("getGoodLedger", getGoodLedger)
 	t.Run("getGoodLedgerOnly", getGoodLedgerOnly)

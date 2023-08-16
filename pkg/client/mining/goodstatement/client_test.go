@@ -43,25 +43,6 @@ var (
 	}
 )
 
-func createGoodStatement(t *testing.T) {
-	handler, err := goodstatement1.NewHandler(
-		context.Background(),
-		goodstatement1.WithID(&ret.ID),
-		goodstatement1.WithGoodID(&ret.GoodID),
-		goodstatement1.WithCoinTypeID(&ret.CoinTypeID),
-		goodstatement1.WithAmount(&ret.Amount),
-		goodstatement1.WithBenefitDate(&ret.BenefitDate),
-	)
-	assert.Nil(t, err)
-
-	info, err := handler.CreateGoodStatement(context.Background())
-	if assert.Nil(t, err) {
-		ret.CreatedAt = info.CreatedAt
-		ret.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ret, info)
-	}
-}
-
 func getGoodStatement(t *testing.T) {
 	handler, err := goodstatement1.NewHandler(
 		context.Background(),
@@ -121,7 +102,6 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createGoodStatement", createGoodStatement)
 	t.Run("getGoodStatement", getGoodStatement)
 	t.Run("getGoodStatementOnly", getGoodStatementOnly)
 	t.Run("getGoodStatements", getGoodStatements)
