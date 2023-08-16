@@ -1,22 +1,26 @@
-package bookkeeping
+package statement
 
 import (
 	"context"
 	"fmt"
 
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/mining/goodstatement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
-type Handler struct {
+type Req struct {
 	GoodID                    *uuid.UUID
 	CoinTypeID                *uuid.UUID
 	TotalAmount               *decimal.Decimal
 	UnsoldAmount              *decimal.Decimal
 	TechniqueServiceFeeAmount *decimal.Decimal
 	BenefitDate               *uint32
-	Offset                    int32
-	Limit                     int32
+}
+
+type Handler struct {
+	*Req
+	Reqs []*Req
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -135,6 +139,76 @@ func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) er
 			return nil
 		}
 		h.BenefitDate = date
+		return nil
+	}
+}
+
+//nolint
+func WithReqs(reqs []*npool.GoodStatementsReq) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		_reqs := []*Req{}
+		for _, req := range reqs {
+			_req := &Req{}
+			if req.GoodID == nil {
+				return fmt.Errorf("invalid good id ")
+			}
+			if req.CoinTypeID == nil {
+				return fmt.Errorf("invalid coin type id ")
+			}
+			if req.TotalAmount == nil {
+				return fmt.Errorf("invalid total amount")
+			}
+			if req.UnsoldAmount == nil {
+				return fmt.Errorf("invalid unsold amount ")
+			}
+			if req.TechniqueServiceFeeAmount == nil {
+				return fmt.Errorf("invalid technique service fee amount")
+			}
+			if req.BenefitDate == nil {
+				return fmt.Errorf("invalid benefit date")
+			}
+			if req.GoodID != nil {
+				_id, err := uuid.Parse(*req.GoodID)
+				if err != nil {
+					return err
+				}
+				_req.GoodID = &_id
+			}
+			if req.CoinTypeID != nil {
+				_id, err := uuid.Parse(*req.CoinTypeID)
+				if err != nil {
+					return err
+				}
+				_req.CoinTypeID = &_id
+			}
+			if req.TotalAmount != nil {
+				amount, err := decimal.NewFromString(*req.TotalAmount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) <= 0 {
+					return fmt.Errorf("total amount is less than equal 0 %v", *req.TotalAmount)
+				}
+				_req.TotalAmount = &amount
+			}
+			if req.UnsoldAmount != nil {
+				amount, err := decimal.NewFromString(*req.TotalAmount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("unsold amount is less than 0 %v", *req.UnsoldAmount)
+				}
+				_req.UnsoldAmount = &amount
+			}
+
+			if req.BenefitDate != nil {
+				_req.BenefitDate = req.BenefitDate
+			}
+
+			_reqs = append(_reqs, _req)
+		}
+		h.Reqs = _reqs
 		return nil
 	}
 }

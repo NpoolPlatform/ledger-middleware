@@ -1,12 +1,14 @@
-package goodstatement
+package statement
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	goodledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodledger"
-	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodstatement"
+	goodstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/goodstatement"
+	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/mining/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -118,8 +120,8 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 	return nil
 }
 
-func (h *createHandler) tryCreateGoodStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	if _, err := crud.CreateSet(
+func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	if _, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		req,
 	).Save(ctx); err != nil {
@@ -128,7 +130,7 @@ func (h *createHandler) tryCreateGoodStatement(req *crud.Req, ctx context.Contex
 	return nil
 }
 
-func (h *createHandler) tryCreateUnsoldStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateUnsoldStatement(req *unsoldcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	if _, err := crud.CreateSet(
 		tx.GoodStatement.Create(),
 		req,
@@ -139,22 +141,51 @@ func (h *createHandler) tryCreateUnsoldStatement(req *crud.Req, ctx context.Cont
 }
 
 func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
-	reqs := []*crud.Req{}
+	reqs := []*Req{}
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		for _, req := range h.Reqs {
+			stm, err := goodstatementcrud.SetQueryConds(
+				tx.GoodStatement.Query(),
+				&goodstatementcrud.Conds{
+					GoodID:      &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
+					CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+					BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: *req.BenefitDate},
+				},
+			)
+			if err != nil {
+				return err
+			}
+			exist, err := stm.Exist(ctx)
+			if err != nil {
+				return err
+			}
+			if exist {
+				msg := fmt.Sprintf(
+					"good statement exist! GoodID(%v), CoinTypeID(%v),BenefitDate(%v)",
+					*req.GoodID, *req.CoinTypeID, *req.BenefitDate,
+				)
+				logger.Sugar().Errorf(msg)
+				continue
+			}
+			reqs = append(reqs, req)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	ids := []uuid.UUID{}
 	handler := &createHandler{
 		Handler: h,
 	}
 
-	db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	ids := []uuid.UUID{}
+	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range reqs {
 			_fn := func() error {
-				id := uuid.New()
-				if req.ID == nil {
-					req.ID = &id
-				}
+				goodStatementID := uuid.New()
 
-				key := fmt.Sprintf("ledger-create-goodstatement:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
+				key := fmt.Sprintf("ledger-create-goodstatement:%v:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate, goodStatementID)
 				if err := redis2.TryLock(key, 0); err != nil {
 					return err
 				}
@@ -162,20 +193,40 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 					_ = redis2.Unlock(key)
 				}()
 
-				if err := handler.tryCreateGoodStatement(req, ctx, tx); err != nil {
-					return err
-				}
-				if err := handler.tryCreateUnsoldStatement(req, ctx, tx); err != nil {
-					return err
-				}
-				if err := handler.tryCreateOrUpdateGoodLedger(&goodledgercrud.Req{
-					GoodID: req.GoodID,
-					CoinTypeID: req.CoinTypeID,
-					Amount: req.Amount,
-					ToPlatform: req.,
+				if err := handler.tryCreateGoodStatement(&goodstatementcrud.Req{
+					ID:          &goodStatementID,
+					GoodID:      req.GoodID,
+					CoinTypeID:  req.CoinTypeID,
+					BenefitDate: req.BenefitDate,
+					Amount:      req.TotalAmount,
 				}, ctx, tx); err != nil {
 					return err
 				}
+				if err := handler.tryCreateUnsoldStatement(&unsoldcrud.Req{
+					GoodID:      req.GoodID,
+					CoinTypeID:  req.CoinTypeID,
+					Amount:      req.UnsoldAmount,
+					BenefitDate: req.BenefitDate,
+				}, ctx, tx); err != nil {
+					return err
+				}
+
+				toPlatform := h.UnsoldAmount.Add(*h.TechniqueServiceFeeAmount)
+				toUser := h.TotalAmount.Sub(toPlatform)
+				if h.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
+					return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", h.TotalAmount.String(), toPlatform.String(), toUser.String())
+				}
+
+				if err := handler.tryCreateOrUpdateGoodLedger(&goodledgercrud.Req{
+					GoodID:     req.GoodID,
+					CoinTypeID: req.CoinTypeID,
+					Amount:     req.TotalAmount,
+					ToPlatform: &toPlatform,
+					ToUser:     &toUser,
+				}, ctx, tx); err != nil {
+					return err
+				}
+				ids = append(ids, goodStatementID)
 				return nil
 			}
 
@@ -187,4 +238,9 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	
+	return nil, nil
 }
