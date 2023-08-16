@@ -77,3 +77,35 @@ func GetStatements(ctx context.Context, conds *npool.Conds, offset, limit int32)
 	}
 	return infos.([]*npool.Statement), total, nil
 }
+
+func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.CreateStatements(ctx, &npool.CreateStatementsRequest{
+			Infos: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail create statements: %v", err)
+		}
+		return resp.GetInfos(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail create statements: %v", err)
+	}
+	return infos.([]*npool.Statement), nil
+}
+
+func UnCreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.UnCreateStatements(ctx, &npool.UnCreateStatementsRequest{
+			Infos: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail uncreate statements: %v", err)
+		}
+		return resp.GetInfos(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail uncreate statements: %v", err)
+	}
+	return infos.([]*npool.Statement), nil
+}
