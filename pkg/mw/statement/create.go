@@ -25,9 +25,28 @@ type createHandler struct {
 	*Handler
 }
 
-func (h *createHandler) tryCreateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
+	}
+
+	stm, err := profitcrud.SetQueryConds(
+		tx.Profit.Query(),
+		&profitcrud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: req.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: req.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: req.CoinTypeID},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	info, err := stm.Only(ctx)
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			return err
+		}
+		return err
 	}
 
 	key := fmt.Sprintf("ledger-profit:%v:%v:%v", *req.AppID, *req.UserID, *req.CoinTypeID)
@@ -38,12 +57,43 @@ func (h *createHandler) tryCreateProfit(req *crud.Req, ctx context.Context, tx *
 		_ = redis2.Unlock(key)
 	}()
 
-	if _, err := profitcrud.CreateSet(tx.Profit.Create(), &profitcrud.Req{
-		AppID:      req.AppID,
-		UserID:     req.UserID,
-		CoinTypeID: req.CoinTypeID,
-		Incoming:   req.Amount,
-	}).Save(ctx); err != nil {
+	// create
+	if info == nil {
+		stm, err := profitcrud.CreateSet(tx.Profit.Create(), &profitcrud.Req{
+			AppID:      req.AppID,
+			UserID:     req.UserID,
+			CoinTypeID: req.CoinTypeID,
+			Incoming:   req.Amount,
+		})
+		if err != nil {
+			return err
+		}
+		if _, err := stm.Save(ctx); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// update
+	old, err := tx.Profit.Get(ctx, info.ID)
+	if err != nil {
+		return err
+	}
+
+	stm1, err := profitcrud.UpdateSet(
+		old,
+		tx.Profit.UpdateOneID(info.ID),
+		&profitcrud.Req{
+			AppID:      req.AppID,
+			UserID:     req.UserID,
+			CoinTypeID: req.CoinTypeID,
+			Incoming:   req.Amount,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm1.Save(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -191,7 +241,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryCreateProfit(req, ctx, tx); err != nil {
+				if err := handler.tryCreateOrUpdateProfit(req, ctx, tx); err != nil {
 					return err
 				}
 
@@ -245,6 +295,9 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *createHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	if req.ID == nil {
+		return fmt.Errorf("invalid statement id")
+	}
 	now := uint32(time.Now().Unix())
 	if _, err := crud.UpdateSet(
 		tx.Statement.UpdateOneID(*req.ID),
@@ -311,7 +364,14 @@ func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, e
 					return err
 				}
 
-				if err := handler.tryCreateProfit(req, ctx, tx); err != nil {
+				// TODO: Cannot Be RollUp
+				profitAmount := decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
+				if err := handler.tryCreateOrUpdateProfit(&crud.Req{
+					AppID:      req.AppID,
+					UserID:     req.UserID,
+					CoinTypeID: req.CoinTypeID,
+					Amount:     &profitAmount,
+				}, ctx, tx); err != nil {
 					return err
 				}
 

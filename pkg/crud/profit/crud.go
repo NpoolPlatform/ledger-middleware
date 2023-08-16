@@ -22,7 +22,7 @@ type Req struct {
 	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.ProfitCreate, in *Req) *ent.ProfitCreate {
+func CreateSet(c *ent.ProfitCreate, in *Req) (*ent.ProfitCreate, error) {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -35,15 +35,34 @@ func CreateSet(c *ent.ProfitCreate, in *Req) *ent.ProfitCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-	c.SetIncoming(decimal.NewFromInt(0))
-	return c
+
+	incoming := decimal.NewFromInt(0)
+	if in.Incoming != nil {
+		incoming = incoming.Add(*in.Incoming)
+		if incoming.Cmp(decimal.NewFromInt(0)) < 0 {
+			return nil, fmt.Errorf("profit incoming less than 0 %v", incoming.String())
+		}
+		c.SetIncoming(*in.Incoming)
+	}
+	return c, nil
 }
 
-func UpdateSet(u *ent.ProfitUpdateOne, req *Req) *ent.ProfitUpdateOne {
+func UpdateSet(entity *ent.Profit, u *ent.ProfitUpdateOne, req *Req) (*ent.ProfitUpdateOne, error) {
+	incoming := decimal.NewFromInt(0)
+	if req.Incoming != nil {
+		incoming = incoming.Add(*req.Incoming)
+	}
+	if incoming.Add(entity.Incoming).
+		Cmp(
+			decimal.NewFromInt(0),
+		) < 0 {
+		return nil, fmt.Errorf("incoming (%v) + entity.incoming (%v) < 0",
+			incoming, entity.Incoming)
+	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
-	return u
+	return u, nil
 }
 
 type Conds struct {
