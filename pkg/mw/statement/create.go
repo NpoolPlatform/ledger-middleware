@@ -128,14 +128,7 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 	if info == nil {
 		stm, err := ledgercrud.CreateSet(
 			tx.Ledger.Create(),
-			&ledgercrud.Req{
-				ID:         req.ID,
-				UserID:     req.UserID,
-				CoinTypeID: h.CoinTypeID,
-				Incoming:   req.Incoming,
-				Outcoming:  req.Outcoming,
-				Spendable:  req.Spendable,
-			},
+			req,
 		)
 		if err != nil {
 			return err
