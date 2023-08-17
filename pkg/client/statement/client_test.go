@@ -40,50 +40,56 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit = npool.Statement{
-		ID:           "",
-		AppID:        appID,
-		UserID:       userID,
-		CoinTypeID:   coinTypeID,
-		Amount:       "100.000000000000000000",
-		IOType:       basetypes.IOType_Incoming,
-		IOTypeStr:    basetypes.IOType_Incoming.String(),
-		IOSubType:    basetypes.IOSubType_Deposit,
-		IOSubTypeStr: basetypes.IOSubType_Deposit.String(),
-		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		ID:              "",
+		AppID:           appID,
+		UserID:          userID,
+		CoinTypeID:      coinTypeID,
+		Amount:          "100",
+		IOType:          basetypes.IOType_Incoming,
+		IOTypeStr:       basetypes.IOType_Incoming.String(),
+		IOSubType:       basetypes.IOSubType_Deposit,
+		IOSubTypeStr:    basetypes.IOSubType_Deposit.String(),
+		IOExtra:         fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
+		CoinUSDCurrency: "0",
 	}
 	payment = npool.Statement{
-		ID:           "",
-		AppID:        appID,
-		UserID:       userID,
-		CoinTypeID:   coinTypeID,
-		Amount:       "10.000000000000000000",
-		IOType:       basetypes.IOType_Outcoming,
-		IOTypeStr:    basetypes.IOType_Outcoming.String(),
-		IOSubType:    basetypes.IOSubType_Payment,
-		IOSubTypeStr: basetypes.IOSubType_Payment.String(),
-		IOExtra:      fmt.Sprintf(`{"PaymentID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		ID:              "",
+		AppID:           appID,
+		UserID:          userID,
+		CoinTypeID:      coinTypeID,
+		Amount:          "10",
+		IOType:          basetypes.IOType_Outcoming,
+		IOTypeStr:       basetypes.IOType_Outcoming.String(),
+		IOSubType:       basetypes.IOSubType_Payment,
+		IOSubTypeStr:    basetypes.IOSubType_Payment.String(),
+		IOExtra:         fmt.Sprintf(`{"PaymentID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
+		CoinUSDCurrency: "0",
 	}
 	miningBenefit = npool.Statement{
-		ID:           "",
-		AppID:        appID,
-		UserID:       userID,
-		CoinTypeID:   coinTypeID,
-		Amount:       "1.000000000000000000",
-		IOType:       basetypes.IOType_Incoming,
-		IOTypeStr:    basetypes.IOType_Incoming.String(),
-		IOSubType:    basetypes.IOSubType_MiningBenefit,
-		IOSubTypeStr: basetypes.IOSubType_MiningBenefit.String(),
-		IOExtra:      fmt.Sprintf(`{"GoodID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		ID:              "",
+		AppID:           appID,
+		UserID:          userID,
+		CoinTypeID:      coinTypeID,
+		Amount:          "1",
+		IOType:          basetypes.IOType_Incoming,
+		IOTypeStr:       basetypes.IOType_Incoming.String(),
+		IOSubType:       basetypes.IOSubType_MiningBenefit,
+		IOSubTypeStr:    basetypes.IOSubType_MiningBenefit.String(),
+		IOExtra:         fmt.Sprintf(`{"GoodID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
+		CoinUSDCurrency: "0",
 	}
 	ledgerResult = ledgerpb.Ledger{
 		ID:         "",
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
-		Incoming:   "101.000000000000000000",
-		Outcoming:  "10.000000000000000000",
-		Locked:     "0.000000000000000000",
-		Spendable:  "91.000000000000000000",
+		Incoming:   "101",
+		Outcoming:  "10",
+		Locked:     "0",
+		Spendable:  "91",
 	}
 )
 
@@ -99,8 +105,8 @@ func createStatements(t *testing.T) {
 	}})
 	if assert.Nil(t, err) {
 		assert.Equal(t, 1, len(deposits))
-        deposit.CreatedAt = deposits[0].CreatedAt
-        deposit.UpdatedAt = deposits[0].UpdatedAt
+		deposit.CreatedAt = deposits[0].CreatedAt
+		deposit.UpdatedAt = deposits[0].UpdatedAt
 		deposit.ID = deposits[0].ID
 		assert.Equal(t, &deposit, deposits[0])
 	}
@@ -116,8 +122,8 @@ func createStatements(t *testing.T) {
 	}})
 	if assert.Nil(t, err) {
 		assert.Equal(t, 1, len(payments))
-        payment.CreatedAt = payments[0].CreatedAt
-        payment.UpdatedAt = payments[0].UpdatedAt
+		payment.CreatedAt = payments[0].CreatedAt
+		payment.UpdatedAt = payments[0].UpdatedAt
 		payment.ID = payments[0].ID
 		assert.Equal(t, &payment, payments[0])
 	}
@@ -133,8 +139,8 @@ func createStatements(t *testing.T) {
 	}})
 	if assert.Nil(t, err) {
 		assert.Equal(t, 1, len(benefits))
-        miningBenefit.CreatedAt = benefits[0].CreatedAt
-        miningBenefit.UpdatedAt = benefits[0].UpdatedAt
+		miningBenefit.CreatedAt = benefits[0].CreatedAt
+		miningBenefit.UpdatedAt = benefits[0].UpdatedAt
 		miningBenefit.ID = benefits[0].ID
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
@@ -201,10 +207,10 @@ var (
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
-		Incoming:   "101.000000000000000000",
-		Outcoming:  "0.000000000000000000",
-		Locked:     "0.000000000000000000",
-		Spendable:  "101.000000000000000000",
+		Incoming:   "101",
+		Outcoming:  "0",
+		Locked:     "0",
+		Spendable:  "101",
 	}
 )
 
