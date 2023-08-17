@@ -16,9 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	ledgercli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger"
+	profitcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/profit"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	profitpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/profit"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -159,6 +161,43 @@ func compareLedger(t *testing.T) {
 		assert.Equal(t, &ledgerResult, info)
 	}
 }
+
+var (
+	profit = profitpb.Profit{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Incoming:   "1",
+	}
+)
+
+func compareProfit(t *testing.T) {
+	info, err := profitcli.GetProfitOnly(context.Background(), &profitpb.Conds{
+		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
+		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
+	})
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		profit.ID = info.ID
+		profit.CreatedAt = info.CreatedAt
+		profit.UpdatedAt = info.UpdatedAt
+	}
+
+	info, err = profitcli.GetProfit(context.Background(), info.ID)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
+
+	infos, _, err := profitcli.GetProfits(context.Background(), &profitpb.Conds{
+		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
+		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
+	}, 0, 1)
+	if assert.Nil(t, err) {
+		assert.NotEqual(t, len(infos), 0)
+	}
+}
+
 func getStatement(t *testing.T) {
 	info, err := GetStatement(context.Background(), deposit.ID)
 	if assert.Nil(t, err) {
@@ -243,6 +282,7 @@ func TestClient(t *testing.T) {
 
 	t.Run("createStatements", createStatements)
 	t.Run("compareLedger", compareLedger)
+	t.Run("compareProfit", compareProfit)
 	t.Run("getStatement", getStatement)
 	t.Run("getStatementOnly", getStatementOnly)
 	t.Run("getStatements", getStatements)
