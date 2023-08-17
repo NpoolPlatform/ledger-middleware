@@ -15,8 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
-	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
+	ledgercli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
@@ -145,22 +144,13 @@ func createStatements(t *testing.T) {
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
 
-	handler, err := ledger1.NewHandler(
-		context.Background(),
-		ledger1.WithAppID(&appID),
-		ledger1.WithUserID(&userID),
-		ledger1.WithCoinTypeID(&coinTypeID),
-	)
-	assert.Nil(t, err)
-
-	handler.Conds = &ledgercrud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *handler.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *handler.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *handler.CoinTypeID},
-	}
-
-	info, err := handler.GetLedgerOnly(context.Background())
+	info, err := ledgercli.GetLedgerOnly(context.Background(), &ledgerpb.Conds{
+		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: ledgerResult.AppID},
+		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: ledgerResult.UserID},
+		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ledgerResult.CoinTypeID},
+	})
 	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
 		ledgerResult.ID = info.ID
 		assert.Equal(t, &ledgerResult, info)
 	}
@@ -228,13 +218,7 @@ func unCreateStatements(t *testing.T) {
 	assert.Nil(t, err)
 
 	ledgerResult2.ID = ledgerResult.ID
-	handler, err := ledger1.NewHandler(
-		context.Background(),
-		ledger1.WithID(&ledgerResult.ID),
-	)
-
-	assert.Nil(t, err)
-	info, err := handler.GetLedger(context.Background())
+	info, err := ledgercli.GetLedger(context.Background(), ledgerResult.ID)
 	if assert.Nil(t, err) {
 		assert.Equal(t, &ledgerResult2, info)
 	}
