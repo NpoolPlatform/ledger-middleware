@@ -247,17 +247,19 @@ var (
 )
 
 func unCreateStatements(t *testing.T) {
-	_, err := UnCreateStatements(context.Background(), []*npool.StatementReq{{
-		ID:         &payment.ID,
+	infos, err := UnCreateStatements(context.Background(), []*npool.StatementReq{{
+		ID:         &miningBenefit.ID,
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
-		Amount:     &payment.Amount,
-		IOType:     &payment.IOType,
-		IOSubType:  &payment.IOSubType,
-		IOExtra:    &payment.IOExtra,
+		Amount:     &miningBenefit.Amount,
+		IOType:     &miningBenefit.IOType,
+		IOSubType:  &miningBenefit.IOSubType,
+		IOExtra:    &miningBenefit.IOExtra,
 	}})
 	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(infos))
+	assert.Equal(t, &miningBenefit, infos[0])
 
 	ledgerResult2.ID = ledgerResult.ID
 	info, err := ledgercli.GetLedger(context.Background(), ledgerResult.ID)
@@ -278,7 +280,7 @@ func compareProfit1(t *testing.T) {
 }
 
 func tryGetStatement(t *testing.T) {
-	info, err := GetStatement(context.Background(), deposit.ID)
+	info, err := GetStatement(context.Background(), profit.ID)
 	assert.Nil(t, err)
 	assert.Nil(t, info)
 }
