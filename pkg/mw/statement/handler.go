@@ -302,16 +302,16 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				return fmt.Errorf("invalid app id ")
 			}
 			if req.UserID == nil {
-				return fmt.Errorf("invalid user id ")
+				return fmt.Errorf("invalid user id")
 			}
 			if req.CoinTypeID == nil {
-				return fmt.Errorf("invalid coin type id ")
+				return fmt.Errorf("invalid coin type id")
 			}
 			if req.Amount == nil {
-				return fmt.Errorf("invalid app id ")
+				return fmt.Errorf("invalid amount")
 			}
 			if req.IOExtra == nil {
-				return fmt.Errorf("invalid app id ")
+				return fmt.Errorf("invalid io extra")
 			}
 			if req.IOType == nil {
 				return fmt.Errorf("invalid io type")

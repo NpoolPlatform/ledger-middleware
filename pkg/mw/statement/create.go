@@ -33,9 +33,9 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 	stm, err := profitcrud.SetQueryConds(
 		tx.Profit.Query(),
 		&profitcrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: req.CoinTypeID},
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
 		},
 	)
 	if err != nil {
@@ -46,7 +46,6 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 		if !ent.IsNotFound(err) {
 			return err
 		}
-		return err
 	}
 
 	key := fmt.Sprintf("ledger-profit:%v:%v:%v", *req.AppID, *req.UserID, *req.CoinTypeID)
@@ -111,9 +110,9 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 
 func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: req.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: req.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: req.CoinTypeID},
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
 	})
 	if err != nil {
 		return err
@@ -123,7 +122,6 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 		if !ent.IsNotFound(err) {
 			return err
 		}
-		return err
 	}
 
 	// create
@@ -364,7 +362,6 @@ func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, e
 					return err
 				}
 
-				// TODO: Cannot Be RollUp
 				profitAmount := decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
 				if err := handler.tryCreateOrUpdateProfit(&crud.Req{
 					AppID:      req.AppID,

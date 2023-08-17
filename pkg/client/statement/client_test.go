@@ -99,6 +99,8 @@ func createStatements(t *testing.T) {
 	}})
 	if assert.Nil(t, err) {
 		assert.Equal(t, 1, len(deposits))
+        deposit.CreatedAt = deposits[0].CreatedAt
+        deposit.UpdatedAt = deposits[0].UpdatedAt
 		deposit.ID = deposits[0].ID
 		assert.Equal(t, &deposit, deposits[0])
 	}
@@ -114,6 +116,8 @@ func createStatements(t *testing.T) {
 	}})
 	if assert.Nil(t, err) {
 		assert.Equal(t, 1, len(payments))
+        payment.CreatedAt = payments[0].CreatedAt
+        payment.UpdatedAt = payments[0].UpdatedAt
 		payment.ID = payments[0].ID
 		assert.Equal(t, &payment, payments[0])
 	}
@@ -129,6 +133,8 @@ func createStatements(t *testing.T) {
 	}})
 	if assert.Nil(t, err) {
 		assert.Equal(t, 1, len(benefits))
+        miningBenefit.CreatedAt = benefits[0].CreatedAt
+        miningBenefit.UpdatedAt = benefits[0].UpdatedAt
 		miningBenefit.ID = benefits[0].ID
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
