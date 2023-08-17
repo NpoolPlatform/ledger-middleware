@@ -10,6 +10,36 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+
+func (s *Server) GetStatement(ctx context.Context, in *npool.GetStatementRequest) (*npool.GetStatementResponse, error) {
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithID(&in.ID),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetStatement",
+			"In", in,
+			"error", err,
+		)
+		return &npool.GetStatementResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.GetStatement(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetStatement",
+			"In", in,
+			"error", err,
+		)
+		return &npool.GetStatementResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetStatementResponse{
+		Info: info,
+	}, nil
+}
+
 func (s *Server) GetStatements(ctx context.Context, in *npool.GetStatementsRequest) (
 	*npool.GetStatementsResponse,
 	error,

@@ -154,6 +154,8 @@ func compareLedger(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult.ID = info.ID
+		ledgerResult.CreatedAt = info.CreatedAt
+		ledgerResult.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult, info)
 	}
 }
