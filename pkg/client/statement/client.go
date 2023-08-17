@@ -32,12 +32,12 @@ func GetStatement(ctx context.Context, id string) (*npool.Statement, error) {
 			ID: id,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get detail: %v", err)
+			return nil, fmt.Errorf("fail get statement: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail get detail: %v", err)
+		return nil, fmt.Errorf("fail get statement: %v", err)
 	}
 	return info.(*npool.Statement), nil
 }
@@ -48,12 +48,12 @@ func GetStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.Statement
 			Conds: conds,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get detail: %v", err)
+			return nil, fmt.Errorf("fail get statement: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail get detail: %v", err)
+		return nil, fmt.Errorf("fail get statement: %v", err)
 	}
 	return info.(*npool.Statement), nil
 }
@@ -67,13 +67,13 @@ func GetStatements(ctx context.Context, conds *npool.Conds, offset, limit int32)
 			Limit:  limit,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get details: %v", err)
+			return nil, fmt.Errorf("fail get statements: %v", err)
 		}
 		total = resp.GetTotal()
 		return resp.GetInfos(), nil
 	})
 	if err != nil {
-		return nil, 0, fmt.Errorf("fail get details: %v", err)
+		return nil, 0, fmt.Errorf("fail get statements: %v", err)
 	}
 	return infos.([]*npool.Statement), total, nil
 }

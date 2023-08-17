@@ -207,7 +207,7 @@ func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) {
 	if conds.Incoming != nil {
 		incoming, ok := conds.Incoming.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid io type %v", conds.Incoming.Val)
+			return nil, fmt.Errorf("invalid incoming %v", conds.Incoming.Val)
 		}
 		switch conds.Incoming.Op {
 		case cruder.EQ:
