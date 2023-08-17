@@ -143,7 +143,9 @@ func createStatements(t *testing.T) {
 		miningBenefit.ID = benefits[0].ID
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
+}
 
+func compareLedger(t *testing.T) {
 	info, err := ledgercli.GetLedgerOnly(context.Background(), &ledgerpb.Conds{
 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
@@ -155,7 +157,6 @@ func createStatements(t *testing.T) {
 		assert.Equal(t, &ledgerResult, info)
 	}
 }
-
 func getStatement(t *testing.T) {
 	info, err := GetStatement(context.Background(), deposit.ID)
 	if assert.Nil(t, err) {
@@ -236,6 +237,7 @@ func TestClient(t *testing.T) {
 	})
 
 	t.Run("createStatements", createStatements)
+	t.Run("compareLedger", compareLedger)
 	t.Run("getStatement", getStatement)
 	t.Run("getStatementOnly", getStatementOnly)
 	t.Run("getStatements", getStatements)
