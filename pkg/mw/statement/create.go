@@ -345,7 +345,7 @@ func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, e
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range reqs {
 			_fn := func() error {
-				key := fmt.Sprintf("ledger-uncreate-statement:%v:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID, *h.IOExtra)
+				key := fmt.Sprintf("ledger-uncreate-statement:%v:%v:%v:%v", *req.AppID, *req.UserID, *req.CoinTypeID, *req.IOExtra)
 				if err := redis2.TryLock(key, 0); err != nil {
 					return err
 				}
