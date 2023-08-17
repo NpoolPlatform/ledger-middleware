@@ -259,15 +259,17 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			}
 		}
 		if conds.IOType != nil {
+			ioType := conds.GetIOType().GetValue()
 			h.Conds.IOType = &cruder.Cond{
 				Op:  conds.GetIOType().GetOp(),
-				Val: conds.GetIOType().GetValue(),
+				Val: basetypes.IOType(ioType),
 			}
 		}
 		if conds.IOSubType != nil {
+			ioSubType := conds.GetIOSubType().GetValue()
 			h.Conds.IOSubType = &cruder.Cond{
 				Op:  conds.GetIOSubType().GetOp(),
-				Val: conds.GetIOSubType().GetValue(),
+				Val: basetypes.IOSubType(ioSubType),
 			}
 		}
 		if conds.IOExtra != nil {
