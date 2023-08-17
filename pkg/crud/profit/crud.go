@@ -62,6 +62,9 @@ func UpdateSet(entity *ent.Profit, u *ent.ProfitUpdateOne, req *Req) (*ent.Profi
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
+	if req.Incoming != nil {
+		u.SetIncoming(incoming)
+	}
 	return u, nil
 }
 
