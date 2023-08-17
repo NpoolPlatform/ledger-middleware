@@ -218,9 +218,10 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			}
 		}
 		if conds.State != nil {
+			state := conds.GetState().GetValue()
 			h.Conds.State = &cruder.Cond{
 				Op:  conds.GetState().GetOp(),
-				Val: conds.GetState().GetValue(),
+				Val: basetypes.WithdrawState(state),
 			}
 		}
 		return nil
