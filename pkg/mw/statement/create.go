@@ -247,6 +247,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 					return fmt.Errorf("invalid io type %v", *req.IOType)
 				}
 				spendable := incoming.Sub(outcoming)
+				locked := decimal.NewFromInt(0)
 
 				if err := handler.tryCreateOrUpdateLedger(&ledgercrud.Req{
 					AppID:      req.AppID,
@@ -255,6 +256,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 					Incoming:   &incoming,
 					Outcoming:  &outcoming,
 					Spendable:  &spendable,
+					Locked:     &locked,
 				}, ctx, tx); err != nil {
 					return err
 				}
