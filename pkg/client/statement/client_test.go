@@ -145,9 +145,9 @@ func createStatements(t *testing.T) {
 	}
 
 	info, err := ledgercli.GetLedgerOnly(context.Background(), &ledgerpb.Conds{
-		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: ledgerResult.AppID},
-		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: ledgerResult.UserID},
-		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ledgerResult.CoinTypeID},
+		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
+		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
 	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
