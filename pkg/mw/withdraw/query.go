@@ -27,6 +27,7 @@ func (h *queryHandler) selectWithdraw(stm *ent.WithdrawQuery) {
 		entwithdraw.FieldUserID,
 		entwithdraw.FieldCoinTypeID,
 		entwithdraw.FieldAccountID,
+		entwithdraw.FieldState,
 		entwithdraw.FieldChainTransactionID,
 		entwithdraw.FieldPlatformTransactionID,
 		entwithdraw.FieldAddress,
