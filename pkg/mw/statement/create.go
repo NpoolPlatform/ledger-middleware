@@ -363,6 +363,7 @@ func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, e
 					UserID:     req.UserID,
 					CoinTypeID: req.CoinTypeID,
 					Amount:     &profitAmount,
+					IOSubType:  req.IOSubType,
 				}, ctx, tx); err != nil {
 					return err
 				}
