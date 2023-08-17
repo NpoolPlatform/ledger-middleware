@@ -8,6 +8,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/shopspring/decimal"
 )
@@ -71,6 +72,7 @@ func (h *queryHandler) formalize() {
 			amount = _amount.String()
 		}
 		info.Amount = amount
+		info.State = basetypes.WithdrawState(basetypes.WithdrawState_value[info.StateStr])
 	}
 }
 

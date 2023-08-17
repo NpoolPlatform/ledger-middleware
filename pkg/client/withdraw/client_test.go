@@ -34,15 +34,16 @@ func init() {
 
 var (
 	ret = npool.Withdraw{
-		ID:         uuid.NewString(),
-		AppID:      uuid.NewString(),
-		UserID:     uuid.NewString(),
-		CoinTypeID: uuid.NewString(),
-		AccountID:  uuid.NewString(),
-		Address:    uuid.NewString(),
-		Amount:     "999.999999999",
-		State:      basetypes.WithdrawState_Reviewing,
-		StateStr:   basetypes.WithdrawState_Reviewing.String(),
+		ID:                    uuid.NewString(),
+		AppID:                 uuid.NewString(),
+		UserID:                uuid.NewString(),
+		CoinTypeID:            uuid.NewString(),
+		AccountID:             uuid.NewString(),
+		Address:               uuid.NewString(),
+		Amount:                "999.999999999",
+		State:                 basetypes.WithdrawState_Reviewing,
+		StateStr:              basetypes.WithdrawState_Reviewing.String(),
+		PlatformTransactionID: "00000000-0000-0000-0000-000000000000",
 	}
 )
 
