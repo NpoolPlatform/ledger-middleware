@@ -401,6 +401,8 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 			default:
 				return fmt.Errorf("invalid io type %v", *req.IOType)
 			}
+			_req.IOType = req.IOType
+			_req.IOSubType = req.IOSubType
 			_reqs = append(_reqs, _req)
 		}
 		h.Reqs = _reqs
