@@ -321,6 +321,13 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 			if req.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
+			if req.ID != nil {
+				_id, err := uuid.Parse(*req.ID)
+				if err != nil {
+					return err
+				}
+				_req.ID = &_id
+			}
 			if req.AppID != nil {
 				_id, err := uuid.Parse(*req.AppID)
 				if err != nil {
