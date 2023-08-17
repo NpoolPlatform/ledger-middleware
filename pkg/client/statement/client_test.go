@@ -239,10 +239,10 @@ var (
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
-		Incoming:   "101",
-		Outcoming:  "0",
+		Incoming:   "100",
+		Outcoming:  "10",
 		Locked:     "0",
-		Spendable:  "101",
+		Spendable:  "90",
 	}
 )
 
