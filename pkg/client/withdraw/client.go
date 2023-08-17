@@ -44,22 +44,6 @@ func CreateWithdraw(ctx context.Context, in *npool.WithdrawReq) (*npool.Withdraw
 	return info.(*npool.Withdraw), nil
 }
 
-func CreateWithdraws(ctx context.Context, in []*npool.WithdrawReq) ([]*npool.Withdraw, error) {
-	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.CreateWithdraws(ctx, &npool.CreateWithdrawsRequest{
-			Infos: in,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail create withdraws: %v", err)
-		}
-		return resp.GetInfos(), nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("fail create withdraws: %v", err)
-	}
-	return infos.([]*npool.Withdraw), nil
-}
-
 func UpdateWithdraw(ctx context.Context, in *npool.WithdrawReq) (*npool.Withdraw, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.UpdateWithdraw(ctx, &npool.UpdateWithdrawRequest{
@@ -126,36 +110,4 @@ func GetWithdraws(ctx context.Context, conds *npool.Conds, offset, limit int32) 
 		return nil, 0, fmt.Errorf("fail get withdraws: %v", err)
 	}
 	return infos.([]*npool.Withdraw), total, nil
-}
-
-func ExistWithdraw(ctx context.Context, id string) (bool, error) {
-	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.ExistWithdraw(ctx, &npool.ExistWithdrawRequest{
-			ID: id,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail get withdraw: %v", err)
-		}
-		return resp.GetInfo(), nil
-	})
-	if err != nil {
-		return false, fmt.Errorf("fail get withdraw: %v", err)
-	}
-	return infos.(bool), nil
-}
-
-func ExistWithdrawConds(ctx context.Context, conds *npool.Conds) (bool, error) {
-	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.ExistWithdrawConds(ctx, &npool.ExistWithdrawCondsRequest{
-			Conds: conds,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fail get withdraw: %v", err)
-		}
-		return resp.GetInfo(), nil
-	})
-	if err != nil {
-		return false, fmt.Errorf("fail get withdraw: %v", err)
-	}
-	return infos.(bool), nil
 }
