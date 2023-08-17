@@ -269,6 +269,20 @@ func unCreateStatements(t *testing.T) {
 	}
 }
 
+func compareProfit1(t *testing.T) {
+	info, err := profitcli.GetProfit(context.Background(), profit.ID)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		assert.Equal(t, "0", info.Incoming)
+	}
+}
+
+func tryGetStatement(t *testing.T) {
+	info, err := GetStatement(context.Background(), deposit.ID)
+	assert.Nil(t, err)
+	assert.Nil(t, info)
+}
+
 func TestClient(t *testing.T) {
 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
 		return
@@ -287,4 +301,6 @@ func TestClient(t *testing.T) {
 	t.Run("getStatementOnly", getStatementOnly)
 	t.Run("getStatements", getStatements)
 	t.Run("unCreateStatements", unCreateStatements)
+	t.Run("compareProfit1", compareProfit1)
+	t.Run("tryGetStatement", tryGetStatement)
 }
