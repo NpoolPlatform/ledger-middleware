@@ -223,6 +223,9 @@ func unCreateStatements(t *testing.T) {
 	ledgerResult2.ID = ledgerResult.ID
 	info, err := ledgercli.GetLedger(context.Background(), ledgerResult.ID)
 	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		ledgerResult2.CreatedAt = info.CreatedAt
+		ledgerResult2.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult2, info)
 	}
 }

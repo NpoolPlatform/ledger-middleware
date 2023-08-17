@@ -110,11 +110,11 @@ func UpdateSet(entity *ent.Ledger, u *ent.LedgerUpdateOne, req *Req) (*ent.Ledge
 	if locked.Add(entity.Locked).Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, fmt.Errorf("locked (%v) + locked (%v) < 0", locked, entity.Locked)
 	}
-	if incoming.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("incoming (%v) < 0", incoming)
+	if incoming.Add(entity.Incoming).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("incoming (%v) + incoming (%v) < 0", locked, entity.Incoming)
 	}
-	if outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("outcoming (%v) < 0", outcoming)
+	if outcoming.Add(entity.Outcoming).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("outcoming (%v) + outcoming (%v) < 0", locked, entity.Outcoming)
 	}
 	if spendable.Add(entity.Spendable).Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, fmt.Errorf("spendable (%v) + spendable(%v) < 0", spendable, entity.Spendable)
