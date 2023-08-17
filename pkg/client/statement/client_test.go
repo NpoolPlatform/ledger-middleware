@@ -18,6 +18,7 @@ import (
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
 	"google.golang.org/grpc"
@@ -39,6 +40,7 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit = npool.Statement{
+		ID:           "",
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -50,6 +52,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	payment = npool.Statement{
+		ID:           "",
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -61,6 +64,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"PaymentID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	miningBenefit = npool.Statement{
+		ID:           "",
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -72,6 +76,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"GoodID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	ledgerResult = ledgerpb.Ledger{
+		ID:         "",
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
@@ -83,8 +88,7 @@ var (
 )
 
 func createStatements(t *testing.T) {
-	reqs := []*npool.StatementReq{}
-	reqs = append(reqs, &npool.StatementReq{
+	deposits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -92,9 +96,14 @@ func createStatements(t *testing.T) {
 		IOType:     &deposit.IOType,
 		IOSubType:  &deposit.IOSubType,
 		IOExtra:    &deposit.IOExtra,
-	})
+	}})
+	if assert.Nil(t, err) {
+		assert.Equal(t, 1, len(deposits))
+		deposit.ID = deposits[0].ID
+		assert.Equal(t, &deposit, deposits[0])
+	}
 
-	reqs = append(reqs, &npool.StatementReq{
+	payments, err := CreateStatements(context.Background(), []*npool.StatementReq{{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -102,9 +111,14 @@ func createStatements(t *testing.T) {
 		IOType:     &payment.IOType,
 		IOSubType:  &payment.IOSubType,
 		IOExtra:    &payment.IOExtra,
-	})
+	}})
+	if assert.Nil(t, err) {
+		assert.Equal(t, 1, len(payments))
+		payment.ID = payments[0].ID
+		assert.Equal(t, &payment, payments[0])
+	}
 
-	reqs = append(reqs, &npool.StatementReq{
+	benefits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -112,11 +126,11 @@ func createStatements(t *testing.T) {
 		IOType:     &miningBenefit.IOType,
 		IOSubType:  &miningBenefit.IOSubType,
 		IOExtra:    &miningBenefit.IOExtra,
-	})
-
-	infos, err := CreateStatements(context.Background(), reqs)
+	}})
 	if assert.Nil(t, err) {
-		assert.Equal(t, 3, len(infos))
+		assert.Equal(t, 1, len(benefits))
+		miningBenefit.ID = benefits[0].ID
+		assert.Equal(t, &miningBenefit, benefits[0])
 	}
 
 	handler, err := ledger1.NewHandler(
@@ -135,59 +149,84 @@ func createStatements(t *testing.T) {
 
 	info, err := handler.GetLedgerOnly(context.Background())
 	if assert.Nil(t, err) {
+		ledgerResult.ID = info.ID
 		assert.Equal(t, &ledgerResult, info)
 	}
 }
 
-// func getStatement(t *testing.T) {
-// 	info, err := GetStatement(context.Background(), ret.ID)
-// 	if assert.Nil(t, err) {
-// 		assert.Equal(t, &ret, info)
-// 	}
-// }
+func getStatement(t *testing.T) {
+	info, err := GetStatement(context.Background(), deposit.ID)
+	if assert.Nil(t, err) {
+		assert.Equal(t, &deposit, info)
+	}
+}
 
-// func getStatementOnly(t *testing.T) {
-// 	_, err := GetStatementOnly(context.Background(), &npool.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: ret.AppID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.UserID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
-// 		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.IOType)},
-// 		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.IOSubType)},
-// 		Amount:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.Amount},
-// 		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: ret.IOExtra},
-// 	})
-// 	assert.Nil(t, err)
-// }
+func getStatementOnly(t *testing.T) {
+	info, err := GetStatementOnly(context.Background(), &npool.Conds{
+		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
+		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
+		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOType)},
+		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOSubType)},
+		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: deposit.IOExtra},
+	})
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+	}
+}
 
-// func getStatements(t *testing.T) {
-// 	infos, _, err := GetStatements(context.Background(), &npool.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: ret.AppID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.UserID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
-// 		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.IOType)},
-// 		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.IOSubType)},
-// 		Amount:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.Amount},
-// 	}, 0, 1)
-// 	if assert.Nil(t, err) {
-// 		assert.NotEqual(t, len(infos), 0)
-// 	}
-// }
+func getStatements(t *testing.T) {
+	infos, _, err := GetStatements(context.Background(), &npool.Conds{
+		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
+		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
+		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOType)},
+		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOSubType)},
+		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: deposit.IOExtra},
+	}, 0, 1)
+	if assert.Nil(t, err) {
+		assert.NotEqual(t, len(infos), 0)
+	}
+}
 
-// func deleteStatement(t *testing.T) {
-// 	handler, err := statement1.NewHandler(
-// 		context.Background(),
-// 		statement1.WithID(&ret.ID),
-// 	)
-// 	assert.Nil(t, err)
+var (
+	ledgerResult2 = ledgerpb.Ledger{
+		ID:         "",
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Incoming:   "101.000000000000000000",
+		Outcoming:  "0.000000000000000000",
+		Locked:     "0.000000000000000000",
+		Spendable:  "101.000000000000000000",
+	}
+)
 
-// 	info, err := handler.DeleteStatement(context.Background())
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, info)
+func unCreateStatements(t *testing.T) {
+	_, err := UnCreateStatements(context.Background(), []*npool.StatementReq{{
+		ID:         &payment.ID,
+		AppID:      &appID,
+		UserID:     &userID,
+		CoinTypeID: &coinTypeID,
+		Amount:     &payment.Amount,
+		IOType:     &payment.IOType,
+		IOSubType:  &payment.IOSubType,
+		IOExtra:    &payment.IOExtra,
+	}})
+	assert.Nil(t, err)
 
-// 	info, err = handler.GetStatement(context.Background())
-// 	assert.Nil(t, err)
-// 	assert.Nil(t, info)
-// }
+	ledgerResult2.ID = ledgerResult.ID
+	handler, err := ledger1.NewHandler(
+		context.Background(),
+		ledger1.WithID(&ledgerResult.ID),
+	)
+
+	assert.Nil(t, err)
+	info, err := handler.GetLedger(context.Background())
+	if assert.Nil(t, err) {
+		assert.Equal(t, &ledgerResult2, info)
+	}
+}
 
 func TestClient(t *testing.T) {
 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
@@ -201,8 +240,8 @@ func TestClient(t *testing.T) {
 	})
 
 	t.Run("createStatements", createStatements)
-	// t.Run("getStatement", getStatement)
-	// t.Run("getStatementOnly", getStatementOnly)
-	// t.Run("getStatements", getStatements)
-	// t.Run("deleteStatement", deleteStatement)
+	t.Run("getStatement", getStatement)
+	t.Run("getStatementOnly", getStatementOnly)
+	t.Run("getStatements", getStatements)
+	t.Run("unCreateStatements", unCreateStatements)
 }
