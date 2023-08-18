@@ -99,6 +99,28 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 }
 
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	stm, err := crud.SetQueryConds(
+		tx.Statement.Query(),
+		&crud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
+			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
+			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	exist, err := stm.Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("statement already exist")
+	}
+
 	if _, err := crud.CreateSet(
 		tx.Statement.Create(),
 		req,

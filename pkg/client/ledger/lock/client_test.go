@@ -1,103 +1,130 @@
 package lock
 
-// import (
-// 	"context"
-// 	"fmt"
-// 	"os"
-// 	"strconv"
-// 	"testing"
+import (
+	"context"
+	"fmt"
+	"os"
+	"strconv"
+	"testing"
 
-// 	"bou.ke/monkey"
-// 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-// 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
-// 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
-// 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-// 	"github.com/google/uuid"
-// 	"github.com/stretchr/testify/assert"
+	"bou.ke/monkey"
+	"github.com/NpoolPlatform/go-service-framework/pkg/config"
+	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 
-// 	ledgercli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger"
-// 	statementcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/statement"
-// 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-// 	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
-// 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
-// 	profitpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/profit"
-// 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
-// 	"google.golang.org/grpc"
-// 	"google.golang.org/grpc/credentials/insecure"
-// )
+	statementcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/statement"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	lockpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/lock"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
 
-// func init() {
-// 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
-// 		return
-// 	}
-// 	if err := testinit.Init(); err != nil {
-// 		fmt.Printf("cannot init test stub: %v\n", err)
-// 	}
-// }
+func init() {
+	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
+		return
+	}
+	if err := testinit.Init(); err != nil {
+		fmt.Printf("cannot init test stub: %v\n", err)
+	}
+}
 
-// var (
-// 	appID      = uuid.NewString()
-// 	userID     = uuid.NewString()
-// 	coinTypeID = uuid.NewString()
+var (
+	appID      = uuid.NewString()
+	userID     = uuid.NewString()
+	coinTypeID = uuid.NewString()
 
-// 	deposit = npool.Statement{
-// 		ID:              "",
-// 		AppID:           appID,
-// 		UserID:          userID,
-// 		CoinTypeID:      coinTypeID,
-// 		Amount:          "100",
-// 		IOType:          basetypes.IOType_Incoming,
-// 		IOTypeStr:       basetypes.IOType_Incoming.String(),
-// 		IOSubType:       basetypes.IOSubType_Deposit,
-// 		IOSubTypeStr:    basetypes.IOSubType_Deposit.String(),
-// 		IOExtra:         fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
-// 		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
-// 		CoinUSDCurrency: "0",
-// 	}
-// 	payment = npool.Statement{
-// 		ID:              "",
-// 		AppID:           appID,
-// 		UserID:          userID,
-// 		CoinTypeID:      coinTypeID,
-// 		Amount:          "10",
-// 		IOType:          basetypes.IOType_Outcoming,
-// 		IOTypeStr:       basetypes.IOType_Outcoming.String(),
-// 		IOSubType:       basetypes.IOSubType_Payment,
-// 		IOSubTypeStr:    basetypes.IOSubType_Payment.String(),
-// 		IOExtra:         fmt.Sprintf(`{"PaymentID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
-// 		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
-// 		CoinUSDCurrency: "0",
-// 	}
-// 	ledgerResult = ledgerpb.Ledger{
-// 		ID:         "",
-// 		AppID:      appID,
-// 		UserID:     userID,
-// 		CoinTypeID: coinTypeID,
-// 		Incoming:   "101",
-// 		Outcoming:  "10",
-// 		Locked:     "0",
-// 		Spendable:  "91",
-// 	}
-// )
+	deposit1 = npool.Statement{
+		AppID:           appID,
+		UserID:          userID,
+		CoinTypeID:      coinTypeID,
+		Amount:          "100",
+		IOType:          basetypes.IOType_Incoming,
+		IOTypeStr:       basetypes.IOType_Incoming.String(),
+		IOSubType:       basetypes.IOSubType_Deposit,
+		IOSubTypeStr:    basetypes.IOSubType_Deposit.String(),
+		IOExtra:         fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
+		CoinUSDCurrency: "0",
+	}
 
-// func createStatements(t *testing.T) {
-// 	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{{
-// 		AppID:      &appID,
-// 		UserID:     &userID,
-// 		CoinTypeID: &coinTypeID,
-// 		Amount:     &deposit.Amount,
-// 		IOType:     &deposit.IOType,
-// 		IOSubType:  &deposit.IOSubType,
-// 		IOExtra:    &deposit.IOExtra,
-// 	}})
-// 	if assert.Nil(t, err) {
-// 		assert.Equal(t, 1, len(deposits))
-// 		deposit.CreatedAt = deposits[0].CreatedAt
-// 		deposit.UpdatedAt = deposits[0].UpdatedAt
-// 		deposit.ID = deposits[0].ID
-// 		assert.Equal(t, &deposit, deposits[0])
-// 	}
-// }
+	deposit2 = npool.Statement{
+		AppID:           appID,
+		UserID:          userID,
+		CoinTypeID:      coinTypeID,
+		Amount:          "50",
+		IOType:          basetypes.IOType_Incoming,
+		IOTypeStr:       basetypes.IOType_Incoming.String(),
+		IOSubType:       basetypes.IOSubType_Deposit,
+		IOSubTypeStr:    basetypes.IOSubType_Deposit.String(),
+		IOExtra:         fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
+		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
+		CoinUSDCurrency: "0",
+	}
+
+	req = lockpb.BalanceReq{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Amount:     "10",
+	}
+
+	ledgerResult1 = ledgerpb.Ledger{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Incoming:   "150",
+		Outcoming:  "0",
+		Locked:     "10",
+		Spendable:  "140",
+	}
+
+	ledgerResult2 = ledgerpb.Ledger{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Incoming:   "150",
+		Outcoming:  "0",
+		Locked:     "0",
+		Spendable:  "150",
+	}
+)
+
+func createStatements(t *testing.T) {
+	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
+		{
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit1.Amount,
+			IOType:     &deposit1.IOType,
+			IOSubType:  &deposit1.IOSubType,
+			IOExtra:    &deposit1.IOExtra,
+		}, {
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit2.Amount,
+			IOType:     &deposit2.IOType,
+			IOSubType:  &deposit2.IOSubType,
+			IOExtra:    &deposit2.IOExtra,
+		},
+		{
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit2.Amount,
+			IOType:     &deposit2.IOType,
+			IOSubType:  &deposit2.IOSubType,
+			IOExtra:    &deposit2.IOExtra,
+		}})
+	if assert.Nil(t, err) {
+		assert.Equal(t, 2, len(deposits)) // the same batch of data cannot be written repeatedly.
+	}
+}
 
 // func compareLedger(t *testing.T) {
 // 	info, err := ledgercli.GetLedgerOnly(context.Background(), &ledgerpb.Conds{
@@ -113,15 +140,6 @@ package lock
 // 		assert.Equal(t, &ledgerResult, info)
 // 	}
 // }
-
-// var (
-// 	profit = profitpb.Profit{
-// 		AppID:      appID,
-// 		UserID:     userID,
-// 		CoinTypeID: coinTypeID,
-// 		Incoming:   "1",
-// 	}
-// )
 
 // func compareProfit(t *testing.T) {
 // 	info, err := profitcli.GetProfitOnly(context.Background(), &profitpb.Conds{
@@ -185,58 +203,22 @@ package lock
 // 	}
 // }
 
-// var (
-// 	ledgerResult2 = ledgerpb.Ledger{
-// 		ID:         "",
-// 		AppID:      appID,
-// 		UserID:     userID,
-// 		CoinTypeID: coinTypeID,
-// 		Incoming:   "101",
-// 		Outcoming:  "0",
-// 		Locked:     "0",
-// 		Spendable:  "101",
-// 	}
-// )
+func TestClient(t *testing.T) {
+	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
+		return
+	}
 
-// func unCreateStatements(t *testing.T) {
-// 	_, err := UnCreateStatements(context.Background(), []*npool.StatementReq{{
-// 		ID:         &payment.ID,
-// 		AppID:      &appID,
-// 		UserID:     &userID,
-// 		CoinTypeID: &coinTypeID,
-// 		Amount:     &payment.Amount,
-// 		IOType:     &payment.IOType,
-// 		IOSubType:  &payment.IOSubType,
-// 		IOExtra:    &payment.IOExtra,
-// 	}})
-// 	assert.Nil(t, err)
+	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
 
-// 	ledgerResult2.ID = ledgerResult.ID
-// 	info, err := ledgercli.GetLedger(context.Background(), ledgerResult.ID)
-// 	if assert.Nil(t, err) {
-// 		assert.NotNil(t, info)
-// 		ledgerResult2.CreatedAt = info.CreatedAt
-// 		ledgerResult2.UpdatedAt = info.UpdatedAt
-// 		assert.Equal(t, &ledgerResult2, info)
-// 	}
-// }
+	monkey.Patch(grpc2.GetGRPCConn, func(service string, tags ...string) (*grpc.ClientConn, error) {
+		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	})
 
-// func TestClient(t *testing.T) {
-// 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
-// 		return
-// 	}
-
-// 	gport := config.GetIntValueWithNameSpace("", config.KeyGRPCPort)
-
-// 	monkey.Patch(grpc2.GetGRPCConn, func(service string, tags ...string) (*grpc.ClientConn, error) {
-// 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
-// 	})
-
-// 	t.Run("createStatements", createStatements)
-// 	t.Run("compareLedger", compareLedger)
-// 	t.Run("compareProfit", compareProfit)
-// 	t.Run("getStatement", getStatement)
-// 	t.Run("getStatementOnly", getStatementOnly)
-// 	t.Run("getStatements", getStatements)
-// 	t.Run("unCreateStatements", unCreateStatements)
-// }
+	t.Run("createStatements", createStatements)
+	// t.Run("compareLedger", compareLedger)
+	// t.Run("compareProfit", compareProfit)
+	// t.Run("getStatement", getStatement)
+	// t.Run("getStatementOnly", getStatementOnly)
+	// t.Run("getStatements", getStatements)
+	// t.Run("unCreateStatements", unCreateStatements)
+}
