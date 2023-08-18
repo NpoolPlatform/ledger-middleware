@@ -42,7 +42,7 @@ func CreateSet(c *ent.ProfitCreate, in *Req) (*ent.ProfitCreate, error) {
 		if incoming.Cmp(decimal.NewFromInt(0)) < 0 {
 			return nil, fmt.Errorf("profit incoming less than 0 %v", incoming.String())
 		}
-		c.SetIncoming(*in.Incoming)
+		c.SetIncoming(incoming)
 	}
 	return c, nil
 }
@@ -63,6 +63,7 @@ func UpdateSet(entity *ent.Profit, u *ent.ProfitUpdateOne, req *Req) (*ent.Profi
 		u.SetDeletedAt(*req.DeletedAt)
 	}
 	if req.Incoming != nil {
+        incoming = incoming.Add(entity.Incoming)
 		u.SetIncoming(incoming)
 	}
 	return u, nil
