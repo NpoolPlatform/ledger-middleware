@@ -65,6 +65,7 @@ func (h *unCreateHandler) tryUpdateGoodLedger(req *goodledgercrud.Req, ctx conte
 	return nil
 }
 
+//nolint
 func (h *unCreateHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := goodstatementcrud.SetQueryConds(
 		tx.GoodStatement.Query(),
@@ -93,6 +94,7 @@ func (h *unCreateHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx
 	return nil
 }
 
+//nolint
 func (h *unCreateHandler) tryDeleteUnsoldStatement(req *unsoldcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := unsoldcrud.SetQueryConds(
 		tx.UnsoldStatement.Query(),

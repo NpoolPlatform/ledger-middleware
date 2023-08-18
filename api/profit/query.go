@@ -74,7 +74,6 @@ func (s *Server) GetProfit(ctx context.Context, in *npool.GetProfitRequest) (*np
 	}, nil
 }
 
-
 func (s *Server) GetProfitOnly(ctx context.Context, in *npool.GetProfitOnlyRequest) (
 	*npool.GetProfitOnlyResponse,
 	error,

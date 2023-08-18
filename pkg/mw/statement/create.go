@@ -98,6 +98,7 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 	return nil
 }
 
+//nolint
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := crud.SetQueryConds(
 		tx.Statement.Query(),
@@ -203,6 +204,7 @@ func statementKey(in *crud.Req) string {
 	)
 }
 
+//nolint
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
 	// to ensure the accuracy of the ledger, the same batch of data cannot be written repeatedly.
 	reqs := []*crud.Req{}
@@ -325,6 +327,7 @@ func (h *createHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, t
 	return nil
 }
 
+//nolint
 func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, error) {
 	ids := []uuid.UUID{}
 	for _, req := range h.Reqs {

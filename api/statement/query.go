@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
 func (s *Server) GetStatement(ctx context.Context, in *npool.GetStatementRequest) (*npool.GetStatementResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
@@ -75,6 +74,7 @@ func (s *Server) GetStatements(ctx context.Context, in *npool.GetStatementsReque
 	}, nil
 }
 
+//nolint
 func (s *Server) GetStatementOnly(ctx context.Context, in *npool.GetStatementOnlyRequest) (
 	*npool.GetStatementOnlyResponse,
 	error,

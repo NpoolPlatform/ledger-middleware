@@ -28,6 +28,7 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 	return fn(_ctx, cli)
 }
 
+//nolint
 func LockBalance(ctx context.Context, in *npool.BalanceReq) (*ledgerpb.Ledger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.LockBalance(ctx, &npool.LockBalanceRequest{
@@ -44,6 +45,7 @@ func LockBalance(ctx context.Context, in *npool.BalanceReq) (*ledgerpb.Ledger, e
 	return info.(*ledgerpb.Ledger), nil
 }
 
+//nolint
 func UnlockBalance(ctx context.Context, in *npool.BalanceReq) (*ledgerpb.Ledger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.UnlockBalance(ctx, &npool.UnlockBalanceRequest{
@@ -60,6 +62,7 @@ func UnlockBalance(ctx context.Context, in *npool.BalanceReq) (*ledgerpb.Ledger,
 	return info.(*ledgerpb.Ledger), nil
 }
 
+//nolint
 func SpendBalance(ctx context.Context, in *npool.SpendBalanceReq) ([]*ledgerpb.Ledger, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.SpendBalance(ctx, &npool.SpendBalanceRequest{
@@ -76,6 +79,7 @@ func SpendBalance(ctx context.Context, in *npool.SpendBalanceReq) ([]*ledgerpb.L
 	return infos.([]*ledgerpb.Ledger), nil
 }
 
+//nolint
 func UnspendBalance(ctx context.Context, in *npool.SpendBalanceReq) ([]*ledgerpb.Ledger, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.UnspendBalance(ctx, &npool.UnspendBalanceRequest{

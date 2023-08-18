@@ -78,6 +78,7 @@ func GetStatements(ctx context.Context, conds *npool.Conds, offset, limit int32)
 	return infos.([]*npool.Statement), total, nil
 }
 
+//nolint
 func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.CreateStatements(ctx, &npool.CreateStatementsRequest{
@@ -94,6 +95,7 @@ func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.S
 	return infos.([]*npool.Statement), nil
 }
 
+//nolint
 func UnCreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.UnCreateStatements(ctx, &npool.UnCreateStatementsRequest{

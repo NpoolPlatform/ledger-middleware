@@ -186,5 +186,4 @@ func TestClient(t *testing.T) {
 	t.Run("createStatements", createStatements)
 	t.Run("lockBalance", lockBalance)
 	t.Run("unlockBalance", unlockBalance)
-
 }

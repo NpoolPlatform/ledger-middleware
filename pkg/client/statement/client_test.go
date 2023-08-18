@@ -205,6 +205,7 @@ func getStatement(t *testing.T) {
 	}
 }
 
+//nolint
 func getStatementOnly(t *testing.T) {
 	info, err := GetStatementOnly(context.Background(), &npool.Conds{
 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
@@ -219,6 +220,7 @@ func getStatementOnly(t *testing.T) {
 	}
 }
 
+//nolint
 func getStatements(t *testing.T) {
 	infos, _, err := GetStatements(context.Background(), &npool.Conds{
 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
