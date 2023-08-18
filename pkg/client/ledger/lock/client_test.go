@@ -10,15 +10,14 @@ import (
 	"bou.ke/monkey"
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
-	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-
 	statementcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/statement"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	lockpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/lock"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/statement"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -93,8 +92,8 @@ var (
 	}
 )
 
-func createStatements(t *testing.T) {
-	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
+func insertSameDataTwice(t *testing.T) {
+	_, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
 		{
 			AppID:      &appID,
 			UserID:     &userID,
@@ -120,88 +119,57 @@ func createStatements(t *testing.T) {
 			IOType:     &deposit2.IOType,
 			IOSubType:  &deposit2.IOSubType,
 			IOExtra:    &deposit2.IOExtra,
-		}})
+		},
+	})
+	assert.NotNil(t, err) // the same batch of data cannot be written repeatedly.
+}
+
+func createStatements(t *testing.T) {
+	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
+		{
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit1.Amount,
+			IOType:     &deposit1.IOType,
+			IOSubType:  &deposit1.IOSubType,
+			IOExtra:    &deposit1.IOExtra,
+		}, {
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit2.Amount,
+			IOType:     &deposit2.IOType,
+			IOSubType:  &deposit2.IOSubType,
+			IOExtra:    &deposit2.IOExtra,
+		},
+	})
 	if assert.Nil(t, err) {
-		assert.Equal(t, 2, len(deposits)) // the same batch of data cannot be written repeatedly.
+		assert.Equal(t, 2, len(deposits))
 	}
 }
 
-// func compareLedger(t *testing.T) {
-// 	info, err := ledgercli.GetLedgerOnly(context.Background(), &ledgerpb.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-// 	})
-// 	if assert.Nil(t, err) {
-// 		assert.NotNil(t, info)
-// 		ledgerResult.ID = info.ID
-// 		ledgerResult.CreatedAt = info.CreatedAt
-// 		ledgerResult.UpdatedAt = info.UpdatedAt
-// 		assert.Equal(t, &ledgerResult, info)
-// 	}
-// }
+func lockBalance(t *testing.T) {
+	info, err := LockBalance(context.Background(), &req)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		ledgerResult1.ID = info.ID
+		ledgerResult1.CreatedAt = info.CreatedAt
+		ledgerResult1.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult1, info)
+	}
+}
 
-// func compareProfit(t *testing.T) {
-// 	info, err := profitcli.GetProfitOnly(context.Background(), &profitpb.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-// 	})
-// 	if assert.Nil(t, err) {
-// 		assert.NotNil(t, info)
-// 		profit.ID = info.ID
-// 		profit.CreatedAt = info.CreatedAt
-// 		profit.UpdatedAt = info.UpdatedAt
-// 	}
-
-// 	info, err = profitcli.GetProfit(context.Background(), info.ID)
-// 	assert.Nil(t, err)
-// 	assert.NotNil(t, info)
-
-// 	infos, _, err := profitcli.GetProfits(context.Background(), &profitpb.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-// 	}, 0, 1)
-// 	if assert.Nil(t, err) {
-// 		assert.NotEqual(t, len(infos), 0)
-// 	}
-// }
-
-// func getStatement(t *testing.T) {
-// 	info, err := GetStatement(context.Background(), deposit.ID)
-// 	if assert.Nil(t, err) {
-// 		assert.Equal(t, &deposit, info)
-// 	}
-// }
-
-// func getStatementOnly(t *testing.T) {
-// 	info, err := GetStatementOnly(context.Background(), &npool.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-// 		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOType)},
-// 		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOSubType)},
-// 		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: deposit.IOExtra},
-// 	})
-// 	if assert.Nil(t, err) {
-// 		assert.NotNil(t, info)
-// 	}
-// }
-
-// func getStatements(t *testing.T) {
-// 	infos, _, err := GetStatements(context.Background(), &npool.Conds{
-// 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-// 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
-// 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-// 		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOType)},
-// 		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOSubType)},
-// 		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: deposit.IOExtra},
-// 	}, 0, 1)
-// 	if assert.Nil(t, err) {
-// 		assert.NotEqual(t, len(infos), 0)
-// 	}
-// }
+func unlockBalance(t *testing.T) {
+	info, err := UnlockBalance(context.Background(), &req)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		ledgerResult2.ID = info.ID
+		ledgerResult2.CreatedAt = info.CreatedAt
+		ledgerResult2.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult2, info)
+	}
+}
 
 func TestClient(t *testing.T) {
 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
@@ -214,11 +182,9 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
+	t.Run("insertSameDataTwice", insertSameDataTwice)
 	t.Run("createStatements", createStatements)
-	// t.Run("compareLedger", compareLedger)
-	// t.Run("compareProfit", compareProfit)
-	// t.Run("getStatement", getStatement)
-	// t.Run("getStatementOnly", getStatementOnly)
-	// t.Run("getStatements", getStatements)
-	// t.Run("unCreateStatements", unCreateStatements)
+	t.Run("lockBalance", lockBalance)
+	t.Run("unlockBalance", unlockBalance)
+
 }
