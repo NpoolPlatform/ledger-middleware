@@ -153,10 +153,10 @@ func lockBalance(t *testing.T) {
 	info, err := LockBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
-		ledgerResult1.ID = info.ID
-		ledgerResult1.CreatedAt = info.CreatedAt
-		ledgerResult1.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ledgerResult1, info)
+		ledgerResult2.ID = info.ID
+		ledgerResult2.CreatedAt = info.CreatedAt
+		ledgerResult2.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult2, info)
 	}
 }
 
@@ -164,10 +164,10 @@ func unlockBalance(t *testing.T) {
 	info, err := UnlockBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
-		ledgerResult2.ID = info.ID
-		ledgerResult2.CreatedAt = info.CreatedAt
-		ledgerResult2.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ledgerResult2, info)
+		ledgerResult1.ID = info.ID
+		ledgerResult1.CreatedAt = info.CreatedAt
+		ledgerResult1.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult1, info)
 	}
 }
 

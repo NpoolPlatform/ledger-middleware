@@ -23,9 +23,9 @@ type lockHandler struct {
 
 func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
 	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: req.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: req.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: req.CoinTypeID},
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
 	})
 	if err != nil {
 		return nil, err
@@ -113,9 +113,6 @@ func (h *Handler) LockBalance(ctx context.Context) (info *ledgerpb.Ledger, err e
 	locked := h.Amount
 	spendable := decimal.RequireFromString(fmt.Sprintf("-%v", h.Amount.String()))
 
-	handler := &lockHandler{
-		Handler: h,
-	}
 	key := fmt.Sprintf("ledger-lock-balance:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return nil, err
@@ -124,6 +121,9 @@ func (h *Handler) LockBalance(ctx context.Context) (info *ledgerpb.Ledger, err e
 		_ = redis2.Unlock(key)
 	}()
 
+	handler := &lockHandler{
+		Handler: h,
+	}
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
 			AppID:      h.AppID,
