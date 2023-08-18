@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
@@ -381,6 +382,13 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 					return fmt.Errorf("io extra is invalid json str %v", *req.IOExtra)
 				}
 				_req.IOExtra = req.IOExtra
+			}
+			if req.CreatedAt != nil {
+				now := uint32(time.Now().Unix())
+				if *req.CreatedAt < now {
+					return fmt.Errorf("invalid created at")
+				}
+				_req.CreatedAt = req.CreatedAt
 			}
 			if req.IOType == nil || req.IOSubType == nil {
 				return fmt.Errorf("invalid io type or io subtype")

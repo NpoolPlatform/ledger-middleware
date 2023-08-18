@@ -59,6 +59,9 @@ func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
 	if in.IOExtra != nil {
 		c.SetIoExtra(*in.IOExtra)
 	}
+	if in.CreatedAt != nil {
+		c.SetCreatedAt(*in.CreatedAt)
+	}
 	return c
 }
 
