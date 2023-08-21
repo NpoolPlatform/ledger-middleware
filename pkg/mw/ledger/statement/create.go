@@ -2,7 +2,6 @@ package statement
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -121,7 +120,18 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 		return fmt.Errorf("statement already exist")
 	}
 
-	key := statementKey(req)
+	key := fmt.Sprintf("%v:%v:%v:%v",
+		commonpb.Prefix_PrefixCreateLedgerStatement,
+		*h.AppID,
+		*h.UserID,
+		*h.CoinTypeID,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
@@ -208,20 +218,6 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 	}
 
 	return nil
-}
-
-func statementKey(in *crud.Req) string {
-	extra := sha256.Sum256([]byte(*in.IOExtra))
-	return fmt.Sprintf("%v:%v:%v:%v:%v:%v:%v:%v",
-		commonpb.Prefix_PrefixCreateLedger,
-		*in.AppID,
-		*in.UserID,
-		*in.CoinTypeID,
-		in.IOType.String(),
-		in.IOSubType.String(),
-		*in.IOExtra,
-		extra,
-	)
 }
 
 //nolint
