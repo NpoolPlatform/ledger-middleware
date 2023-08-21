@@ -1,7 +1,7 @@
-package goodstatement
+package statement
 
 import (
-	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
+	goodstatement "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 
 	"google.golang.org/grpc"
 )

@@ -193,7 +193,7 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 func statementKey(in *crud.Req) string {
 	extra := sha256.Sum256([]byte(*in.IOExtra))
 	return fmt.Sprintf("%v:%v:%v:%v:%v:%v:%v:%v",
-		commonpb.Prefix_PrefixCreateStatement,
+		commonpb.Prefix_PrefixCreateLedger,
 		*in.AppID,
 		*in.UserID,
 		*in.CoinTypeID,

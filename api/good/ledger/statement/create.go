@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
+	goodstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement/statement"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,9 +14,9 @@ func (s *Server) CreateGoodStatements(ctx context.Context, in *npool.CreateGoodS
 	*npool.CreateGoodStatementsResponse,
 	error,
 ) {
-	handler, err := statement1.NewHandler(
+	handler, err := goodstatement1.NewHandler(
 		ctx,
-		statement1.WithReqs(in.GetInfos()),
+		goodstatement1.WithReqs(in.GetInfos()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -3,7 +3,6 @@ package lock
 import (
 	"context"
 	"fmt"
-	"time"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
@@ -19,6 +18,53 @@ import (
 
 type lockHandler struct {
 	*Handler
+}
+
+func (h *lockHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
+	ioType := basetypes.IOType_Outcoming
+
+	if _, err := statementcrud.CreateSet(
+		tx.Statement.Create(),
+		&statementcrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  h.IOSubType,
+			Amount:     h.Outcoming,
+			IOExtra:    h.IOExtra,
+		},
+	).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) error {
+	ioType := basetypes.IOType_Outcoming
+	stm, err := statementcrud.SetQueryConds(
+		tx.Statement.Query(),
+		&statementcrud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
+			IOType:     &cruder.Cond{Op: cruder.EQ, Val: ioType},
+			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
+			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	exist, err := stm.Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("statement already exist")
+	}
+
+	return nil
 }
 
 func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
@@ -72,10 +118,14 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 	return handler.GetLedger(ctx)
 }
 
-func (h *Handler) UnlockBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+		return nil, fmt.Errorf("nothing todo")
+	}
 	// TODO: LockBalanceOut Can Only Be Called Once
-	locked := decimal.RequireFromString(fmt.Sprintf("-%v", h.Amount.String()))
-	spendable := h.Amount
+	spendable := h.Unlocked.Sub(*h.Outcoming)
+	unlocked := decimal.RequireFromString(h.Unlocked.String())
+	outcoming := h.Outcoming
 
 	handler := &lockHandler{
 		Handler: h,
@@ -90,14 +140,25 @@ func (h *Handler) UnlockBalance(ctx context.Context) (info *ledgerpb.Ledger, err
 	}()
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		if err := handler.tryGetStatement(ctx, tx); err != nil {
+			return err
+		}
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,
 			CoinTypeID: h.CoinTypeID,
-			Locked:     &locked,
-			Spendable:  spendable,
+			Locked:     &unlocked,
+			Spendable:  &spendable,
+			Outcoming:  outcoming,
 		}, ctx, tx)
 		if err != nil {
+			return err
+		}
+
+		if h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+			return nil
+		}
+		if err := handler.tryCreateStatement(ctx, tx); err != nil {
 			return err
 		}
 		return nil
@@ -109,9 +170,9 @@ func (h *Handler) UnlockBalance(ctx context.Context) (info *ledgerpb.Ledger, err
 	return info, err
 }
 
-func (h *Handler) LockBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	locked := h.Amount
-	spendable := decimal.RequireFromString(fmt.Sprintf("-%v", h.Amount.String()))
+func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+	locked := h.Locked
+	spendable := decimal.RequireFromString(fmt.Sprintf("-%v", h.Locked.String()))
 
 	key := fmt.Sprintf("ledger-lock-balance:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -142,61 +203,4 @@ func (h *Handler) LockBalance(ctx context.Context) (info *ledgerpb.Ledger, err e
 	}
 
 	return info, err
-}
-
-func (h *lockHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
-	ioType := basetypes.IOType_Outcoming
-
-	if _, err := statementcrud.CreateSet(
-		tx.Statement.Create(),
-		&statementcrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			IOType:     &ioType,
-			IOSubType:  h.IOSubType,
-			Amount:     h.Outcoming,
-			IOExtra:    h.IOExtra,
-		},
-	).Save(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (h *lockHandler) tryDeleteStatement(ctx context.Context, tx *ent.Tx) error {
-	ioType := basetypes.IOType_Outcoming
-
-	stm, err := statementcrud.SetQueryConds(
-		tx.Statement.Query(),
-		&statementcrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
-			IOType:     &cruder.Cond{Op: cruder.EQ, Val: ioType},
-			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
-			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
-		},
-	)
-	if err != nil {
-		return err
-	}
-	info, err := stm.Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("statement not found")
-		}
-		return err
-	}
-
-	now := uint32(time.Now().Unix())
-	if _, err := statementcrud.UpdateSet(
-		tx.Statement.UpdateOneID(info.ID),
-		&statementcrud.Req{
-			DeletedAt: &now,
-		},
-	).Save(ctx); err != nil {
-		return err
-	}
-	return nil
 }
