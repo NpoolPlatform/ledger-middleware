@@ -14,7 +14,6 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
-	lockpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -66,7 +65,7 @@ var (
 
 	locked    = "10"
 	outcoming = "0"
-	req       = lockpb.LedgerReq{
+	req       = ledgerpb.LedgerReq{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
