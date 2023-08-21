@@ -48,16 +48,15 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 		}
 	}
 
-	key := fmt.Sprintf("ledger-profit:%v:%v:%v", *req.AppID, *req.UserID, *req.CoinTypeID)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-
 	// create
 	if info == nil {
+		key := fmt.Sprintf("%v:%v:%v:%v", commonpb.Prefix_PrefixCreateLedgerProfit, *req.AppID, *req.UserID, *req.CoinTypeID)
+		if err := redis2.TryLock(key, 0); err != nil {
+			return err
+		}
+		defer func() {
+			_ = redis2.Unlock(key)
+		}()
 		stm, err := profitcrud.CreateSet(tx.Profit.Create(), &profitcrud.Req{
 			AppID:      req.AppID,
 			UserID:     req.UserID,
@@ -122,6 +121,14 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 		return fmt.Errorf("statement already exist")
 	}
 
+	key := statementKey(req)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	if _, err := crud.CreateSet(
 		tx.Statement.Create(),
 		req,
@@ -149,6 +156,19 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 
 	// create
 	if info == nil {
+		key := fmt.Sprintf("%v:%v:%v:%v",
+			commonpb.Prefix_PrefixCreateLedger,
+			*h.AppID,
+			*h.UserID,
+			*h.CoinTypeID,
+		)
+		if err := redis2.TryLock(key, 0); err != nil {
+			return err
+		}
+		defer func() {
+			_ = redis2.Unlock(key)
+		}()
+
 		stm, err := ledgercrud.CreateSet(
 			tx.Ledger.Create(),
 			req,
@@ -244,14 +264,6 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if req.ID == nil {
 					req.ID = &id
 				}
-
-				key := statementKey(req)
-				if err := redis2.TryLock(key, 0); err != nil {
-					return err
-				}
-				defer func() {
-					_ = redis2.Unlock(key)
-				}()
 
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
