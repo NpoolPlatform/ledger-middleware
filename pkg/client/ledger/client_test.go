@@ -155,25 +155,25 @@ func createStatements(t *testing.T) {
 	}
 }
 
-func addBalance(t *testing.T) {
+func lockBalance(t *testing.T) {
 	info, err := AddBalance(context.Background(), &req)
-	if assert.Nil(t, err) {
-		assert.NotNil(t, info)
-		ledgerResult2.ID = info.ID
-		ledgerResult2.CreatedAt = info.CreatedAt
-		ledgerResult2.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ledgerResult2, info)
-	}
-}
-
-func subBalance(t *testing.T) {
-	info, err := SubBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult1.ID = info.ID
 		ledgerResult1.CreatedAt = info.CreatedAt
 		ledgerResult1.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult1, info)
+	}
+}
+
+func unlockBalance(t *testing.T) {
+	info, err := SubBalance(context.Background(), &req)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		ledgerResult2.ID = info.ID
+		ledgerResult2.CreatedAt = info.CreatedAt
+		ledgerResult2.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult2, info)
 	}
 }
 
@@ -190,6 +190,6 @@ func TestClient(t *testing.T) {
 
 	t.Run("insertSameDataTwice", insertSameDataTwice)
 	t.Run("createStatements", createStatements)
-	t.Run("addBalance", addBalance)
-	t.Run("subBalance", subBalance)
+	t.Run("addBalance", lockBalance)
+	t.Run("subBalance", lockBalance)
 }
