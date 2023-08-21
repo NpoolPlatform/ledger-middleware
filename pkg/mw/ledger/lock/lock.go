@@ -7,7 +7,7 @@ import (
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
-	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
+	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
@@ -199,94 +199,4 @@ func (h *lockHandler) tryDeleteStatement(ctx context.Context, tx *ent.Tx) error 
 		return err
 	}
 	return nil
-}
-
-//nolint
-func (h *Handler) UnspendBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
-		return nil, fmt.Errorf("nothing todo")
-	}
-
-	key := fmt.Sprintf("ledger-unspend-balance:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-
-	handler := &lockHandler{
-		Handler: h,
-	}
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err = handler.tryDeleteStatement(ctx, tx); err != nil {
-			return err
-		}
-
-		// TODO:
-		spendable := h.Unlocked.Sub(*h.Outcoming)
-		unlocked := decimal.RequireFromString(h.Unlocked.String())
-
-		info, err = handler.tryUpdateLedger(ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &unlocked,
-			Outcoming:  h.Outcoming,
-			Spendable:  &spendable,
-		}, ctx, tx)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return info, nil
-}
-
-//nolint
-func (h *Handler) SpendBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
-		return nil, fmt.Errorf("nothing todo")
-	}
-
-	key := fmt.Sprintf("ledger-spend-balance:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-
-	handler := &lockHandler{
-		Handler: h,
-	}
-
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err = handler.tryCreateStatement(ctx, tx); err != nil {
-			return err
-		}
-
-		spendable := h.Unlocked.Sub(*h.Outcoming)
-		unlocked := decimal.RequireFromString(h.Unlocked.String())
-
-		info, err = handler.tryUpdateLedger(ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &unlocked,
-			Outcoming:  h.Outcoming,
-			Spendable:  &spendable,
-		}, ctx, tx)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return info, nil
 }

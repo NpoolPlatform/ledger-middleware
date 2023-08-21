@@ -78,3 +78,37 @@ func GetLedgers(ctx context.Context, conds *npool.Conds, offset, limit int32) ([
 	}
 	return infos.([]*npool.Ledger), total, nil
 }
+
+//nolint
+func AddBalance(ctx context.Context, in *npool.BalanceReq) (*npool.Ledger, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.AddBalance(ctx, &npool.AddBalanceRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail lock balance: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail lock balance: %v", err)
+	}
+	return info.(*npool.Ledger), nil
+}
+
+//nolint
+func SubBalance(ctx context.Context, in *npool.BalanceReq) (*npool.Ledger, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.SubBalance(ctx, &npool.SubBalanceRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail unlock balance: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail unlock balance: %v", err)
+	}
+	return info.(*npool.Ledger), nil
+}

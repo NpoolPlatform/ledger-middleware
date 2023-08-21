@@ -3,16 +3,15 @@ package api
 import (
 	"context"
 
+	goodledger "github.com/NpoolPlatform/ledger-middleware/api/good/ledger"
+	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/good/ledger/statement"
+	unsold "github.com/NpoolPlatform/ledger-middleware/api/good/ledger/unsold"
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
-	lock "github.com/NpoolPlatform/ledger-middleware/api/ledger/lock"
-	goodledger "github.com/NpoolPlatform/ledger-middleware/api/mining/goodledger"
-	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/mining/goodstatement"
-	unsold "github.com/NpoolPlatform/ledger-middleware/api/mining/unsoldstatement"
-	profit "github.com/NpoolPlatform/ledger-middleware/api/profit"
-	statement "github.com/NpoolPlatform/ledger-middleware/api/statement"
+	profit "github.com/NpoolPlatform/ledger-middleware/api/ledger/profit"
+	statement "github.com/NpoolPlatform/ledger-middleware/api/ledger/statement"
 	withdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw"
 
-	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v1"
+	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v2"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -28,7 +27,6 @@ func Register(server grpc.ServiceRegistrar) {
 	goodledger.Register(server)
 	statement.Register(server)
 	profit.Register(server)
-	lock.Register(server)
 	withdraw.Register(server)
 	goodstatement.Register(server)
 	unsold.Register(server)
