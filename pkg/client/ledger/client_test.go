@@ -190,6 +190,6 @@ func TestClient(t *testing.T) {
 
 	t.Run("insertSameDataTwice", insertSameDataTwice)
 	t.Run("createStatements", createStatements)
-	t.Run("addBalance", lockBalance)
-	t.Run("subBalance", lockBalance)
+	t.Run("lockBalance", lockBalance)
+	t.Run("unlockBalance", unlockBalance)
 }
