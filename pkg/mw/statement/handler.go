@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/statement"
@@ -384,9 +383,8 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				_req.IOExtra = req.IOExtra
 			}
 			if req.CreatedAt != nil {
-				now := uint32(time.Now().Unix())
-				if *req.CreatedAt < now {
-					return fmt.Errorf("invalid created at")
+				if *req.CreatedAt == 0 {
+					return fmt.Errorf("invalid created at %v", *req.CreatedAt)
 				}
 				_req.CreatedAt = req.CreatedAt
 			}
