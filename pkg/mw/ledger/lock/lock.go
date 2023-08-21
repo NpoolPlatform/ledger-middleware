@@ -194,6 +194,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		if h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 			return nil
 		}
+
 		if err := handler.tryCreateStatement(ctx, tx); err != nil {
 			return err
 		}
@@ -208,16 +209,9 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 
 // Lock & Unspend
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	// Lock Scene
+	spendable := h.Outcoming.Sub(*h.Amount)
 	locked := h.Amount
-	spendable := decimal.RequireFromString(fmt.Sprintf("-%v", h.Amount.String()))
-	outcoming := decimal.NewFromInt(0)
-
-	// Unspend Scene
-	if h.Outcoming.Cmp(decimal.NewFromInt(0)) > 0 {
-		outcoming = decimal.RequireFromString(fmt.Sprintf("-%v", h.Outcoming.String()))
-		locked = h.Outcoming
-	}
+	outcoming := decimal.RequireFromString(fmt.Sprintf("-%v", h.Outcoming.String()))
 
 	handler := &lockHandler{
 		Handler: h,
@@ -236,6 +230,12 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		}
 
 		if h.Outcoming.Cmp(decimal.NewFromInt(0)) > 0 {
+			if h.IOSubType == nil {
+				return fmt.Errorf("invalid io sub type")
+			}
+			if h.IOExtra == nil {
+				return fmt.Errorf("invalid io extra")
+			}
 			if err := handler.tryDeleteStatement(ctx, tx); err != nil {
 				return err
 			}
