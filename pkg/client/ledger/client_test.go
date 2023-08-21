@@ -65,10 +65,14 @@ var (
 
 	locked    = "10"
 	outcoming = "0"
+	ioSubType = basetypes.IOSubType_Withdrawal
+	ioExtra   = fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString())
 	req       = ledgerpb.LedgerReq{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
+		IOSubType:  &ioSubType,
+		IOExtra:    &ioExtra,
 		Locked:     &locked,
 		Outcoming:  &outcoming,
 	}
