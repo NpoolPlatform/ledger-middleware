@@ -9,7 +9,6 @@ import (
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
@@ -148,16 +147,21 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 	if err != nil {
 		return nil, err
 	}
-	if _, err := stm1.Save(ctx); err != nil {
+	info1, err := stm1.Save(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	handler := ledger1.Handler{
-		Req: ledgercrud.Req{
-			ID: &info.ID,
-		},
-	}
-	return handler.GetLedger(ctx)
+	return &ledgerpb.Ledger{
+		ID:         info.ID.String(),
+		AppID:      info.AppID.String(),
+		UserID:     info.UserID.String(),
+		CoinTypeID: info.CoinTypeID.String(),
+		Outcoming:  info1.Outcoming.String(),
+		Incoming:   info1.Incoming.String(),
+		Spendable:  info1.Spendable.String(),
+		Locked:     info1.Locked.String(),
+	}, nil
 }
 
 // Unlock & Spend
