@@ -168,7 +168,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 
 	// TODO: LockBalanceOut Can Only Be Called Once
 	spendable := h.Locked.Sub(*h.Outcoming)
-	unlocked := decimal.RequireFromString(h.Locked.String())
+	unlocked := decimal.RequireFromString(fmt.Sprintf("-%v", h.Locked.String()))
 	outcoming := h.Outcoming
 
 	handler := &lockHandler{
