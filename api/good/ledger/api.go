@@ -1,7 +1,7 @@
-package goodledger
+package ledger
 
 import (
-	"github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger"
+	goodledger "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger"
 
 	"google.golang.org/grpc"
 )

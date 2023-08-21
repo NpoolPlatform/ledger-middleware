@@ -5,7 +5,6 @@ import (
 
 	goodledger "github.com/NpoolPlatform/ledger-middleware/api/good/ledger"
 	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/good/ledger/statement"
-	unsold "github.com/NpoolPlatform/ledger-middleware/api/good/ledger/unsold"
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
 	profit "github.com/NpoolPlatform/ledger-middleware/api/ledger/profit"
 	statement "github.com/NpoolPlatform/ledger-middleware/api/ledger/statement"
@@ -29,7 +28,6 @@ func Register(server grpc.ServiceRegistrar) {
 	profit.Register(server)
 	withdraw.Register(server)
 	goodstatement.Register(server)
-	unsold.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
