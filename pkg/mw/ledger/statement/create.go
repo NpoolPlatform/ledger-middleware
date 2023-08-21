@@ -122,9 +122,9 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 
 	key := fmt.Sprintf("%v:%v:%v:%v",
 		commonpb.Prefix_PrefixCreateLedgerStatement,
-		*h.AppID,
-		*h.UserID,
-		*h.CoinTypeID,
+		*req.AppID,
+		*req.UserID,
+		*req.CoinTypeID,
 	)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -168,9 +168,9 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 	if info == nil {
 		key := fmt.Sprintf("%v:%v:%v:%v",
 			commonpb.Prefix_PrefixCreateLedger,
-			*h.AppID,
-			*h.UserID,
-			*h.CoinTypeID,
+			*req.AppID,
+			*req.UserID,
+			*req.CoinTypeID,
 		)
 		if err := redis2.TryLock(key, 0); err != nil {
 			return err
