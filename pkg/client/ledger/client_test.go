@@ -69,7 +69,7 @@ var (
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
-		Locked:     &locked,
+		Amount:     &locked,
 	}
 
 	ledgerResult1 = ledgerpb.Ledger{
