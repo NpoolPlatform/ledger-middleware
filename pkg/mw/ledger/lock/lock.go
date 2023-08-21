@@ -160,6 +160,7 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 	return handler.GetLedger(ctx)
 }
 
+// Unlock & Spend
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
 	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 		return nil, fmt.Errorf("nothing todo")
@@ -205,7 +206,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	return info, err
 }
 
-// For Lock & Unspend Scene
+// Lock & Unspend
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
 	// Lock Scene
 	locked := h.Locked
