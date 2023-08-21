@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -122,6 +121,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	if h.Unlocked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 		return nil, fmt.Errorf("nothing todo")
 	}
+
 	// TODO: LockBalanceOut Can Only Be Called Once
 	spendable := h.Unlocked.Sub(*h.Outcoming)
 	unlocked := decimal.RequireFromString(h.Unlocked.String())
@@ -130,14 +130,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	handler := &lockHandler{
 		Handler: h,
 	}
-
-	key := fmt.Sprintf("ledger-lock-balance-out:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if err := handler.tryGetStatement(ctx, tx); err != nil {
@@ -173,14 +165,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
 	locked := h.Locked
 	spendable := decimal.RequireFromString(fmt.Sprintf("-%v", h.Locked.String()))
-
-	key := fmt.Sprintf("ledger-lock-balance:%v:%v:%v", *h.AppID, *h.UserID, *h.CoinTypeID)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
 
 	handler := &lockHandler{
 		Handler: h,
