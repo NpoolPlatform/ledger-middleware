@@ -162,13 +162,13 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 
 // Unlock & Spend
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	if h.Amount.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
+	if h.Locked.Cmp(decimal.NewFromInt(0)) == 0 && h.Outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
 		return nil, fmt.Errorf("nothing todo")
 	}
 
 	// TODO: LockBalanceOut Can Only Be Called Once
-	spendable := h.Amount.Sub(*h.Outcoming)
-	unlocked := decimal.RequireFromString(h.Amount.String())
+	spendable := h.Locked.Sub(*h.Outcoming)
+	unlocked := decimal.RequireFromString(h.Locked.String())
 	outcoming := h.Outcoming
 
 	handler := &lockHandler{
@@ -209,8 +209,8 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 
 // Lock & Unspend
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	spendable := h.Outcoming.Sub(*h.Amount)
-	locked := h.Amount
+	spendable := h.Outcoming.Sub(*h.Locked)
+	locked := h.Locked
 	outcoming := decimal.RequireFromString(fmt.Sprintf("-%v", h.Outcoming.String()))
 
 	handler := &lockHandler{

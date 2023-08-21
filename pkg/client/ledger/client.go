@@ -80,7 +80,7 @@ func GetLedgers(ctx context.Context, conds *npool.Conds, offset, limit int32) ([
 }
 
 //nolint
-func AddBalance(ctx context.Context, in *npool.BalanceReq) (*npool.Ledger, error) {
+func AddBalance(ctx context.Context, in *npool.LedgerReq) (*npool.Ledger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.AddBalance(ctx, &npool.AddBalanceRequest{
 			Info: in,
@@ -97,7 +97,7 @@ func AddBalance(ctx context.Context, in *npool.BalanceReq) (*npool.Ledger, error
 }
 
 //nolint
-func SubBalance(ctx context.Context, in *npool.BalanceReq) (*npool.Ledger, error) {
+func SubBalance(ctx context.Context, in *npool.LedgerReq) (*npool.Ledger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.SubBalance(ctx, &npool.SubBalanceRequest{
 			Info: in,

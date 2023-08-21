@@ -64,12 +64,14 @@ var (
 		CoinUSDCurrency: "0",
 	}
 
-	locked = "10"
-	req    = lockpb.BalanceReq{
+	locked    = "10"
+	outcoming = "0"
+	req       = lockpb.LedgerReq{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
-		Amount:     &locked,
+		Locked:     &locked,
+		Outcoming:  &outcoming,
 	}
 
 	ledgerResult1 = ledgerpb.Ledger{

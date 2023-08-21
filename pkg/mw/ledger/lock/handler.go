@@ -15,7 +15,7 @@ type Handler struct {
 	AppID      *uuid.UUID
 	UserID     *uuid.UUID
 	CoinTypeID *uuid.UUID
-	Amount     *decimal.Decimal
+	Locked     *decimal.Decimal
 	Outcoming  *decimal.Decimal
 	IOSubType  *basetypes.IOSubType
 	IOExtra    *string
@@ -106,7 +106,7 @@ func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, 
 	}
 }
 
-func WithAmount(amount *string) func(context.Context, *Handler) error {
+func WithLocked(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
 			return fmt.Errorf("invalid amount")
@@ -118,7 +118,7 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
 			return fmt.Errorf("amount is less than 0 %v", *amount)
 		}
-		h.Amount = &_amount
+		h.Locked = &_amount
 		return nil
 	}
 }
