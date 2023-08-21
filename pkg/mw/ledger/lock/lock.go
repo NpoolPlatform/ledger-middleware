@@ -3,6 +3,7 @@ package lock
 import (
 	"context"
 	"fmt"
+	"time"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
@@ -17,6 +18,28 @@ import (
 
 type lockHandler struct {
 	*Handler
+}
+
+func (h *lockHandler) setConds() *statementcrud.Conds {
+	conds := &statementcrud.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &cruder.Cond{Op: cruder.EQ, Val: *h.AppID}
+	}
+	if h.UserID != nil {
+		conds.UserID = &cruder.Cond{Op: cruder.EQ, Val: *h.UserID}
+	}
+	if h.CoinTypeID != nil {
+		conds.CoinTypeID = &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID}
+	}
+	if h.IOSubType != nil {
+		conds.IOSubType = &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType}
+	}
+	if h.IOExtra != nil {
+		conds.IOExtra = &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra}
+	}
+	ioType := basetypes.IOType_Outcoming
+	conds.IOType = &cruder.Cond{Op: cruder.EQ, Val: ioType}
+	return conds
 }
 
 func (h *lockHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
@@ -39,18 +62,38 @@ func (h *lockHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error 
 	return nil
 }
 
-func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) error {
-	ioType := basetypes.IOType_Outcoming
+func (h *lockHandler) tryDeleteStatement(ctx context.Context, tx *ent.Tx) error {
 	stm, err := statementcrud.SetQueryConds(
 		tx.Statement.Query(),
-		&statementcrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
-			IOType:     &cruder.Cond{Op: cruder.EQ, Val: ioType},
-			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
-			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: h.IOExtra},
+		h.setConds(),
+	)
+	if err != nil {
+		return err
+	}
+	info, err := stm.Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+
+	now := uint32(time.Now().Unix())
+	if _, err := statementcrud.UpdateSet(
+		tx.Statement.UpdateOneID(info.ID),
+		&statementcrud.Req{
+			DeletedAt: &now,
 		},
+	).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) error {
+	stm, err := statementcrud.SetQueryConds(
+		tx.Statement.Query(),
+		h.setConds(),
 	)
 	if err != nil {
 		return err
@@ -162,9 +205,18 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	return info, err
 }
 
+// For Lock & Unspend Scene
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+	// Lock Scene
 	locked := h.Locked
 	spendable := decimal.RequireFromString(fmt.Sprintf("-%v", h.Locked.String()))
+	outcoming := decimal.NewFromInt(0)
+
+	// Unspend Scene
+	if h.Outcoming.Cmp(decimal.NewFromInt(0)) > 0 {
+		outcoming = decimal.RequireFromString(fmt.Sprintf("-%v", h.Outcoming.String()))
+		locked = h.Outcoming
+	}
 
 	handler := &lockHandler{
 		Handler: h,
@@ -176,9 +228,16 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			CoinTypeID: h.CoinTypeID,
 			Locked:     locked,
 			Spendable:  &spendable,
+			Outcoming:  &outcoming,
 		}, ctx, tx)
 		if err != nil {
 			return err
+		}
+
+		if h.Outcoming.Cmp(decimal.NewFromInt(0)) > 0 {
+			if err := handler.tryDeleteStatement(ctx, tx); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
