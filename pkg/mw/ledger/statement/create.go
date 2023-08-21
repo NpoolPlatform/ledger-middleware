@@ -132,12 +132,6 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
-	if err := redis2.TryLock(key, 0); err != nil {
-		return err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
 
 	if _, err := crud.CreateSet(
 		tx.Statement.Create(),
