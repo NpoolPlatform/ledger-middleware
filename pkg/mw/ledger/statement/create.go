@@ -214,6 +214,34 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 	return nil
 }
 
+func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
+	h.Conds = &crud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
+		IOType:     &cruder.Cond{Op: cruder.EQ, Val: *h.IOType},
+		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
+		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra},
+	}
+	exist, err := h.ExistStatementConds(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if exist {
+		return nil, fmt.Errorf("statement already exist")
+	}
+
+	h.Reqs = []*crud.Req{&h.Req}
+	infos, err := h.CreateStatements(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(infos) == 0 {
+		return nil, nil
+	}
+	return infos[0], nil
+}
+
 //nolint
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
 	// to ensure the accuracy of the ledger, the same batch of data cannot be written repeatedly.
