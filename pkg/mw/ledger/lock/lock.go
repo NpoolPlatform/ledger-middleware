@@ -162,7 +162,7 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 	}, nil
 }
 
-// Lock & Unspend
+// Lock & Spend
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
 	if h.Spendable != nil && h.Locked != nil {
 		return nil, fmt.Errorf("spendable & locked is not allowed")
@@ -180,20 +180,21 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		spendable := decimal.NewFromInt(0)
 		outcoming := decimal.NewFromInt(0)
 
-		if h.Spendable != nil && h.Spendable.Cmp(decimal.NewFromInt(0)) < 0 { // lock
-			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
-			spendable = *h.Spendable
-		}
-		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) > 0 { // unspend
+		if h.Locked != nil { // lock
 			locked = *h.Locked
-			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
+			spendable = decimal.NewFromInt(0).Sub(*h.Locked)
 		}
 
-		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) > 0 {
+		if h.Spendable != nil { // spend
+			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
+			outcoming = *h.Spendable
+		}
+
+		if h.Spendable != nil {
 			if h.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
-			if h.IOExtra == nil {
+			if h.IOExtra != nil {
 				return fmt.Errorf("invalid io extra")
 			}
 
@@ -201,15 +202,14 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			if err != nil {
 				return err
 			}
-			if !exist {
-				return nil
+			if exist {
+				return fmt.Errorf("statement already exist")
 			}
 
-			if err := handler.tryDeleteStatement(ctx, tx); err != nil {
+			if err := handler.tryCreateStatement(ctx, tx); err != nil {
 				return err
 			}
 		}
-
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,
@@ -231,7 +231,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	return info, err
 }
 
-// Unlock & Spend
+// Unlock & Unspend
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
 	if h.Spendable != nil && h.Locked != nil {
 		return nil, fmt.Errorf("spendable & locked is not allowed")
@@ -248,17 +248,30 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		spendable := decimal.NewFromInt(0)
 		outcoming := decimal.NewFromInt(0)
 
-		if h.Spendable != nil && h.Spendable.Cmp(decimal.NewFromInt(0)) > 0 { // unlock
-			spendable = *h.Spendable
-			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
+		if h.Locked != nil { // unlock
+			locked = decimal.NewFromInt(0).Sub(*h.Locked)
+			spendable = *h.Locked
 		}
-		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) < 0 { // spend
-			locked = *h.Locked
-			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
+		if h.Spendable != nil { // unspend
+			locked = *h.Spendable
+			spendable = decimal.NewFromInt(0).Sub(*h.Spendable)
 		}
 
-		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) < 0 {
-			if err := handler.tryCreateStatement(ctx, tx); err != nil {
+		if h.Spendable != nil {
+			if h.IOSubType == nil {
+				return fmt.Errorf("invalid io sub type")
+			}
+			if h.IOExtra != nil {
+				return fmt.Errorf("invalid io extra")
+			}
+			exist, err := handler.tryGetStatement(ctx, tx)
+			if err != nil {
+				return err
+			}
+			if exist {
+				return nil
+			}
+			if err := handler.tryDeleteStatement(ctx, tx); err != nil {
 				return err
 			}
 		}
