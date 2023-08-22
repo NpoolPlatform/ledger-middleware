@@ -1,4 +1,4 @@
-package goodledger
+package ledger
 
 import (
 	"context"

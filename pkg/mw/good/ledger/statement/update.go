@@ -1,4 +1,4 @@
-package goodstatement
+package statement
 
 import (
 	"context"
