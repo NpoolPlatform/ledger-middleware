@@ -8,6 +8,7 @@ import (
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
@@ -41,12 +42,16 @@ func (h *lockHandler) setConds() *statementcrud.Conds {
 }
 
 func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	if _, err := statementcrud.CreateSet(
-		tx.Statement.Create(),
-		req,
-	).Save(ctx); err != nil {
+	handler := statement1.Handler{
+		Reqs: []*statementcrud.Req{
+			req,
+		},
+	}
+
+	if _, err := handler.CreateStatements(ctx); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -153,14 +158,16 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			}
 
 			ioType := basetypes.IOType_Outcoming
+			changeLedger := false
 			if err := handler.tryCreateStatement(&statementcrud.Req{
-				AppID:      h.AppID,
-				UserID:     h.UserID,
-				CoinTypeID: h.CoinTypeID,
-				IOType:     &ioType,
-				IOSubType:  h.IOSubType,
-				IOExtra:    h.IOExtra,
-				Amount:     h.Locked,
+				AppID:        h.AppID,
+				UserID:       h.UserID,
+				CoinTypeID:   h.CoinTypeID,
+				IOType:       &ioType,
+				IOSubType:    h.IOSubType,
+				IOExtra:      h.IOExtra,
+				Amount:       h.Locked,
+				ChangeLedger: &changeLedger,
 			}, ctx, tx); err != nil {
 				return err
 			}
@@ -230,14 +237,16 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			}
 
 			ioType := basetypes.IOType_Incoming
+			changeLedger := false
 			if err := handler.tryCreateStatement(&statementcrud.Req{
-				AppID:      h.AppID,
-				UserID:     h.UserID,
-				CoinTypeID: h.CoinTypeID,
-				IOType:     &ioType,
-				IOSubType:  h.IOSubType,
-				IOExtra:    h.IOExtra,
-				Amount:     h.Locked,
+				AppID:        h.AppID,
+				UserID:       h.UserID,
+				CoinTypeID:   h.CoinTypeID,
+				IOType:       &ioType,
+				IOSubType:    h.IOSubType,
+				IOExtra:      h.IOExtra,
+				Amount:       h.Locked,
+				ChangeLedger: &changeLedger,
 			}, ctx, tx); err != nil {
 				return err
 			}
