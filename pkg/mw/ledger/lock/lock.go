@@ -185,31 +185,11 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			spendable = *h.Spendable
 		}
 		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) > 0 { // unspend
-			outcoming = *h.Locked
-			locked = decimal.NewFromInt(0).Sub(*h.Locked)
+			locked = *h.Locked
+			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
 		}
 
-		exist, err := handler.tryGetStatement(ctx, tx)
-		if err != nil {
-			return err
-		}
-		if exist {
-			return fmt.Errorf("statement already exist")
-		}
-
-		info, err = handler.tryUpdateLedger(ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &locked,
-			Spendable:  &spendable,
-			Outcoming:  &outcoming,
-		}, ctx, tx)
-		if err != nil {
-			return err
-		}
-
-		if outcoming.Cmp(decimal.NewFromInt(0)) > 0 {
+		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) > 0 {
 			if h.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
@@ -229,6 +209,19 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 				return err
 			}
 		}
+
+		info, err = handler.tryUpdateLedger(ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Spendable:  &spendable,
+			Outcoming:  &outcoming,
+		}, ctx, tx)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -255,13 +248,19 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		spendable := decimal.NewFromInt(0)
 		outcoming := decimal.NewFromInt(0)
 
-		if h.Spendable != nil && h.Spendable.Cmp(decimal.NewFromInt(0)) < 0 { // spend
-			locked = *h.Locked
-			outcoming = decimal.NewFromInt(0).Sub(*h.Spendable)
+		if h.Spendable != nil && h.Spendable.Cmp(decimal.NewFromInt(0)) > 0 { // unlock
+			spendable = *h.Spendable
+			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
 		}
-		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) > 0 { // unlock
-			spendable = *h.Locked
-			locked = decimal.NewFromInt(0).Sub(*h.Locked)
+		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) < 0 { // spend
+			locked = *h.Locked
+			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
+		}
+
+		if h.Locked != nil && h.Locked.Cmp(decimal.NewFromInt(0)) < 0 {
+			if err := handler.tryCreateStatement(ctx, tx); err != nil {
+				return err
+			}
 		}
 
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
@@ -273,14 +272,6 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			Outcoming:  &outcoming,
 		}, ctx, tx)
 		if err != nil {
-			return err
-		}
-
-		if outcoming.Cmp(decimal.NewFromInt(0)) == 0 {
-			return nil
-		}
-
-		if err := handler.tryCreateStatement(ctx, tx); err != nil {
 			return err
 		}
 		return nil
