@@ -8,6 +8,7 @@ import (
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -17,6 +18,7 @@ import (
 
 type lockHandler struct {
 	*Handler
+	info *ledgerpb.Ledger
 }
 
 func (h *Handler) validate() error {
@@ -130,21 +132,25 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 	if err != nil {
 		return nil, err
 	}
-	info1, err := stm1.Save(ctx)
+	if _, err := stm1.Save(ctx); err != nil {
+		return nil, err
+	}
+
+	ledgerID := old.ID.String()
+	handler, err := ledger1.NewHandler(
+		ctx,
+		ledger1.WithID(&ledgerID),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ledgerpb.Ledger{
-		ID:         info.ID.String(),
-		AppID:      info.AppID.String(),
-		UserID:     info.UserID.String(),
-		CoinTypeID: info.CoinTypeID.String(),
-		Outcoming:  info1.Outcoming.String(),
-		Incoming:   info1.Incoming.String(),
-		Spendable:  info1.Spendable.String(),
-		Locked:     info1.Locked.String(),
-	}, nil
+	h.info, err = handler.GetLedger(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return h.info, nil
 }
 
 func (h *lockHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
@@ -237,7 +243,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		return nil, err
 	}
 
-	return info, err
+	return handler.info, err
 }
 
 func (h *lockHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
@@ -310,7 +316,7 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 }
 
 // Unlock & Unspend
-func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+func (h *Handler) AddBalance(ctx context.Context) (*ledgerpb.Ledger, error) {
 	if err := h.validate(); err != nil {
 		return nil, err
 	}
@@ -319,7 +325,7 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		Handler: h,
 	}
 
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if err := handler.tryUnlock(ctx, tx); err != nil {
 			return err
 		}
@@ -332,5 +338,5 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		return nil, err
 	}
 
-	return info, err
+	return handler.info, err
 }
