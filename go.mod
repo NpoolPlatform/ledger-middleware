@@ -7,8 +7,8 @@ require (
 	entgo.io/ent v0.11.2
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230509081417-267df92cab6d
-	github.com/NpoolPlatform/libent-cruder v0.0.0-20220621110548-8f3f8049ecc5
-	github.com/NpoolPlatform/message v0.0.0-20230821094550-f66e353118bd
+	github.com/NpoolPlatform/libent-cruder v0.0.0-20230822060122-512da6e5c8bf
+	github.com/NpoolPlatform/message v0.0.0-20230822093230-ec438ce1864e
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
