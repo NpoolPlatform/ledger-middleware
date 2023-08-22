@@ -16,6 +16,7 @@ type Handler struct {
 	UserID     *uuid.UUID
 	CoinTypeID *uuid.UUID
 	Locked     *decimal.Decimal
+	Spendable  *decimal.Decimal
 	Outcoming  *decimal.Decimal
 	IOSubType  *basetypes.IOSubType
 	IOExtra    *string
