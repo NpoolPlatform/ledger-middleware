@@ -19,6 +19,16 @@ type lockHandler struct {
 	*Handler
 }
 
+func (h *Handler) validate() error {
+	if h.Spendable != nil && h.Locked != nil {
+		return fmt.Errorf("spendable & locked is not allowed")
+	}
+	if h.Spendable == nil && h.Locked == nil {
+		return fmt.Errorf("spendable or locked needed")
+	}
+	return nil
+}
+
 func (h *lockHandler) setConds() *statementcrud.Conds {
 	conds := &statementcrud.Conds{}
 	if h.AppID != nil {
@@ -55,20 +65,30 @@ func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Con
 	return nil
 }
 
-func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) (bool, error) {
+func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
+	if h.IOSubType == nil {
+		return nil, fmt.Errorf("invalid io sub type")
+	}
+	if h.IOExtra == nil {
+		return nil, fmt.Errorf("invalid io extra")
+	}
+
 	stm, err := statementcrud.SetQueryConds(
 		tx.Statement.Query(),
 		h.setConds(),
 	)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	exist, err := stm.Exist(ctx)
+	info, err := stm.Only(ctx)
 	if err != nil {
-		return false, err
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
-	return exist, nil
+	return info, nil
 }
 
 func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
@@ -127,13 +147,77 @@ func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, t
 	}, nil
 }
 
+func (h *lockHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
+	if h.Spendable == nil {
+		return nil
+	}
+	if h.Spendable.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("spendable less than equal 0")
+	}
+
+	spendable := decimal.NewFromInt(0).Sub(*h.Spendable)
+	locked := *h.Spendable
+
+	if _, err := h.tryUpdateLedger(ledgercrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		Locked:     &locked,
+		Spendable:  &spendable,
+	}, ctx, tx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
+	if h.Locked == nil {
+		return nil
+	}
+	if h.Locked.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("locked less than equal 0")
+	}
+
+	info, err := h.tryGetStatement(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if info != nil {
+		return fmt.Errorf("statement already exist")
+	}
+
+	ioType := basetypes.IOType_Outcoming
+	if err := h.tryCreateStatement(&statementcrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     &ioType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+		Amount:     h.Locked,
+	}, ctx, tx); err != nil {
+		return err
+	}
+
+	locked := decimal.NewFromInt(0).Sub(*h.Locked)
+	outcoming := *h.Locked
+
+	if _, err = h.tryUpdateLedger(ledgercrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		Locked:     &locked,
+		Outcoming:  &outcoming,
+	}, ctx, tx); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Lock & Spend
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	if h.Spendable != nil && h.Locked != nil {
-		return nil, fmt.Errorf("spendable & locked is not allowed")
-	}
-	if h.Spendable == nil && h.Locked == nil {
-		return nil, fmt.Errorf("spendable or locked needed")
+	if err := h.validate(); err != nil {
+		return nil, err
 	}
 
 	handler := &lockHandler{
@@ -141,60 +225,10 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if h.Locked != nil { // whether need to create statement
-			if h.IOSubType == nil {
-				return fmt.Errorf("invalid io sub type")
-			}
-			if h.IOExtra != nil {
-				return fmt.Errorf("invalid io extra")
-			}
-
-			exist, err := handler.tryGetStatement(ctx, tx)
-			if err != nil {
-				return err
-			}
-			if exist {
-				return fmt.Errorf("statement already exist")
-			}
-
-			ioType := basetypes.IOType_Outcoming
-			changeLedger := false
-			if err := handler.tryCreateStatement(&statementcrud.Req{
-				AppID:        h.AppID,
-				UserID:       h.UserID,
-				CoinTypeID:   h.CoinTypeID,
-				IOType:       &ioType,
-				IOSubType:    h.IOSubType,
-				IOExtra:      h.IOExtra,
-				Amount:       h.Locked,
-				ChangeLedger: &changeLedger,
-			}, ctx, tx); err != nil {
-				return err
-			}
+		if err := handler.tryLock(ctx, tx); err != nil {
+			return err
 		}
-
-		locked := decimal.NewFromInt(0)
-		spendable := decimal.NewFromInt(0)
-		outcoming := decimal.NewFromInt(0)
-
-		if h.Spendable != nil { // lock
-			spendable = decimal.NewFromInt(0).Sub(*h.Spendable)
-			locked = *h.Spendable
-		}
-		if h.Locked != nil { // spend
-			locked = decimal.NewFromInt(0).Sub(*h.Locked)
-			outcoming = *h.Locked
-		}
-
-		info, err = handler.tryUpdateLedger(ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &locked,
-			Spendable:  &spendable,
-			Outcoming:  &outcoming,
-		}, ctx, tx)
-		if err != nil {
+		if err := handler.trySpend(ctx, tx); err != nil {
 			return err
 		}
 		return nil
@@ -206,13 +240,79 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	return info, err
 }
 
+func (h *lockHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
+	if h.Spendable == nil {
+		return nil
+	}
+	if h.Spendable.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("spendable less than equal 0")
+	}
+
+	spendable := *h.Spendable
+	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
+
+	if _, err := h.tryUpdateLedger(ledgercrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		Locked:     &locked,
+		Spendable:  &spendable,
+	}, ctx, tx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
+	if h.Locked == nil {
+		return nil
+	}
+	if h.Locked.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("locked less than equal 0")
+	}
+
+	info, err := h.tryGetStatement(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if info == nil {
+		return nil
+	}
+
+	// rollback
+	ioType := basetypes.IOType_Outcoming
+	ioExtra := fmt.Sprintf(`{"GeneralID": "%v", "Rollback": "true"}`, info.ID.String())
+	if err := h.tryCreateStatement(&statementcrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     &ioType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    &ioExtra,
+		Amount:     h.Locked,
+	}, ctx, tx); err != nil {
+		return err
+	}
+
+	locked := *h.Locked
+	outcoming := decimal.NewFromInt(0).Sub(*h.Locked)
+
+	if _, err = h.tryUpdateLedger(ledgercrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		Locked:     &locked,
+		Outcoming:  &outcoming,
+	}, ctx, tx); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Unlock & Unspend
 func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
-	if h.Spendable != nil && h.Locked != nil {
-		return nil, fmt.Errorf("spendable & locked is not allowed")
-	}
-	if h.Spendable == nil && h.Locked == nil {
-		return nil, fmt.Errorf("spendable or locked needed")
+	if err := h.validate(); err != nil {
+		return nil, err
 	}
 
 	handler := &lockHandler{
@@ -220,60 +320,10 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if h.Locked != nil { // whether need to delete statement
-			if h.IOSubType == nil {
-				return fmt.Errorf("invalid io sub type")
-			}
-			if h.IOExtra != nil {
-				return fmt.Errorf("invalid io extra")
-			}
-
-			exist, err := handler.tryGetStatement(ctx, tx)
-			if err != nil {
-				return err
-			}
-			if exist {
-				return nil
-			}
-
-			ioType := basetypes.IOType_Incoming
-			changeLedger := false
-			if err := handler.tryCreateStatement(&statementcrud.Req{
-				AppID:        h.AppID,
-				UserID:       h.UserID,
-				CoinTypeID:   h.CoinTypeID,
-				IOType:       &ioType,
-				IOSubType:    h.IOSubType,
-				IOExtra:      h.IOExtra,
-				Amount:       h.Locked,
-				ChangeLedger: &changeLedger,
-			}, ctx, tx); err != nil {
-				return err
-			}
+		if err := handler.tryUnlock(ctx, tx); err != nil {
+			return err
 		}
-
-		locked := decimal.NewFromInt(0)
-		spendable := decimal.NewFromInt(0)
-		outcoming := decimal.NewFromInt(0)
-
-		if h.Spendable != nil { // unlock
-			spendable = *h.Spendable
-			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
-		}
-		if h.Locked != nil { // unspend
-			locked = *h.Locked
-			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
-		}
-
-		info, err = handler.tryUpdateLedger(ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &locked,
-			Spendable:  &spendable,
-			Outcoming:  &outcoming,
-		}, ctx, tx)
-		if err != nil {
+		if err := handler.tryUnspend(ctx, tx); err != nil {
 			return err
 		}
 		return nil
