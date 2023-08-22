@@ -388,9 +388,6 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				}
 				_req.CreatedAt = req.CreatedAt
 			}
-			if req.ChangeLedger != nil {
-				_req.ChangeLedger = req.ChangeLedger
-			}
 			if req.IOType == nil || req.IOSubType == nil {
 				return fmt.Errorf("invalid io type or io subtype")
 			}
