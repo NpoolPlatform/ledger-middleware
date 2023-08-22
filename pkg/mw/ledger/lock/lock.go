@@ -3,7 +3,6 @@ package lock
 import (
 	"context"
 	"fmt"
-	"time"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
@@ -41,49 +40,10 @@ func (h *lockHandler) setConds() *statementcrud.Conds {
 	return conds
 }
 
-func (h *lockHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
-	ioType := basetypes.IOType_Outcoming
-
+func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	if _, err := statementcrud.CreateSet(
 		tx.Statement.Create(),
-		&statementcrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			IOType:     &ioType,
-			IOSubType:  h.IOSubType,
-			Amount:     h.Outcoming,
-			IOExtra:    h.IOExtra,
-		},
-	).Save(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (h *lockHandler) tryDeleteStatement(ctx context.Context, tx *ent.Tx) error {
-	stm, err := statementcrud.SetQueryConds(
-		tx.Statement.Query(),
-		h.setConds(),
-	)
-	if err != nil {
-		return err
-	}
-
-	info, err := stm.Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	now := uint32(time.Now().Unix())
-	if _, err := statementcrud.UpdateSet(
-		tx.Statement.UpdateOneID(info.ID),
-		&statementcrud.Req{
-			DeletedAt: &now,
-		},
+		req,
 	).Save(ctx); err != nil {
 		return err
 	}
@@ -176,20 +136,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		locked := decimal.NewFromInt(0)
-		spendable := decimal.NewFromInt(0)
-		outcoming := decimal.NewFromInt(0)
-
-		if h.Spendable != nil { // lock
-			locked = *h.Spendable
-			spendable = decimal.NewFromInt(0).Sub(*h.Spendable)
-		}
-		if h.Locked != nil { // spend
-			locked = decimal.NewFromInt(0).Sub(*h.Locked)
-			outcoming = *h.Locked
-		}
-
-		if h.Locked != nil { // spend
+		if h.Locked != nil { // whether need to create statement
 			if h.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
@@ -205,9 +152,31 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 				return fmt.Errorf("statement already exist")
 			}
 
-			if err := handler.tryCreateStatement(ctx, tx); err != nil {
+			ioType := basetypes.IOType_Outcoming
+			if err := handler.tryCreateStatement(&statementcrud.Req{
+				AppID:      h.AppID,
+				UserID:     h.UserID,
+				CoinTypeID: h.CoinTypeID,
+				IOType:     &ioType,
+				IOSubType:  h.IOSubType,
+				IOExtra:    h.IOExtra,
+				Amount:     h.Locked,
+			}, ctx, tx); err != nil {
 				return err
 			}
+		}
+
+		locked := decimal.NewFromInt(0)
+		spendable := decimal.NewFromInt(0)
+		outcoming := decimal.NewFromInt(0)
+
+		if h.Spendable != nil { // lock
+			spendable = decimal.NewFromInt(0).Sub(*h.Spendable)
+			locked = *h.Spendable
+		}
+		if h.Locked != nil { // spend
+			locked = decimal.NewFromInt(0).Sub(*h.Locked)
+			outcoming = *h.Locked
 		}
 
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
@@ -221,7 +190,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		if err != nil {
 			return err
 		}
-
 		return nil
 	})
 	if err != nil {
@@ -243,21 +211,9 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 	handler := &lockHandler{
 		Handler: h,
 	}
+
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		locked := decimal.NewFromInt(0)
-		spendable := decimal.NewFromInt(0)
-		outcoming := decimal.NewFromInt(0)
-
-		if h.Spendable != nil { // unlock
-			spendable = *h.Spendable
-			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
-		}
-		if h.Locked != nil { // unspend
-			locked = *h.Locked
-			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
-		}
-
-		if h.Locked != nil { // unspend
+		if h.Locked != nil { // whether need to delete statement
 			if h.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
@@ -272,9 +228,32 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			if exist {
 				return nil
 			}
-			if err := handler.tryDeleteStatement(ctx, tx); err != nil {
+
+			ioType := basetypes.IOType_Incoming
+			if err := handler.tryCreateStatement(&statementcrud.Req{
+				AppID:      h.AppID,
+				UserID:     h.UserID,
+				CoinTypeID: h.CoinTypeID,
+				IOType:     &ioType,
+				IOSubType:  h.IOSubType,
+				IOExtra:    h.IOExtra,
+				Amount:     h.Locked,
+			}, ctx, tx); err != nil {
 				return err
 			}
+		}
+
+		locked := decimal.NewFromInt(0)
+		spendable := decimal.NewFromInt(0)
+		outcoming := decimal.NewFromInt(0)
+
+		if h.Spendable != nil { // unlock
+			spendable = *h.Spendable
+			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
+		}
+		if h.Locked != nil { // unspend
+			locked = *h.Locked
+			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
 		}
 
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
