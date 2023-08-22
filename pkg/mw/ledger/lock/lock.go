@@ -254,7 +254,7 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		}
 		if h.Spendable != nil { // unspend
 			locked = *h.Spendable
-			spendable = decimal.NewFromInt(0).Sub(*h.Spendable)
+			outcoming = decimal.NewFromInt(0).Sub(*h.Spendable)
 		}
 
 		if h.Spendable != nil {
