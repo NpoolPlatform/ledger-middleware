@@ -54,13 +54,16 @@ func (h *lockHandler) setConds() *statementcrud.Conds {
 }
 
 func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	handler := statement1.Handler{
-		Reqs: []*statementcrud.Req{
-			req,
-		},
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithChangeLedger(),
+	)
+	if err != nil {
+		return err
 	}
 
-	if _, err := handler.CreateStatements(ctx); err != nil {
+	handler.Req = *req
+	if _, err := handler.CreateStatement(ctx); err != nil {
 		return err
 	}
 

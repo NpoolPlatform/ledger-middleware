@@ -287,12 +287,12 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 					return err
 				}
 
-				if req.ChangeLedger != nil && !*req.ChangeLedger {
-					return nil
-				}
-
 				if err := handler.tryCreateOrUpdateProfit(req, ctx, tx); err != nil {
 					return err
+				}
+
+				if h.ChangeLedger != nil && !*h.ChangeLedger { // just create statement, do not update ledger
+					return nil
 				}
 
 				incoming := decimal.NewFromInt(0)

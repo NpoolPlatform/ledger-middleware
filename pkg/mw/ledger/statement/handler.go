@@ -22,7 +22,7 @@ type Handler struct {
 	Conds        *crud.Conds
 	Offset       int32
 	Limit        int32
-	ChangeLedger bool
+	ChangeLedger *bool
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -190,7 +190,8 @@ func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 
 func WithChangeLedger() func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.ChangeLedger = true
+		changeable := false
+		h.ChangeLedger = &changeable
 		return nil
 	}
 }
