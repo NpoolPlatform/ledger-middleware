@@ -258,6 +258,11 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
 				}
+
+				if req.ChangeLedger != nil && !*req.ChangeLedger {
+					return nil
+				}
+
 				if err := handler.tryCreateOrUpdateProfit(req, ctx, tx); err != nil {
 					return err
 				}

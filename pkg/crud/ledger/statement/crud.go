@@ -26,6 +26,7 @@ type Req struct {
 	IOExtra         *string
 	CreatedAt       *uint32
 	DeletedAt       *uint32
+	ChangeLedger    *bool // determine whether need to change ledger, default true
 }
 
 func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
