@@ -184,7 +184,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 			locked = *h.Locked
 			spendable = decimal.NewFromInt(0).Sub(*h.Locked)
 		}
-
 		if h.Spendable != nil { // spend
 			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
 			outcoming = *h.Spendable
@@ -210,6 +209,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 				return err
 			}
 		}
+
 		info, err = handler.tryUpdateLedger(ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,
