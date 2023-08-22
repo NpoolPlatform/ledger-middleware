@@ -6,9 +6,9 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
-	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
 	goodledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger"
 	goodstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/statement"
+	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -85,14 +85,22 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 	return nil
 }
 
-func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	if _, err := goodstatementcrud.CreateSet(
+func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) (*npool.GoodStatement, error) {
+	info, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		req,
-	).Save(ctx); err != nil {
-		return err
+	).Save(ctx)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return &npool.GoodStatement{
+		ID:          info.ID.String(),
+		GoodID:      info.GoodID.String(),
+		CoinTypeID:  info.CoinTypeID.String(),
+		BenefitDate: info.BenefitDate,
+		CreatedAt:   info.CreatedAt,
+		UpdatedAt:   info.UpdatedAt,
+	}, nil
 }
 
 func (h *createHandler) tryCreateUnsoldStatement(req *unsoldcrud.Req, ctx context.Context, tx *ent.Tx) error {
@@ -145,6 +153,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	}
 
 	ids := []uuid.UUID{}
+	infos := []*npool.GoodStatement{}
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range reqs {
 			_fn := func() error {
@@ -158,15 +167,18 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 					_ = redis2.Unlock(key)
 				}()
 
-				if err := handler.tryCreateGoodStatement(&goodstatementcrud.Req{
+				info, err := handler.tryCreateGoodStatement(&goodstatementcrud.Req{
 					ID:          &goodStatementID,
 					GoodID:      req.GoodID,
 					CoinTypeID:  req.CoinTypeID,
 					BenefitDate: req.BenefitDate,
 					Amount:      req.TotalAmount,
-				}, ctx, tx); err != nil {
+				}, ctx, tx)
+				if err != nil {
 					return err
 				}
+				infos = append(infos, info)
+
 				if err := handler.tryCreateUnsoldStatement(&unsoldcrud.Req{
 					GoodID:      req.GoodID,
 					CoinTypeID:  req.CoinTypeID,
@@ -205,5 +217,5 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		return nil, err
 	}
 
-	return nil, nil
+	return infos, nil
 }

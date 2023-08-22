@@ -159,7 +159,7 @@ func WithReqs(reqs []*npool.GoodStatementsReq) func(context.Context, *Handler) e
 				return fmt.Errorf("invalid total amount")
 			}
 			if req.UnsoldAmount == nil {
-				return fmt.Errorf("invalid unsold amount ")
+				return fmt.Errorf("invalid unsold amount")
 			}
 			if req.TechniqueServiceFeeAmount == nil {
 				return fmt.Errorf("invalid technique service fee amount")
