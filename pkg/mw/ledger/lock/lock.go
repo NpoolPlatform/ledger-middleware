@@ -180,16 +180,16 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		spendable := decimal.NewFromInt(0)
 		outcoming := decimal.NewFromInt(0)
 
-		if h.Locked != nil { // lock
-			locked = *h.Locked
-			spendable = decimal.NewFromInt(0).Sub(*h.Locked)
+		if h.Spendable != nil { // lock
+			locked = *h.Spendable
+			spendable = decimal.NewFromInt(0).Sub(*h.Spendable)
 		}
-		if h.Spendable != nil { // spend
-			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
-			outcoming = *h.Spendable
+		if h.Locked != nil { // spend
+			locked = decimal.NewFromInt(0).Sub(*h.Locked)
+			outcoming = *h.Locked
 		}
 
-		if h.Spendable != nil {
+		if h.Locked != nil { // spend
 			if h.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
@@ -248,22 +248,23 @@ func (h *Handler) AddBalance(ctx context.Context) (info *ledgerpb.Ledger, err er
 		spendable := decimal.NewFromInt(0)
 		outcoming := decimal.NewFromInt(0)
 
-		if h.Locked != nil { // unlock
-			locked = decimal.NewFromInt(0).Sub(*h.Locked)
-			spendable = *h.Locked
+		if h.Spendable != nil { // unlock
+			spendable = *h.Spendable
+			locked = decimal.NewFromInt(0).Sub(*h.Spendable)
 		}
-		if h.Spendable != nil { // unspend
-			locked = *h.Spendable
-			outcoming = decimal.NewFromInt(0).Sub(*h.Spendable)
+		if h.Locked != nil { // unspend
+			locked = *h.Locked
+			outcoming = decimal.NewFromInt(0).Sub(*h.Locked)
 		}
 
-		if h.Spendable != nil {
+		if h.Locked != nil { // unspend
 			if h.IOSubType == nil {
 				return fmt.Errorf("invalid io sub type")
 			}
 			if h.IOExtra != nil {
 				return fmt.Errorf("invalid io extra")
 			}
+
 			exist, err := handler.tryGetStatement(ctx, tx)
 			if err != nil {
 				return err
