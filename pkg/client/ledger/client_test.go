@@ -64,7 +64,6 @@ var (
 	}
 
 	locked    = "10"
-	outcoming = "0"
 	ioSubType = basetypes.IOSubType_Withdrawal
 	ioExtra   = fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString())
 	req       = ledgerpb.LedgerReq{
@@ -73,8 +72,7 @@ var (
 		CoinTypeID: &coinTypeID,
 		IOSubType:  &ioSubType,
 		IOExtra:    &ioExtra,
-		Locked:     &locked,
-		Outcoming:  &outcoming,
+		Spendable:  &locked,
 	}
 
 	ledgerResult1 = ledgerpb.Ledger{
@@ -155,18 +153,7 @@ func createStatements(t *testing.T) {
 	}
 }
 
-func lockBalance(t *testing.T) {
-	info, err := AddBalance(context.Background(), &req)
-	if assert.Nil(t, err) {
-		assert.NotNil(t, info)
-		ledgerResult1.ID = info.ID
-		ledgerResult1.CreatedAt = info.CreatedAt
-		ledgerResult1.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ledgerResult1, info)
-	}
-}
-
-func unlockBalance(t *testing.T) {
+func subBalance(t *testing.T) {
 	info, err := SubBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
@@ -174,6 +161,17 @@ func unlockBalance(t *testing.T) {
 		ledgerResult2.CreatedAt = info.CreatedAt
 		ledgerResult2.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult2, info)
+	}
+}
+
+func addBalance(t *testing.T) {
+	info, err := AddBalance(context.Background(), &req)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		ledgerResult1.ID = info.ID
+		ledgerResult1.CreatedAt = info.CreatedAt
+		ledgerResult1.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult1, info)
 	}
 }
 
@@ -190,6 +188,6 @@ func TestClient(t *testing.T) {
 
 	t.Run("insertSameDataTwice", insertSameDataTwice)
 	t.Run("createStatements", createStatements)
-	t.Run("lockBalance", lockBalance)
-	t.Run("unlockBalance", unlockBalance)
+	t.Run("subBalance", subBalance)
+	t.Run("addBalance", addBalance)
 }
