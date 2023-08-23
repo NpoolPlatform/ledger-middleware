@@ -107,6 +107,8 @@ func getWithdraws(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
 		WithConds(conds),
+		WithOffset(0),
+		WithLimit(100),
 	)
 	assert.Nil(t, err)
 
