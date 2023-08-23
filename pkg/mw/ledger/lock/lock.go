@@ -131,23 +131,6 @@ func (h *lockHandler) getRollbackStatement(ctx context.Context, tx *ent.Tx) erro
 	return nil
 }
 
-func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	handler, err := statement1.NewHandler(
-		ctx,
-		statement1.WithChangeLedger(),
-	)
-	if err != nil {
-		return err
-	}
-
-	handler.Req = *req
-	if _, err := handler.CreateStatement(ctx); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (h *lockHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
@@ -330,7 +313,15 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 
 	// rollback
 	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, info.ID.String())
-	if err := h.tryCreateStatement(&statementcrud.Req{
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithChangeLedger(),
+	)
+	if err != nil {
+		return err
+	}
+
+	handler.Req = statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
 		CoinTypeID: h.CoinTypeID,
@@ -338,7 +329,8 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		IOSubType:  h.IOSubType,
 		IOExtra:    &ioExtra,
 		Amount:     h.Locked,
-	}, ctx, tx); err != nil {
+	}
+	if _, err := handler.CreateStatement(ctx); err != nil {
 		return err
 	}
 
