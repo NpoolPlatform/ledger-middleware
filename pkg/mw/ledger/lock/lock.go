@@ -8,6 +8,7 @@ import (
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	ledgerpb "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -52,6 +53,21 @@ func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 	h.ledger = info
+
+	id := info.ID.String()
+	handler, err := ledger1.NewHandler(
+		ctx,
+		ledger1.WithID(&id),
+	)
+	if err != nil {
+		return err
+	}
+
+	info1, err := handler.GetLedger(ctx)
+	if err != nil {
+		return err
+	}
+	h.info = info1
 	return nil
 }
 
