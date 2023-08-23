@@ -51,7 +51,7 @@ func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
 		}
 		return err
 	}
-	h.ledger = *info
+	h.ledger = info
 	return nil
 }
 
@@ -325,7 +325,7 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 
 	// whether have been rolled back
 	if h.rollback != nil {
-		return fmt.Errorf("rollback statement already exist")
+		return fmt.Errorf("rollback statement already rolled back")
 	}
 
 	// rollback
