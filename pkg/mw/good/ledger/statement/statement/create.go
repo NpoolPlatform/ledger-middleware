@@ -204,10 +204,10 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 					return err
 				}
 
-				toPlatform := h.UnsoldAmount.Add(*h.TechniqueServiceFeeAmount)
-				toUser := h.TotalAmount.Sub(toPlatform)
-				if h.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
-					return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", h.TotalAmount.String(), toPlatform.String(), toUser.String())
+				toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
+				toUser := req.TotalAmount.Sub(toPlatform)
+				if req.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
+					return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount.String(), toPlatform.String(), toUser.String())
 				}
 
 				if err := handler.tryCreateOrUpdateGoodLedger(&goodledgercrud.Req{
