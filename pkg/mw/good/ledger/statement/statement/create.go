@@ -39,7 +39,7 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 
 	// create
 	if info == nil {
-		key := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedger, *h.GoodID, *h.CoinTypeID)
+		key := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedger, *req.GoodID, *req.CoinTypeID)
 		if err := redis2.TryLock(key, 0); err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 }
 
 func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) (*npool.GoodStatement, error) {
-	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
+	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 }
 
 func (h *createHandler) tryCreateUnsoldStatement(req *unsoldcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
+	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
