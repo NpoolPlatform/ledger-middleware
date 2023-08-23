@@ -208,6 +208,9 @@ func spendBalance(t *testing.T) {
 	info1, err := SubBalance(context.Background(), spendReq)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info1)
+        spendResult.ID = info1.ID
+		spendResult.CreatedAt = info1.CreatedAt
+		spendResult.UpdatedAt = info1.UpdatedAt
 		assert.Equal(t, &spendResult, info1)
 	}
 }
