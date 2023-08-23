@@ -23,8 +23,8 @@ type createHandler struct {
 
 func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := goodledgercrud.SetQueryConds(tx.GoodLedger.Query(), &goodledgercrud.Conds{
-		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: req.GoodID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: req.CoinTypeID},
+		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
 	})
 	if err != nil {
 		return err
@@ -34,7 +34,6 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 		if !ent.IsNotFound(err) {
 			return err
 		}
-		return err
 	}
 
 	// create
@@ -51,7 +50,7 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 			tx.GoodLedger.Create(),
 			&goodledgercrud.Req{
 				GoodID:     req.GoodID,
-				CoinTypeID: h.CoinTypeID,
+				CoinTypeID: req.CoinTypeID,
 				Amount:     req.Amount,
 				ToPlatform: req.ToPlatform,
 				ToUser:     req.ToUser,
@@ -151,10 +150,12 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				},
 			)
 			if err != nil {
+                fmt.Println("SetQueryConds: ", err)
 				return err
 			}
 			exist, err := stm.Exist(ctx)
 			if err != nil {
+                fmt.Println("Exist: ", err)
 				return err
 			}
 			if exist {

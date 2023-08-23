@@ -192,7 +192,7 @@ func WithReqs(reqs []*npool.GoodStatementsReq) func(context.Context, *Handler) e
 				_req.TotalAmount = &amount
 			}
 			if req.UnsoldAmount != nil {
-				amount, err := decimal.NewFromString(*req.TotalAmount)
+				amount, err := decimal.NewFromString(*req.UnsoldAmount)
 				if err != nil {
 					return err
 				}

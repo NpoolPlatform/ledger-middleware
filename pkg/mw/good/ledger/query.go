@@ -63,6 +63,7 @@ func (h *queryHandler) scan(ctx context.Context) error {
 
 func (h *queryHandler) formalize() {
 	for _, info := range h.infos {
+        fmt.Println("infos: ", info)
 		amount := decimal.NewFromInt(0).String()
 		if _amount, err := decimal.NewFromString(info.Amount); err == nil {
 			amount = _amount.String()
@@ -76,7 +77,7 @@ func (h *queryHandler) formalize() {
 		info.ToPlatform = toPlatform
 
 		toUser := decimal.NewFromInt(0).String()
-		if _toUser, err := decimal.NewFromString(info.ToPlatform); err == nil {
+		if _toUser, err := decimal.NewFromString(info.ToUser); err == nil {
 			toUser = _toUser.String()
 		}
 		info.ToUser = toUser
