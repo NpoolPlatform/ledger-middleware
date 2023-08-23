@@ -163,7 +163,7 @@ func createStatements(t *testing.T) {
 	}
 }
 
-func subBalance(t *testing.T) {
+func lockBalance(t *testing.T) {
 	info, err := SubBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
@@ -174,7 +174,7 @@ func subBalance(t *testing.T) {
 	}
 }
 
-func addBalance(t *testing.T) {
+func unlockBalance(t *testing.T) {
 	info, err := AddBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
@@ -234,8 +234,8 @@ func TestClient(t *testing.T) {
 
 	t.Run("insertSameDataTwice", insertSameDataTwice)
 	t.Run("createStatements", createStatements)
-	t.Run("subBalance", subBalance)
-	t.Run("addBalance", addBalance)
+	t.Run("lockBalance", lockBalance)
+	t.Run("unlockBalance", unlockBalance)
 	t.Run("spendBalance", spendBalance)
 	t.Run("unspendBalance", unspendBalance)
 }
