@@ -112,6 +112,9 @@ func (h *lockHandler) getRollbackStatement(ctx context.Context, tx *ent.Tx) erro
 	if err != nil {
 		return err
 	}
+	if origin == nil {
+		return nil
+	}
 
 	// get rollback statement
 	ioType = ledgerpb.IOType_Incoming
