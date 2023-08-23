@@ -96,6 +96,26 @@ func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) (*ent.Sta
 	return info, nil
 }
 
+func (h *lockHandler) tryExistRolledBackStatement(origin *ent.Statement, ctx context.Context, tx *ent.Tx) (bool, error) {
+	ioType := basetypes.IOType_Outcoming
+	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
+
+	conds := h.setConds()
+	conds.IOType = &cruder.Cond{Op: cruder.EQ, Val: ioType}
+	conds.IOExtra = &cruder.Cond{Op: cruder.LIKE, Val: ioExtra}
+
+	stm, err := statementcrud.SetQueryConds(
+		tx.Statement.Query(),
+		conds,
+	)
+	if err != nil {
+		return false, err
+	}
+	exist, err := stm.Exist(ctx)
+
+	return exist, err
+}
+
 func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
 	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
 		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
@@ -192,7 +212,14 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 	if info != nil {
-		return fmt.Errorf("statement already exist")
+		// try get rolled back statement
+		exist, err := h.tryExistRolledBackStatement(info, ctx, tx)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			return fmt.Errorf("statement already exist")
+		}
 	}
 
 	ioType := basetypes.IOType_Outcoming
@@ -288,9 +315,18 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
+	// whether have been rolled back
+	exist, err := h.tryExistRolledBackStatement(info, ctx, tx)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("rollback statement already exist")
+	}
+
 	// rollback
 	ioType := basetypes.IOType_Outcoming
-	ioExtra := fmt.Sprintf(`{"GeneralID": "%v", "Rollback": "true"}`, info.ID.String())
+	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, info.ID.String())
 	if err := h.tryCreateStatement(&statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
