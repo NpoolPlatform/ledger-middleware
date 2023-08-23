@@ -8,7 +8,6 @@ import (
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	ledgerpb "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -104,66 +103,6 @@ func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx conte
 	return &h.rollback, nil
 }
 
-func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgermwpb.Ledger, error) {
-	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	info, err := stm.Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, fmt.Errorf("ledger not exist, AppID: %v, UserID: %v, CoinTypeID: %v", *req.AppID, *req.UserID, *req.CoinTypeID)
-		}
-		return nil, err
-	}
-
-	// update
-	old, err := tx.Ledger.Get(ctx, info.ID)
-	if err != nil {
-		return nil, err
-	}
-	if old == nil {
-		return nil, fmt.Errorf("ledger not exist, id %v", info.ID)
-	}
-
-	stm1, err := ledgercrud.UpdateSet(
-		old,
-		tx.Ledger.UpdateOneID(info.ID),
-		&ledgercrud.Req{
-			Outcoming: req.Outcoming,
-			Spendable: req.Spendable,
-			Locked:    req.Locked,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	if _, err := stm1.Save(ctx); err != nil {
-		return nil, err
-	}
-
-	ledgerID := old.ID.String()
-	handler, err := ledger1.NewHandler(
-		ctx,
-		ledger1.WithID(&ledgerID),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	h.info, err = handler.GetLedger(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return h.info, nil
-}
-
 func (h *lockHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
@@ -175,13 +114,21 @@ func (h *lockHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	spendable := decimal.NewFromInt(0).Sub(*h.Spendable)
 	locked := *h.Spendable
 
-	if _, err := h.tryUpdateLedger(ledgercrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		Locked:     &locked,
-		Spendable:  &spendable,
-	}, ctx, tx); err != nil {
+	stm, err := ledgercrud.UpdateSet(
+		&h.ledger,
+		tx.Ledger.UpdateOneID(h.ledger.ID),
+		&ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Spendable:  &spendable,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm.Save(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -242,13 +189,21 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	locked := decimal.NewFromInt(0).Sub(*h.Locked)
 	outcoming := *h.Locked
 
-	if _, err = h.tryUpdateLedger(ledgercrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		Locked:     &locked,
-		Outcoming:  &outcoming,
-	}, ctx, tx); err != nil {
+	stm, err := ledgercrud.UpdateSet(
+		&h.ledger,
+		tx.Ledger.UpdateOneID(h.ledger.ID),
+		&ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Outcoming:  &outcoming,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm.Save(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -291,13 +246,21 @@ func (h *lockHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	spendable := *h.Spendable
 	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
 
-	if _, err := h.tryUpdateLedger(ledgercrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		Locked:     &locked,
-		Spendable:  &spendable,
-	}, ctx, tx); err != nil {
+	stm, err := ledgercrud.UpdateSet(
+		&h.ledger,
+		tx.Ledger.UpdateOneID(h.ledger.ID),
+		&ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Spendable:  &spendable,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm.Save(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -353,13 +316,21 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	locked := *h.Locked
 	outcoming := decimal.NewFromInt(0).Sub(*h.Locked)
 
-	if _, err = h.tryUpdateLedger(ledgercrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		Locked:     &locked,
-		Outcoming:  &outcoming,
-	}, ctx, tx); err != nil {
+	stm, err := ledgercrud.UpdateSet(
+		&h.ledger,
+		tx.Ledger.UpdateOneID(h.ledger.ID),
+		&ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Outcoming:  &outcoming,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm.Save(ctx); err != nil {
 		return err
 	}
 	return nil
