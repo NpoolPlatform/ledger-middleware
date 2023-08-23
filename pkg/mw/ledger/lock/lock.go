@@ -18,7 +18,6 @@ import (
 
 type lockHandler struct {
 	*Handler
-	info     *ledgermwpb.Ledger
 	ledger   *ent.Ledger
 	rollback *ent.Statement
 }
@@ -45,29 +44,13 @@ func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 
-	info, err := stm.Only(ctx)
+	_, err = stm.Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return fmt.Errorf("ledger not exist, AppID: %v, UserID: %v, CoinTypeID: %v", *h.AppID, *h.UserID, *h.CoinTypeID)
 		}
 		return err
 	}
-	h.ledger = info
-
-	id := info.ID.String()
-	handler, err := ledger1.NewHandler(
-		ctx,
-		ledger1.WithID(&id),
-	)
-	if err != nil {
-		return err
-	}
-
-	info1, err := handler.GetLedger(ctx)
-	if err != nil {
-		return err
-	}
-	h.info = info1
 	return nil
 }
 
@@ -273,7 +256,16 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 		return nil, err
 	}
 
-	return handler.info, err
+	id := handler.ledger.ID.String()
+	handler1, err := ledger1.NewHandler(
+		ctx,
+		ledger1.WithID(&id),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return handler1.GetLedger(ctx)
 }
 
 func (h *lockHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
@@ -405,5 +397,14 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		return nil, err
 	}
 
-	return handler.info, err
+	id := handler.ledger.ID.String()
+	handler1, err := ledger1.NewHandler(
+		ctx,
+		ledger1.WithID(&id),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return handler1.GetLedger(ctx)
 }
