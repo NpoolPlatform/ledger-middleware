@@ -94,6 +94,16 @@ var (
 		Locked:     "0",
 		Spendable:  "150",
 	}
+
+	spendResult = ledgerpb.Ledger{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Incoming:   "150",
+		Outcoming:  "10",
+		Locked:     "0",
+		Spendable:  "140",
+	}
 )
 
 func insertSameDataTwice(t *testing.T) {
@@ -175,6 +185,41 @@ func addBalance(t *testing.T) {
 	}
 }
 
+var (
+	spendReq = &ledgerpb.LedgerReq{
+		AppID:      &appID,
+		UserID:     &userID,
+		CoinTypeID: &coinTypeID,
+		IOSubType:  &ioSubType,
+		IOExtra:    &ioExtra,
+		Locked:     req.Spendable,
+	}
+)
+
+func spendBalance(t *testing.T) {
+	// lock
+	info, err := SubBalance(context.Background(), &req)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+	}
+
+	// spend
+	info1, err := SubBalance(context.Background(), spendReq)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info1)
+		assert.Equal(t, &spendResult, info1)
+	}
+}
+
+func unspendBalance(t *testing.T) {
+	// unspend
+	info, err := AddBalance(context.Background(), spendReq)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		assert.Equal(t, &ledgerResult1, info)
+	}
+}
+
 func TestClient(t *testing.T) {
 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
 		return
@@ -190,4 +235,6 @@ func TestClient(t *testing.T) {
 	t.Run("createStatements", createStatements)
 	t.Run("subBalance", subBalance)
 	t.Run("addBalance", addBalance)
+	t.Run("spendBalance", spendBalance)
+	t.Run("unspendBalance", unspendBalance)
 }
