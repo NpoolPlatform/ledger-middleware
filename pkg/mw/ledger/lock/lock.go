@@ -72,7 +72,8 @@ func (h *lockHandler) tryGetStatement(req *statementcrud.Req, ctx context.Contex
 	if err != nil {
 		return nil, err
 	}
-	info, err := stm.Only(ctx)
+
+	info, err := stm.First(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
