@@ -22,9 +22,9 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 		lock1.WithUserID(req.UserID),
 		lock1.WithCoinTypeID(req.CoinTypeID),
 		lock1.WithLocked(req.Locked),
-		lock1.WithOutcoming(req.Outcoming),
-		lock1.WithIOSubType(req.IOSubType, false),
-		lock1.WithIOExtra(req.IOExtra, false),
+		lock1.WithSpendable(req.Spendable),
+		lock1.WithIOSubType(req.IOSubType),
+		lock1.WithIOExtra(req.IOExtra),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -61,10 +61,10 @@ func (s *Server) SubBalance(ctx context.Context, in *npool.SubBalanceRequest) (
 		lock1.WithAppID(req.AppID),
 		lock1.WithUserID(req.UserID),
 		lock1.WithCoinTypeID(req.CoinTypeID),
+		lock1.WithSpendable(req.Spendable),
 		lock1.WithLocked(req.Locked),
-		lock1.WithOutcoming(req.Outcoming),
-		lock1.WithIOSubType(req.IOSubType, true),
-		lock1.WithIOExtra(req.IOExtra, true),
+		lock1.WithIOSubType(req.IOSubType),
+		lock1.WithIOExtra(req.IOExtra),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

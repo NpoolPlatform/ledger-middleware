@@ -17,7 +17,6 @@ type Handler struct {
 	CoinTypeID *uuid.UUID
 	Locked     *decimal.Decimal
 	Spendable  *decimal.Decimal
-	Outcoming  *decimal.Decimal
 	IOSubType  *basetypes.IOSubType
 	IOExtra    *string
 }
@@ -88,12 +87,9 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, *Handler) error {
+func WithIOSubType(_type *basetypes.IOSubType) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {
-			if must {
-				return fmt.Errorf("invalid io sub type")
-			}
 			return nil
 		}
 		switch *_type {
@@ -110,7 +106,7 @@ func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, 
 func WithLocked(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
-			return fmt.Errorf("invalid amount")
+			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
 		if err != nil {
@@ -124,29 +120,26 @@ func WithLocked(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithOutcoming(outcoming *string) func(context.Context, *Handler) error {
+func WithSpendable(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if outcoming == nil {
-			return fmt.Errorf("invalid outcoming")
+		if amount == nil {
+			return fmt.Errorf("invalid spendable")
 		}
-		_outcoming, err := decimal.NewFromString(*outcoming)
+		_amount, err := decimal.NewFromString(*amount)
 		if err != nil {
 			return err
 		}
-		if _outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("amount is less than 0 %v", *outcoming)
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("amount is less than 0 %v", _amount.String())
 		}
-		h.Outcoming = &_outcoming
+		h.Spendable = &_amount
 		return nil
 	}
 }
 
-func WithIOExtra(extra *string, must bool) func(context.Context, *Handler) error {
+func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if extra == nil {
-			if must {
-				return fmt.Errorf("invalid extra")
-			}
 			return nil
 		}
 		if !json.Valid([]byte(*extra)) {
