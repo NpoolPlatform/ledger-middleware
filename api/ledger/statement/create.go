@@ -10,6 +10,44 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementRequest) (*npool.CreateStatementResponse, error) {
+	req := in.GetInfo()
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithID(req.ID),
+		statement1.WithAppID(req.AppID),
+		statement1.WithUserID(req.UserID),
+		statement1.WithCoinTypeID(req.CoinTypeID),
+		statement1.WithIOType(req.IOType),
+		statement1.WithIOSubType(req.IOSubType),
+		statement1.WithAmount(req.Amount),
+		statement1.WithIOExtra(req.IOExtra),
+		statement1.WithCreatedAt(*req.CreatedAt),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"CreateStatement",
+			"Req", in,
+			"Error", err,
+		)
+		return &npool.CreateStatementResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+
+	info, err := handler.CreateStatement(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"CreateStatement",
+			"Req", in,
+			"Error", err,
+		)
+		return &npool.CreateStatementResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+
+	return &npool.CreateStatementResponse{
+		Info: info,
+	}, nil
+}
+
 //nolint
 func (s *Server) CreateStatements(ctx context.Context, in *npool.CreateStatementsRequest) (*npool.CreateStatementsResponse, error) {
 	handler, err := statement1.NewHandler(

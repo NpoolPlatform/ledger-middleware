@@ -78,6 +78,22 @@ func GetStatements(ctx context.Context, conds *npool.Conds, offset, limit int32)
 	return infos.([]*npool.Statement), total, nil
 }
 
+func CreateStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.CreateStatement(ctx, &npool.CreateStatementRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail create withdraw: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail create withdraw: %v", err)
+	}
+	return info.(*npool.Statement), nil
+}
+
 //nolint
 func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {

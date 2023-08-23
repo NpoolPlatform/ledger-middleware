@@ -188,6 +188,16 @@ func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 	}
 }
 
+func WithCreatedAt(createdAt uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if createdAt == 0 {
+			return nil
+		}
+		h.CreatedAt = &createdAt
+		return nil
+	}
+}
+
 func WithChangeLedger() func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		changeable := false
