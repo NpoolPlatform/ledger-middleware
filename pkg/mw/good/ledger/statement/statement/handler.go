@@ -201,6 +201,16 @@ func WithReqs(reqs []*npool.GoodStatementsReq) func(context.Context, *Handler) e
 				}
 				_req.UnsoldAmount = &amount
 			}
+			if req.TechniqueServiceFeeAmount != nil {
+				amount, err := decimal.NewFromString(*req.TechniqueServiceFeeAmount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("technique service fee amount is less than 0 %v", *req.TechniqueServiceFeeAmount)
+				}
+				_req.TechniqueServiceFeeAmount = &amount
+			}
 
 			if req.BenefitDate != nil {
 				_req.BenefitDate = req.BenefitDate
