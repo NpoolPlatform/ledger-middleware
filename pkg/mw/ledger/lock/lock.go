@@ -220,6 +220,9 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		if err := handler.getLedger(ctx, tx); err != nil {
+			return err
+		}
 		if err := handler.tryLock(ctx, tx); err != nil {
 			return err
 		}
@@ -347,6 +350,9 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		if err := handler.getLedger(ctx, tx); err != nil {
+			return err
+		}
 		if err := handler.tryUnlock(ctx, tx); err != nil {
 			return err
 		}
