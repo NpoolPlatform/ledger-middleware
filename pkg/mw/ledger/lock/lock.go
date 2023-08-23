@@ -11,14 +11,16 @@ import (
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	ledgerpb "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	"github.com/shopspring/decimal"
 )
 
 type lockHandler struct {
 	*Handler
-	info *ledgerpb.Ledger
+	info     *ledgermwpb.Ledger
+	ledger   ent.Ledger
+	rollback ent.Statement
 }
 
 func (h *Handler) validate() error {
@@ -85,10 +87,9 @@ func (h *lockHandler) tryGetStatement(req *statementcrud.Req, ctx context.Contex
 }
 
 func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
-	ioType := basetypes.IOType_Incoming
+	ioType := ledgerpb.IOType_Incoming
 	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
-
-	return h.tryGetStatement(&statementcrud.Req{
+	info, err := h.tryGetStatement(&statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
 		CoinTypeID: h.CoinTypeID,
@@ -96,9 +97,14 @@ func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx conte
 		IOSubType:  h.IOSubType,
 		IOExtra:    &ioExtra,
 	}, ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	h.rollback = *info
+	return &h.rollback, nil
 }
 
-func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
+func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgermwpb.Ledger, error) {
 	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
 		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
 		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
@@ -189,7 +195,7 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("locked less than equal 0")
 	}
 
-	ioType := basetypes.IOType_Outcoming
+	ioType := ledgerpb.IOType_Outcoming
 	info, err := h.tryGetStatement(&statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
@@ -212,7 +218,15 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		}
 	}
 
-	if err := h.tryCreateStatement(&statementcrud.Req{
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithChangeLedger(),
+	)
+	if err != nil {
+		return err
+	}
+
+	handler.Req = statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
 		CoinTypeID: h.CoinTypeID,
@@ -220,7 +234,8 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		IOSubType:  h.IOSubType,
 		IOExtra:    h.IOExtra,
 		Amount:     h.Locked,
-	}, ctx, tx); err != nil {
+	}
+	if _, err := handler.CreateStatement(ctx); err != nil {
 		return err
 	}
 
@@ -240,7 +255,7 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 }
 
 // Lock & Spend
-func (h *Handler) SubBalance(ctx context.Context) (info *ledgerpb.Ledger, err error) {
+func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err error) {
 	if err := h.validate(); err != nil {
 		return nil, err
 	}
@@ -296,7 +311,7 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("locked less than equal 0")
 	}
 
-	ioType := basetypes.IOType_Outcoming
+	ioType := ledgerpb.IOType_Outcoming
 	info, err := h.tryGetStatement(&statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
@@ -351,7 +366,7 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 }
 
 // Unlock & Unspend
-func (h *Handler) AddBalance(ctx context.Context) (*ledgerpb.Ledger, error) {
+func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	if err := h.validate(); err != nil {
 		return nil, err
 	}
@@ -374,4 +389,27 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgerpb.Ledger, error) {
 	}
 
 	return handler.info, err
+}
+
+func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
+	stm, err := ledgercrud.SetQueryConds(
+		tx.Ledger.Query(),
+		&ledgercrud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
+		})
+	if err != nil {
+		return err
+	}
+
+	info, err := stm.Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return fmt.Errorf("ledger not exist, AppID: %v, UserID: %v, CoinTypeID: %v", *h.AppID, *h.UserID, *h.CoinTypeID)
+		}
+		return err
+	}
+	h.ledger = *info
+	return nil
 }
