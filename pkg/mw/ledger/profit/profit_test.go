@@ -42,6 +42,7 @@ func createProfit(t *testing.T) {
 		WithAppID(&ret.AppID),
 		WithUserID(&ret.UserID),
 		WithCoinTypeID(&ret.CoinTypeID),
+		WithIncoming(&ret.Incoming),
 	)
 	assert.Nil(t, err)
 
