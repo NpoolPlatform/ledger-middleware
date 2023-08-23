@@ -31,28 +31,6 @@ func (h *Handler) validate() error {
 	return nil
 }
 
-func (h *lockHandler) setConds() *statementcrud.Conds {
-	conds := &statementcrud.Conds{}
-	if h.AppID != nil {
-		conds.AppID = &cruder.Cond{Op: cruder.EQ, Val: *h.AppID}
-	}
-	if h.UserID != nil {
-		conds.UserID = &cruder.Cond{Op: cruder.EQ, Val: *h.UserID}
-	}
-	if h.CoinTypeID != nil {
-		conds.CoinTypeID = &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID}
-	}
-	if h.IOSubType != nil {
-		conds.IOSubType = &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType}
-	}
-	if h.IOExtra != nil {
-		conds.IOExtra = &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra}
-	}
-	ioType := basetypes.IOType_Outcoming
-	conds.IOType = &cruder.Cond{Op: cruder.EQ, Val: ioType}
-	return conds
-}
-
 func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	handler, err := statement1.NewHandler(
 		ctx,
@@ -70,39 +48,22 @@ func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Con
 	return nil
 }
 
-func (h *lockHandler) tryGetStatement(ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
-	if h.IOSubType == nil {
+func (h *lockHandler) tryGetStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
+	if req.IOSubType == nil {
 		return nil, fmt.Errorf("invalid io sub type")
 	}
-	if h.IOExtra == nil {
+	if req.IOExtra == nil {
 		return nil, fmt.Errorf("invalid io extra")
 	}
 
-	stm, err := statementcrud.SetQueryConds(
-		tx.Statement.Query(),
-		h.setConds(),
-	)
-	if err != nil {
-		return nil, err
+	conds := &statementcrud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+		IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
+		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
+		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
 	}
-	info, err := stm.Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return info, nil
-}
-
-func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
-	ioType := basetypes.IOType_Outcoming
-	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
-
-	conds := h.setConds()
-	conds.IOType = &cruder.Cond{Op: cruder.EQ, Val: ioType}
-	conds.IOExtra = &cruder.Cond{Op: cruder.LIKE, Val: ioExtra}
 
 	stm, err := statementcrud.SetQueryConds(
 		tx.Statement.Query(),
@@ -119,7 +80,21 @@ func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx conte
 		return nil, err
 	}
 
-	return info, err
+	return info, nil
+}
+
+func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
+	ioType := basetypes.IOType_Incoming
+	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
+
+	return h.tryGetStatement(&statementcrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     &ioType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    &ioExtra,
+	}, ctx, tx)
 }
 
 func (h *lockHandler) tryUpdateLedger(req ledgercrud.Req, ctx context.Context, tx *ent.Tx) (*ledgerpb.Ledger, error) {
@@ -213,7 +188,15 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("locked less than equal 0")
 	}
 
-	info, err := h.tryGetStatement(ctx, tx)
+	ioType := basetypes.IOType_Outcoming
+	info, err := h.tryGetStatement(&statementcrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     &ioType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+	}, ctx, tx)
 	if err != nil {
 		return err
 	}
@@ -228,7 +211,6 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		}
 	}
 
-	ioType := basetypes.IOType_Outcoming
 	if err := h.tryCreateStatement(&statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
@@ -313,7 +295,15 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("locked less than equal 0")
 	}
 
-	info, err := h.tryGetStatement(ctx, tx)
+	ioType := basetypes.IOType_Outcoming
+	info, err := h.tryGetStatement(&statementcrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     &ioType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+	}, ctx, tx)
 	if err != nil {
 		return err
 	}
@@ -322,16 +312,15 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	// whether have been rolled back
-	info1, err := h.tryGetRolledBackStatement(info, ctx, tx)
+	rolled, err := h.tryGetRolledBackStatement(info, ctx, tx)
 	if err != nil {
 		return err
 	}
-	if info1 != nil {
+	if rolled != nil {
 		return fmt.Errorf("rollback statement already exist")
 	}
 
 	// rollback
-	ioType := basetypes.IOType_Outcoming
 	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, info.ID.String())
 	if err := h.tryCreateStatement(&statementcrud.Req{
 		AppID:      h.AppID,
