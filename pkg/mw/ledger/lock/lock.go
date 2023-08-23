@@ -44,13 +44,14 @@ func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 
-	_, err = stm.Only(ctx)
+    info, err := stm.Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return fmt.Errorf("ledger not exist, AppID: %v, UserID: %v, CoinTypeID: %v", *h.AppID, *h.UserID, *h.CoinTypeID)
 		}
 		return err
 	}
+    h.ledger = info
 	return nil
 }
 
