@@ -150,10 +150,10 @@ func WithReqs(reqs []*npool.GoodStatementsReq) func(context.Context, *Handler) e
 		for _, req := range reqs {
 			_req := &Req{}
 			if req.GoodID == nil {
-				return fmt.Errorf("invalid good id ")
+				return fmt.Errorf("invalid good id")
 			}
 			if req.CoinTypeID == nil {
-				return fmt.Errorf("invalid coin type id ")
+				return fmt.Errorf("invalid coin type id")
 			}
 			if req.TotalAmount == nil {
 				return fmt.Errorf("invalid total amount")
