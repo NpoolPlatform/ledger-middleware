@@ -18,8 +18,8 @@ import (
 type lockHandler struct {
 	*Handler
 	info     *ledgermwpb.Ledger
-	ledger   ent.Ledger
-	rollback ent.Statement
+	ledger   *ent.Ledger
+	rollback *ent.Statement
 }
 
 func (h *Handler) validate() error {
@@ -32,20 +32,26 @@ func (h *Handler) validate() error {
 	return nil
 }
 
-func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	handler, err := statement1.NewHandler(
-		ctx,
-		statement1.WithChangeLedger(),
-	)
+func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
+	stm, err := ledgercrud.SetQueryConds(
+		tx.Ledger.Query(),
+		&ledgercrud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
+		})
 	if err != nil {
 		return err
 	}
 
-	handler.Req = *req
-	if _, err := handler.CreateStatement(ctx); err != nil {
+	info, err := stm.Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return fmt.Errorf("ledger not exist, AppID: %v, UserID: %v, CoinTypeID: %v", *h.AppID, *h.UserID, *h.CoinTypeID)
+		}
 		return err
 	}
-
+	h.ledger = *info
 	return nil
 }
 
@@ -85,8 +91,30 @@ func (h *lockHandler) tryGetStatement(req *statementcrud.Req, ctx context.Contex
 	return info, nil
 }
 
-func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
-	ioType := ledgerpb.IOType_Incoming
+func (h *lockHandler) getRollbackStatement(ctx context.Context, tx *ent.Tx) error {
+	if h.IOSubType == nil {
+		return fmt.Errorf("invalid io sub type")
+	}
+	if h.IOExtra == nil {
+		return fmt.Errorf("invalid io extra")
+	}
+
+	// get statement
+	ioType := ledgerpb.IOType_Outcoming
+	origin, err := h.tryGetStatement(&statementcrud.Req{
+		AppID:      h.AppID,
+		UserID:     h.UserID,
+		CoinTypeID: h.CoinTypeID,
+		IOType:     &ioType,
+		IOSubType:  h.IOSubType,
+		IOExtra:    h.IOExtra,
+	}, ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	// get rollback statement
+	ioType = ledgerpb.IOType_Incoming
 	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
 	info, err := h.tryGetStatement(&statementcrud.Req{
 		AppID:      h.AppID,
@@ -97,25 +125,39 @@ func (h *lockHandler) tryGetRolledBackStatement(origin *ent.Statement, ctx conte
 		IOExtra:    &ioExtra,
 	}, ctx, tx)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	h.rollback = *info
-	return &h.rollback, nil
+	h.rollback = info
+	return nil
+}
+
+func (h *lockHandler) tryCreateStatement(req *statementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithChangeLedger(),
+	)
+	if err != nil {
+		return err
+	}
+
+	handler.Req = *req
+	if _, err := handler.CreateStatement(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h *lockHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
 	}
-	if h.Spendable.Cmp(decimal.NewFromInt(0)) <= 0 {
-		return fmt.Errorf("spendable less than equal 0")
-	}
 
 	spendable := decimal.NewFromInt(0).Sub(*h.Spendable)
 	locked := *h.Spendable
 
 	stm, err := ledgercrud.UpdateSet(
-		&h.ledger,
+		h.ledger,
 		tx.Ledger.UpdateOneID(h.ledger.ID),
 		&ledgercrud.Req{
 			AppID:      h.AppID,
@@ -138,10 +180,6 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
-	if h.Locked.Cmp(decimal.NewFromInt(0)) <= 0 {
-		return fmt.Errorf("locked less than equal 0")
-	}
-
 	ioType := ledgerpb.IOType_Outcoming
 	info, err := h.tryGetStatement(&statementcrud.Req{
 		AppID:      h.AppID,
@@ -155,12 +193,7 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 	if info != nil {
-		// try get rolled back statement
-		info, err := h.tryGetRolledBackStatement(info, ctx, tx)
-		if err != nil {
-			return err
-		}
-		if info == nil {
+		if h.rollback == nil {
 			return fmt.Errorf("statement already exist")
 		}
 	}
@@ -190,7 +223,7 @@ func (h *lockHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	outcoming := *h.Locked
 
 	stm, err := ledgercrud.UpdateSet(
-		&h.ledger,
+		h.ledger,
 		tx.Ledger.UpdateOneID(h.ledger.ID),
 		&ledgercrud.Req{
 			AppID:      h.AppID,
@@ -226,6 +259,9 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 		if err := handler.tryLock(ctx, tx); err != nil {
 			return err
 		}
+		if err := handler.getRollbackStatement(ctx, tx); err != nil {
+			return err
+		}
 		if err := handler.trySpend(ctx, tx); err != nil {
 			return err
 		}
@@ -242,15 +278,12 @@ func (h *lockHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
 	}
-	if h.Spendable.Cmp(decimal.NewFromInt(0)) <= 0 {
-		return fmt.Errorf("spendable less than equal 0")
-	}
 
 	spendable := *h.Spendable
 	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
 
 	stm, err := ledgercrud.UpdateSet(
-		&h.ledger,
+		h.ledger,
 		tx.Ledger.UpdateOneID(h.ledger.ID),
 		&ledgercrud.Req{
 			AppID:      h.AppID,
@@ -273,9 +306,6 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
-	if h.Locked.Cmp(decimal.NewFromInt(0)) <= 0 {
-		return fmt.Errorf("locked less than equal 0")
-	}
 
 	ioType := ledgerpb.IOType_Outcoming
 	info, err := h.tryGetStatement(&statementcrud.Req{
@@ -294,11 +324,7 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	// whether have been rolled back
-	rolled, err := h.tryGetRolledBackStatement(info, ctx, tx)
-	if err != nil {
-		return err
-	}
-	if rolled != nil {
+	if h.rollback != nil {
 		return fmt.Errorf("rollback statement already exist")
 	}
 
@@ -320,7 +346,7 @@ func (h *lockHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	outcoming := decimal.NewFromInt(0).Sub(*h.Locked)
 
 	stm, err := ledgercrud.UpdateSet(
-		&h.ledger,
+		h.ledger,
 		tx.Ledger.UpdateOneID(h.ledger.ID),
 		&ledgercrud.Req{
 			AppID:      h.AppID,
@@ -356,6 +382,9 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		if err := handler.tryUnlock(ctx, tx); err != nil {
 			return err
 		}
+		if err := handler.getRollbackStatement(ctx, tx); err != nil {
+			return err
+		}
 		if err := handler.tryUnspend(ctx, tx); err != nil {
 			return err
 		}
@@ -366,27 +395,4 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	}
 
 	return handler.info, err
-}
-
-func (h *lockHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
-	stm, err := ledgercrud.SetQueryConds(
-		tx.Ledger.Query(),
-		&ledgercrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
-		})
-	if err != nil {
-		return err
-	}
-
-	info, err := stm.Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("ledger not exist, AppID: %v, UserID: %v, CoinTypeID: %v", *h.AppID, *h.UserID, *h.CoinTypeID)
-		}
-		return err
-	}
-	h.ledger = *info
-	return nil
 }
