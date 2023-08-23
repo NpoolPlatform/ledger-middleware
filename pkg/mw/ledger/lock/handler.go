@@ -123,7 +123,7 @@ func WithLocked(amount *string) func(context.Context, *Handler) error {
 func WithSpendable(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
-			return fmt.Errorf("invalid spendable")
+			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
 		if err != nil {

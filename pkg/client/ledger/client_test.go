@@ -167,17 +167,6 @@ func subBalance(t *testing.T) {
 	info, err := SubBalance(context.Background(), &req)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
-		ledgerResult2.ID = info.ID
-		ledgerResult2.CreatedAt = info.CreatedAt
-		ledgerResult2.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ledgerResult2, info)
-	}
-}
-
-func addBalance(t *testing.T) {
-	info, err := AddBalance(context.Background(), &req)
-	if assert.Nil(t, err) {
-		assert.NotNil(t, info)
 		ledgerResult1.ID = info.ID
 		ledgerResult1.CreatedAt = info.CreatedAt
 		ledgerResult1.UpdatedAt = info.UpdatedAt
@@ -185,14 +174,26 @@ func addBalance(t *testing.T) {
 	}
 }
 
+func addBalance(t *testing.T) {
+	info, err := AddBalance(context.Background(), &req)
+	if assert.Nil(t, err) {
+		assert.NotNil(t, info)
+		ledgerResult2.ID = info.ID
+		ledgerResult2.CreatedAt = info.CreatedAt
+		ledgerResult2.UpdatedAt = info.UpdatedAt
+		assert.Equal(t, &ledgerResult2, info)
+	}
+}
+
 var (
-	spendReq = &ledgerpb.LedgerReq{
+	spendable = "10"
+	spendReq  = &ledgerpb.LedgerReq{
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
 		IOSubType:  &ioSubType,
 		IOExtra:    &ioExtra,
-		Locked:     req.Spendable,
+		Locked:     &spendable,
 	}
 )
 
