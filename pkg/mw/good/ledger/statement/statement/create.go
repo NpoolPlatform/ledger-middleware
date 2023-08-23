@@ -12,6 +12,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	"github.com/google/uuid"
 )
@@ -38,6 +39,14 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 
 	// create
 	if info == nil {
+		key := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedger, *h.GoodID, *h.CoinTypeID)
+		if err := redis2.TryLock(key, 0); err != nil {
+			return err
+		}
+		defer func() {
+			_ = redis2.Unlock(key)
+		}()
+
 		stm, err := goodledgercrud.CreateSet(
 			tx.GoodLedger.Create(),
 			&goodledgercrud.Req{
@@ -86,6 +95,14 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 }
 
 func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) (*npool.GoodStatement, error) {
+	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	info, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		req,
@@ -104,6 +121,14 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 }
 
 func (h *createHandler) tryCreateUnsoldStatement(req *unsoldcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	if _, err := unsoldcrud.CreateSet(
 		tx.UnsoldStatement.Create(),
 		req,
@@ -158,15 +183,6 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		for _, req := range reqs {
 			_fn := func() error {
 				goodStatementID := uuid.New()
-
-				key := fmt.Sprintf("ledger-create-goodstatement:%v:%v:%v", *h.GoodID, *h.CoinTypeID, *h.BenefitDate)
-				if err := redis2.TryLock(key, 0); err != nil {
-					return err
-				}
-				defer func() {
-					_ = redis2.Unlock(key)
-				}()
-
 				info, err := handler.tryCreateGoodStatement(&goodstatementcrud.Req{
 					ID:          &goodStatementID,
 					GoodID:      req.GoodID,
