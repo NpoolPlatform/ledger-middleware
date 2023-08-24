@@ -100,7 +100,6 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 				entstatement.IoSubType(h.IOSubType.String()),
 				entstatement.IoExtra(*h.IOExtra),
 			).
-			Order(ent.Desc(entstatement.FieldUpdatedAt)).
 			Only(ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
