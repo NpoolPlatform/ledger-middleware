@@ -2,11 +2,13 @@ package ledger
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -14,10 +16,12 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs   []*crud.Req
-	Conds  *crud.Conds
-	Offset int32
-	Limit  int32
+	Reqs      []*crud.Req
+	Conds     *crud.Conds
+	Offset    int32
+	Limit     int32
+	IOSubType *basetypes.IOSubType
+	IOExtra   *string
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -86,70 +90,66 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithIncoming(incoming *string) func(context.Context, *Handler) error {
+func WithIOSubType(_type *basetypes.IOSubType) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if incoming == nil {
+		if _type == nil {
 			return nil
 		}
-		_incoming, err := decimal.NewFromString(*incoming)
-		if err != nil {
-			return err
+		switch *_type {
+		case basetypes.IOSubType_Withdrawal:
+		case basetypes.IOSubType_Payment:
+		default:
+			return fmt.Errorf("invalid io sub type")
 		}
-		if _incoming.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("amount is less than 0 %v", *incoming)
-		}
-		h.Incoming = &_incoming
+		h.IOSubType = _type
 		return nil
 	}
 }
 
-func WithOutcoming(outcoming *string) func(context.Context, *Handler) error {
+func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if outcoming == nil {
+		if extra == nil {
 			return nil
 		}
-		_outcoming, err := decimal.NewFromString(*outcoming)
-		if err != nil {
-			return err
+		if !json.Valid([]byte(*extra)) {
+			return fmt.Errorf("io extra is invalid json str %v", *extra)
 		}
-		if _outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("amount is less than 0 %v", *outcoming)
-		}
-		h.Outcoming = &_outcoming
+
+		h.IOExtra = extra
 		return nil
 	}
 }
 
-func WithLocked(locked *string) func(context.Context, *Handler) error {
+func WithLocked(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if locked == nil {
+		if amount == nil {
 			return nil
 		}
-		_locked, err := decimal.NewFromString(*locked)
+		_amount, err := decimal.NewFromString(*amount)
 		if err != nil {
 			return err
 		}
-		if _locked.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("amount is less than 0 %v", *locked)
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("amount is less than 0 %v", *amount)
 		}
-		h.Locked = &_locked
+		h.Locked = &_amount
 		return nil
 	}
 }
 
-func WithSpendable(spendable *string) func(context.Context, *Handler) error {
+func WithSpendable(amount *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if spendable == nil {
+		if amount == nil {
 			return nil
 		}
-		_spendable, err := decimal.NewFromString(*spendable)
+		_amount, err := decimal.NewFromString(*amount)
 		if err != nil {
 			return err
 		}
-		if _spendable.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("amount is less than 0 %v", *spendable)
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("amount is less than 0 %v", _amount.String())
 		}
-		h.Spendable = &_spendable
+		h.Spendable = &_amount
 		return nil
 	}
 }
