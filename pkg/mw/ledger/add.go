@@ -19,7 +19,6 @@ import (
 type addHandler struct {
 	*Handler
 	ledger   *ent.Ledger
-	origin   *ent.Statement
 	rollback *ent.Statement
 }
 
@@ -32,6 +31,7 @@ func (h *addHandler) getLedger(ctx context.Context) error {
 				entledger.AppID(*h.AppID),
 				entledger.UserID(*h.UserID),
 				entledger.CoinTypeID(*h.CoinTypeID),
+				entledger.DeletedAt(0),
 			).
 			Only(ctx)
 		if err != nil {
@@ -71,55 +71,53 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
-func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) (*ent.Statement, error) {
+func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
 	if h.IOSubType == nil {
-		return nil, fmt.Errorf("invalid io sub type")
+		return fmt.Errorf("invalid io sub type")
 	}
 	if h.IOExtra == nil {
-		return nil, fmt.Errorf("invalid io extra")
+		return fmt.Errorf("invalid io extra")
 	}
 
 	// get statement
 	ioType := ledgerpb.IOType_Outcoming
-	origin, err := cli.
+	statement, err := cli.
 		Statement.
 		Query().
 		Where(
-			entstatement.AppID(*h.AppID),
-			entstatement.UserID(*h.UserID),
-			entstatement.CoinTypeID(*h.CoinTypeID),
+			entstatement.ID(*h.StatementID),
 			entstatement.IoType(ioType.String()),
-			entstatement.IoSubType(h.IOSubType.String()),
-			entstatement.IoExtra(*h.IOExtra),
+			entstatement.DeletedAt(0),
 		).
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return nil, fmt.Errorf("statement not exist")
+			return fmt.Errorf("statement not exist")
 		}
-		return nil, err
+		return err
 	}
-	h.origin = origin
-	return origin, nil
+
+	if statement.Amount.Cmp(*h.Locked) != 0 {
+		return fmt.Errorf("rollback amount(%v) not match spend amount(%v)", statement.Amount.String(), h.Locked.String())
+	}
+	return nil
 }
 
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
+	if h.StatementID == nil {
+		return fmt.Errorf("invalid statement id")
+	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		// get statement
-		origin, err := h.getStatement(ctx, cli)
-		if err != nil {
+		if err := h.getStatement(ctx, cli); err != nil {
 			return err
 		}
-		if origin.Amount.Cmp(*h.Locked) != 0 {
-			return fmt.Errorf("rollback amount(%v) not match spend amount(%v)", origin.Amount.String(), h.Locked.String())
-		}
-
 		// get rollback statement
 		ioType := ledgerpb.IOType_Incoming
-		ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
+		ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.StatementID.String())
 		info, err := cli.
 			Statement.
 			Query().
@@ -130,6 +128,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 				entstatement.IoType(ioType.String()),
 				entstatement.IoSubType(h.IOSubType.String()),
 				entstatement.IoExtra(ioExtra),
+				entstatement.DeletedAt(0),
 			).
 			Only(ctx)
 		if err != nil {
@@ -153,7 +152,7 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	// rollback
-	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.origin.ID.String())
+	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.StatementID.String())
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithChangeLedger(),
@@ -214,6 +213,9 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	}
 	if err := handler.getRollbackStatement(ctx); err != nil {
 		return nil, err
+	}
+	if h.Locked != nil && handler.rollback != nil {
+		return nil, fmt.Errorf("statement already rolled back")
 	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {

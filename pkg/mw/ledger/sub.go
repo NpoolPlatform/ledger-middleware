@@ -31,6 +31,7 @@ func (h *subHandler) getLedger(ctx context.Context) error {
 				entledger.AppID(*h.AppID),
 				entledger.UserID(*h.UserID),
 				entledger.CoinTypeID(*h.CoinTypeID),
+				entledger.DeletedAt(0),
 			).
 			Only(ctx)
 		if err != nil {
