@@ -14,7 +14,6 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 	req := in.GetInfo()
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithID(req.ID),
 		statement1.WithAppID(req.AppID),
 		statement1.WithUserID(req.UserID),
 		statement1.WithCoinTypeID(req.CoinTypeID),

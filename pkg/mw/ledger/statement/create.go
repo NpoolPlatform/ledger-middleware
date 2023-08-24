@@ -98,28 +98,6 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 
 //nolint
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	stm, err := crud.SetQueryConds(
-		tx.Statement.Query(),
-		&crud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
-			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
-			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
-		},
-	)
-	if err != nil {
-		return err
-	}
-	exist, err := stm.Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if exist {
-		return fmt.Errorf("statement already exist")
-	}
-
 	key := fmt.Sprintf("%v:%v:%v:%v",
 		commonpb.Prefix_PrefixCreateLedgerStatement,
 		*req.AppID,
@@ -223,6 +201,10 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
 		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra},
 	}
+	if h.ID != nil {
+		h.Conds.ID = &cruder.Cond{Op: cruder.EQ, Val: *h.ID}
+	}
+
 	exist, err := h.ExistStatementConds(ctx)
 	if err != nil {
 		return nil, err
@@ -254,6 +236,9 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
 			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
 			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
+		}
+		if req.ID != nil {
+			h.Conds.ID = &cruder.Cond{Op: cruder.EQ, Val: req.ID}
 		}
 		exist, err := h.ExistStatementConds(ctx)
 		if err != nil {
