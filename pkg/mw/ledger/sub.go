@@ -2,8 +2,10 @@ package ledger
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -22,68 +24,30 @@ type subHandler struct {
 	origin *ent.Statement
 }
 
-func (h *subHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
-	info, err := tx.
-		Ledger.
-		Query().
-		Where(
-			entledger.AppID(*h.AppID),
-			entledger.UserID(*h.UserID),
-			entledger.CoinTypeID(*h.CoinTypeID),
-		).
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-	h.ledger = info
-	return nil
-}
-
-func (h *subHandler) getStatement(ctx context.Context, tx *ent.Tx) error {
-	if h.IOSubType == nil {
-		return fmt.Errorf("invalid io sub type")
-	}
-	if h.IOExtra == nil {
-		return fmt.Errorf("invalid io extra")
-	}
-
-	// get statement
-	ioType := ledgerpb.IOType_Outcoming
-	origin, err := tx.
-		Statement.
-		Query().
-		Where(
-			entstatement.AppID(*h.AppID),
-			entstatement.UserID(*h.UserID),
-			entstatement.CoinTypeID(*h.CoinTypeID),
-			entstatement.IoType(ioType.String()),
-			entstatement.IoSubType(h.IOSubType.String()),
-			entstatement.IoExtra(*h.IOExtra),
-		).
-		Order(ent.Desc(entstatement.FieldUpdatedAt)).
-		First(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil
+func (h *subHandler) getLedger(ctx context.Context) error {
+	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		info, err := cli.
+			Ledger.
+			Query().
+			Where(
+				entledger.AppID(*h.AppID),
+				entledger.UserID(*h.UserID),
+				entledger.CoinTypeID(*h.CoinTypeID),
+			).
+			Only(ctx)
+		if err != nil {
+			return err
 		}
-		return err
-	}
-	h.origin = origin
-
-	if err := h.getRollbackStatement(ctx, tx); err != nil {
-		return err
-	}
-
-	// can create statement, set h.origin = nil
-	h.origin = nil
-	return nil
+		h.ledger = info
+		return nil
+	})
+	return err
 }
 
-func (h *subHandler) getRollbackStatement(ctx context.Context, tx *ent.Tx) error {
-	// get rollback statement
+func (h *subHandler) getRollbackStatement(ctx context.Context, cli *ent.Client) error {
 	ioType := ledgerpb.IOType_Incoming
 	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.origin.ID.String())
-	if _, err := tx.
+	if _, err := cli.
 		Statement.
 		Query().
 		Where(
@@ -94,13 +58,65 @@ func (h *subHandler) getRollbackStatement(ctx context.Context, tx *ent.Tx) error
 			entstatement.IoSubType(h.IOSubType.String()),
 			entstatement.IoExtra(ioExtra),
 		).
-		First(ctx); err != nil {
+		Only(ctx); err != nil {
 		if ent.IsNotFound(err) {
 			return fmt.Errorf("statement already exist")
 		}
 		return err
 	}
 	return nil
+}
+
+func (h *subHandler) getStatement(ctx context.Context) error {
+	if h.Locked == nil {
+		return nil
+	}
+	if h.IOSubType == nil {
+		return fmt.Errorf("invalid io sub type")
+	}
+	if h.IOExtra == nil {
+		return fmt.Errorf("invalid io extra")
+	}
+
+	type extra struct {
+		SubID string
+	}
+	e := extra{}
+	if err := json.Unmarshal([]byte(*h.IOExtra), &e); err != nil {
+		logger.Sugar().Errorf("need sub id in extra")
+		return err
+	}
+
+	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		ioType := ledgerpb.IOType_Outcoming
+		origin, err := cli.
+			Statement.
+			Query().
+			Where(
+				entstatement.AppID(*h.AppID),
+				entstatement.UserID(*h.UserID),
+				entstatement.CoinTypeID(*h.CoinTypeID),
+				entstatement.IoType(ioType.String()),
+				entstatement.IoSubType(h.IOSubType.String()),
+				entstatement.IoExtra(*h.IOExtra),
+			).
+			Order(ent.Desc(entstatement.FieldUpdatedAt)).
+			Only(ctx)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil
+			}
+			return err
+		}
+		h.origin = origin
+
+		if err := h.getRollbackStatement(ctx, cli); err != nil {
+			return err
+		}
+		// can create statement, set h.origin = nil
+		h.origin = nil
+		return nil
+	})
 }
 
 func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
@@ -193,15 +209,15 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	handler := &subHandler{
 		Handler: h,
 	}
+	if err := handler.getLedger(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getStatement(ctx); err != nil {
+		return nil, err
+	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.getLedger(ctx, tx); err != nil {
-			return err
-		}
 		if err := handler.tryLock(ctx, tx); err != nil {
-			return err
-		}
-		if err := handler.getStatement(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.trySpend(ctx, tx); err != nil {
