@@ -56,12 +56,14 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 		defer func() {
 			_ = redis2.Unlock(key)
 		}()
-		stm, err := profitcrud.CreateSet(tx.Profit.Create(), &profitcrud.Req{
-			AppID:      req.AppID,
-			UserID:     req.UserID,
-			CoinTypeID: req.CoinTypeID,
-			Incoming:   req.Amount,
-		})
+		stm, err := profitcrud.CreateSetWithValidate(
+			tx.Profit.Create(),
+			&profitcrud.Req{
+				AppID:      req.AppID,
+				UserID:     req.UserID,
+				CoinTypeID: req.CoinTypeID,
+				Incoming:   req.Amount,
+			})
 		if err != nil {
 			return err
 		}
@@ -77,9 +79,8 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 		return err
 	}
 
-	stm1, err := profitcrud.UpdateSet(
+	stm1, err := profitcrud.UpdateSetWithValidate(
 		old,
-		tx.Profit.UpdateOneID(info.ID),
 		&profitcrud.Req{
 			AppID:      req.AppID,
 			UserID:     req.UserID,
@@ -151,7 +152,7 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 			_ = redis2.Unlock(key)
 		}()
 
-		stm, err := ledgercrud.CreateSet(
+		stm, err := ledgercrud.CreateSetWithValidate(
 			tx.Ledger.Create(),
 			req,
 		)
@@ -173,9 +174,8 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 		return fmt.Errorf("ledger not exist, id %v", info.ID)
 	}
 
-	stm1, err := ledgercrud.UpdateSet(
+	stm1, err := ledgercrud.UpdateSetWithValidate(
 		old,
-		tx.Ledger.UpdateOneID(info.ID),
 		&ledgercrud.Req{
 			Incoming:  req.Incoming,
 			Outcoming: req.Outcoming,

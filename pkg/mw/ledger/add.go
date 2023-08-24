@@ -51,9 +51,8 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	spendable := *h.Spendable
 	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
 
-	stm, err := ledgercrud.UpdateSet(
+	stm, err := ledgercrud.UpdateSetWithValidate(
 		h.ledger,
-		tx.Ledger.UpdateOneID(h.ledger.ID),
 		&ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,
@@ -178,9 +177,8 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	locked := *h.Locked
 	outcoming := decimal.NewFromInt(0).Sub(*h.Locked)
 
-	stm, err := ledgercrud.UpdateSet(
+	stm, err := ledgercrud.UpdateSetWithValidate(
 		h.ledger,
-		tx.Ledger.UpdateOneID(h.ledger.ID),
 		&ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,

@@ -17,7 +17,7 @@ type createHandler struct {
 
 func (h *createHandler) createProfit(ctx context.Context) error {
 	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		stm, err := crud.CreateSet(
+		stm, err := crud.CreateSetWithValidate(
 			cli.Profit.Create(),
 			&h.Req,
 		)
