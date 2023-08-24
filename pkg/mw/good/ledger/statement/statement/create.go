@@ -46,7 +46,7 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 			_ = redis2.Unlock(key)
 		}()
 
-		stm, err := goodledgercrud.CreateSet(
+		stm, err := goodledgercrud.CreateSetWithValidate(
 			tx.GoodLedger.Create(),
 			&goodledgercrud.Req{
 				GoodID:     req.GoodID,
@@ -74,9 +74,8 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodledgercrud.Req, ctx
 		return fmt.Errorf("ledger not exist, id %v", info.ID)
 	}
 
-	stm1, err := goodledgercrud.UpdateSet(
+	stm1, err := goodledgercrud.UpdateSetWithValidate(
 		old,
-		tx.GoodLedger.UpdateOneID(info.ID),
 		&goodledgercrud.Req{
 			Amount:     req.Amount,
 			ToPlatform: req.ToPlatform,
@@ -150,12 +149,12 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				},
 			)
 			if err != nil {
-                fmt.Println("SetQueryConds: ", err)
+				fmt.Println("SetQueryConds: ", err)
 				return err
 			}
 			exist, err := stm.Exist(ctx)
 			if err != nil {
-                fmt.Println("Exist: ", err)
+				fmt.Println("Exist: ", err)
 				return err
 			}
 			if exist {

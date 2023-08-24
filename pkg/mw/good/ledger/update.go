@@ -21,9 +21,8 @@ func (h *Handler) UpdateGoodLedger(ctx context.Context) (*npool.GoodLedger, erro
 		if err != nil {
 			return err
 		}
-		entity, err := crud.UpdateSet(
+		entity, err := crud.UpdateSetWithValidate(
 			line,
-			cli.GoodLedger.UpdateOneID(*h.ID),
 			&crud.Req{
 				ToPlatform: h.ToPlatform,
 				ToUser:     h.ToUser,

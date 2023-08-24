@@ -22,7 +22,7 @@ type Req struct {
 	DeletedAt  *uint32
 }
 
-func CreateSet(c *ent.GoodLedgerCreate, in *Req) (*ent.GoodLedgerCreate, error) {
+func CreateSet(c *ent.GoodLedgerCreate, in *Req) *ent.GoodLedgerCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -46,13 +46,6 @@ func CreateSet(c *ent.GoodLedgerCreate, in *Req) (*ent.GoodLedgerCreate, error) 
 		toUser = toUser.Add(*in.ToUser)
 	}
 
-	if amount.Cmp(
-		toUser.Add(toPlatform),
-	) != 0 {
-		return nil, fmt.Errorf("toPlatform (%v) + toUser (%v) != amount (%v)",
-			toPlatform.String(), toUser.String(), amount.String())
-	}
-
 	if in.Amount != nil {
 		c.SetAmount(amount)
 	}
@@ -62,48 +55,27 @@ func CreateSet(c *ent.GoodLedgerCreate, in *Req) (*ent.GoodLedgerCreate, error) 
 	if in.ToUser != nil {
 		c.SetToUser(toUser)
 	}
-	return c, nil
+	return c
 }
 
-func UpdateSet(entity *ent.GoodLedger, u *ent.GoodLedgerUpdateOne, req *Req) (*ent.GoodLedgerUpdateOne, error) {
+func UpdateSet(u *ent.GoodLedgerUpdateOne, req *Req) *ent.GoodLedgerUpdateOne {
 	amount := decimal.NewFromInt(0)
 	if req.Amount != nil {
 		amount = amount.Add(*req.Amount)
+		u.SetAmount(amount)
 	}
 	toPlatform := decimal.NewFromInt(0)
 	if req.ToPlatform != nil {
 		toPlatform = toPlatform.Add(*req.ToPlatform)
+		u.SetToPlatform(toPlatform)
 	}
 	toUser := decimal.NewFromInt(0)
 	if req.ToUser != nil {
 		toUser = toUser.Add(*req.ToUser)
-	}
-
-	if amount.Cmp(toPlatform.Add(toUser)) < 0 {
-		return nil, fmt.Errorf("amount %v < toplatform %v + touser %v", amount.String(), toPlatform.String(), toUser.String())
-	}
-	if amount.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("amount less 0 %v", amount.String())
-	}
-	if toPlatform.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("toplatform less 0 %v", toPlatform.String())
-	}
-	if toUser.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("touser less 0 %v", toUser.String())
-	}
-	if req.Amount != nil {
-		amount = amount.Add(entity.Amount)
-		u.SetAmount(amount)
-	}
-	if req.ToPlatform != nil {
-		toPlatform = toPlatform.Add(entity.ToPlatform)
-		u.SetToPlatform(toPlatform)
-	}
-	if req.ToUser != nil {
-		toUser = toUser.Add(entity.ToUser)
 		u.SetToUser(toUser)
 	}
-	return u, nil
+
+	return u
 }
 
 type Conds struct {
