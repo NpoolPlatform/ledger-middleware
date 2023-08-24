@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -15,6 +14,7 @@ import (
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	ledgerpb "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -83,7 +83,9 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	}
 	e := extra{}
 	if err := json.Unmarshal([]byte(*h.IOExtra), &e); err != nil {
-		logger.Sugar().Errorf("need sub id in extra")
+		return fmt.Errorf("need sub id in extra")
+	}
+	if _, err := uuid.Parse(e.SubID); err != nil {
 		return err
 	}
 
