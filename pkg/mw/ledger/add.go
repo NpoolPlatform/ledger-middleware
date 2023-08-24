@@ -23,21 +23,24 @@ type addHandler struct {
 	rollback *ent.Statement
 }
 
-func (h *addHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
-	info, err := tx.
-		Ledger.
-		Query().
-		Where(
-			entledger.AppID(*h.AppID),
-			entledger.UserID(*h.UserID),
-			entledger.CoinTypeID(*h.CoinTypeID),
-		).
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-	h.ledger = info
-	return nil
+func (h *addHandler) getLedger(ctx context.Context) error {
+	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		info, err := cli.
+			Ledger.
+			Query().
+			Where(
+				entledger.AppID(*h.AppID),
+				entledger.UserID(*h.UserID),
+				entledger.CoinTypeID(*h.CoinTypeID),
+			).
+			Only(ctx)
+		if err != nil {
+			return err
+		}
+		h.ledger = info
+		return nil
+	})
+	return err
 }
 
 func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
@@ -68,7 +71,7 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
-func (h *addHandler) getStatement(ctx context.Context, tx *ent.Tx) (*ent.Statement, error) {
+func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) (*ent.Statement, error) {
 	if h.IOSubType == nil {
 		return nil, fmt.Errorf("invalid io sub type")
 	}
@@ -78,7 +81,7 @@ func (h *addHandler) getStatement(ctx context.Context, tx *ent.Tx) (*ent.Stateme
 
 	// get statement
 	ioType := ledgerpb.IOType_Outcoming
-	origin, err := tx.
+	origin, err := cli.
 		Statement.
 		Query().
 		Where(
@@ -89,8 +92,7 @@ func (h *addHandler) getStatement(ctx context.Context, tx *ent.Tx) (*ent.Stateme
 			entstatement.IoSubType(h.IOSubType.String()),
 			entstatement.IoExtra(*h.IOExtra),
 		).
-		Order(ent.Desc(entstatement.FieldUpdatedAt)).
-		First(ctx)
+		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, fmt.Errorf("statement not exist")
@@ -101,36 +103,44 @@ func (h *addHandler) getStatement(ctx context.Context, tx *ent.Tx) (*ent.Stateme
 	return origin, nil
 }
 
-func (h *addHandler) getRollbackStatement(ctx context.Context, tx *ent.Tx) error {
-	// get statement
-	origin, err := h.getStatement(ctx, tx)
-	if err != nil {
-		return err
+func (h *addHandler) getRollbackStatement(ctx context.Context) error {
+	if h.Locked == nil {
+		return nil
 	}
-
-	// get rollback statement
-	ioType := ledgerpb.IOType_Incoming
-	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
-	info, err := tx.
-		Statement.
-		Query().
-		Where(
-			entstatement.AppID(*h.AppID),
-			entstatement.UserID(*h.UserID),
-			entstatement.CoinTypeID(*h.CoinTypeID),
-			entstatement.IoType(ioType.String()),
-			entstatement.IoSubType(h.IOSubType.String()),
-			entstatement.IoExtra(ioExtra),
-		).
-		First(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil
+	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		// get statement
+		origin, err := h.getStatement(ctx, cli)
+		if err != nil {
+			return err
 		}
-		return err
-	}
-	h.rollback = info
-	return nil
+		if origin.Amount.Cmp(*h.Locked) != 0 {
+			return fmt.Errorf("rollback amount(%v) not match spend amount(%v)", origin.Amount.String(), h.Locked.String())
+		}
+
+		// get rollback statement
+		ioType := ledgerpb.IOType_Incoming
+		ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, origin.ID.String())
+		info, err := cli.
+			Statement.
+			Query().
+			Where(
+				entstatement.AppID(*h.AppID),
+				entstatement.UserID(*h.UserID),
+				entstatement.CoinTypeID(*h.CoinTypeID),
+				entstatement.IoType(ioType.String()),
+				entstatement.IoSubType(h.IOSubType.String()),
+				entstatement.IoExtra(ioExtra),
+			).
+			Only(ctx)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return nil
+			}
+			return err
+		}
+		h.rollback = info
+		return nil
+	})
 }
 
 func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
@@ -199,14 +209,15 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		Handler: h,
 	}
 
+	if err := handler.getLedger(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getRollbackStatement(ctx); err != nil {
+		return nil, err
+	}
+
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.getLedger(ctx, tx); err != nil {
-			return err
-		}
 		if err := handler.tryUnlock(ctx, tx); err != nil {
-			return err
-		}
-		if err := handler.getRollbackStatement(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.tryUnspend(ctx, tx); err != nil {
