@@ -1,4 +1,4 @@
-package general
+package ledger
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ type Req struct {
 	DeletedAt   *uint32
 }
 
-func CreateSet(c *ent.LedgerCreate, in *Req) (*ent.LedgerCreate, error) {
+func CreateSet(c *ent.LedgerCreate, in *Req) *ent.LedgerCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
@@ -55,14 +55,6 @@ func CreateSet(c *ent.LedgerCreate, in *Req) (*ent.LedgerCreate, error) {
 		spendable = spendable.Add(*in.Spendable)
 	}
 
-	if incoming.Cmp(
-		outcoming.Add(locked).
-			Add(spendable),
-	) != 0 {
-		return nil, fmt.Errorf("outcoming (%v) + locked (%v) + spendable (%v) != incoming (%v)",
-			outcoming, locked, spendable, incoming)
-	}
-
 	if in.Incoming != nil {
 		c.SetIncoming(incoming)
 	}
@@ -75,69 +67,34 @@ func CreateSet(c *ent.LedgerCreate, in *Req) (*ent.LedgerCreate, error) {
 	if in.Spendable != nil {
 		c.SetSpendable(spendable)
 	}
-	return c, nil
+	return c
 }
 
-func UpdateSet(entity *ent.Ledger, u *ent.LedgerUpdateOne, req *Req) (*ent.LedgerUpdateOne, error) {
+func UpdateSet(u *ent.LedgerUpdateOne, req *Req) *ent.LedgerUpdateOne {
 	incoming := decimal.NewFromInt(0)
 	if req.Incoming != nil {
 		incoming = incoming.Add(*req.Incoming)
+		u.SetIncoming(incoming)
 	}
+
 	locked := decimal.NewFromInt(0)
 	if req.Locked != nil {
 		locked = locked.Add(*req.Locked)
+		u.SetLocked(locked)
 	}
+
 	outcoming := decimal.NewFromInt(0)
 	if req.Outcoming != nil {
 		outcoming = outcoming.Add(*req.Outcoming)
+		u.SetOutcoming(outcoming)
 	}
+
 	spendable := decimal.NewFromInt(0)
 	if req.Spendable != nil {
 		spendable = spendable.Add(*req.Spendable)
-	}
-
-	if incoming.Add(entity.Incoming).
-		Cmp(
-			locked.Add(entity.Locked).
-				Add(outcoming).
-				Add(entity.Outcoming).
-				Add(spendable).
-				Add(entity.Spendable),
-		) != 0 {
-		return nil, fmt.Errorf("outcoming (%v + %v) + locked (%v + %v) + spendable (%v + %v) != incoming (%v + %v)",
-			outcoming, entity.Outcoming, locked, entity.Locked, spendable, entity.Spendable, incoming, entity.Incoming)
-	}
-
-	if locked.Add(entity.Locked).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("locked (%v) + locked (%v) < 0", locked, entity.Locked)
-	}
-	if incoming.Add(entity.Incoming).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("incoming (%v) + incoming (%v) < 0", locked, entity.Incoming)
-	}
-	if outcoming.Add(entity.Outcoming).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("outcoming (%v) + outcoming (%v) < 0", locked, entity.Outcoming)
-	}
-	if spendable.Add(entity.Spendable).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("spendable (%v) + spendable(%v) < 0", spendable, entity.Spendable)
-	}
-
-	if req.Incoming != nil {
-		incoming = incoming.Add(entity.Incoming)
-		u.SetIncoming(incoming)
-	}
-	if req.Outcoming != nil {
-		outcoming = outcoming.Add(entity.Outcoming)
-		u.SetOutcoming(outcoming)
-	}
-	if req.Locked != nil {
-		locked = locked.Add(entity.Locked)
-		u.SetLocked(locked)
-	}
-	if req.Spendable != nil {
-		spendable = spendable.Add(entity.Spendable)
 		u.SetSpendable(spendable)
 	}
-	return u, nil
+	return u
 }
 
 type Conds struct {
