@@ -25,6 +25,7 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 		lock1.WithSpendable(req.Spendable),
 		lock1.WithIOSubType(req.IOSubType),
 		lock1.WithIOExtra(req.IOExtra),
+		lock1.WithStatementID(req.StatementID),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -65,6 +66,7 @@ func (s *Server) SubBalance(ctx context.Context, in *npool.SubBalanceRequest) (
 		lock1.WithLocked(req.Locked),
 		lock1.WithIOSubType(req.IOSubType),
 		lock1.WithIOExtra(req.IOExtra),
+		lock1.WithStatementID(req.StatementID),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

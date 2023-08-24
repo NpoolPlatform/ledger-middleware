@@ -12,15 +12,16 @@ import (
 )
 
 type Req struct {
-	ID         *uuid.UUID
-	AppID      *uuid.UUID
-	UserID     *uuid.UUID
-	CoinTypeID *uuid.UUID
-	Incoming   *decimal.Decimal
-	Outcoming  *decimal.Decimal
-	Locked     *decimal.Decimal
-	Spendable  *decimal.Decimal
-	DeletedAt  *uint32
+	ID          *uuid.UUID
+	AppID       *uuid.UUID
+	UserID      *uuid.UUID
+	CoinTypeID  *uuid.UUID
+	StatementID *uuid.UUID
+	Incoming    *decimal.Decimal
+	Outcoming   *decimal.Decimal
+	Locked      *decimal.Decimal
+	Spendable   *decimal.Decimal
+	DeletedAt   *uint32
 }
 
 func CreateSet(c *ent.LedgerCreate, in *Req) (*ent.LedgerCreate, error) {

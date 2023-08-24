@@ -7,6 +7,7 @@ import (
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
@@ -72,6 +73,32 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.UserID = &_id
+		return nil
+	}
+}
+
+func WithStatementID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		_id, err := uuid.Parse(*id)
+		if err != nil {
+			return err
+		}
+
+		handler, err := statement1.NewHandler(ctx, statement1.WithID(id))
+		if err != nil {
+			return err
+		}
+		exist, err := handler.ExistStatement(ctx)
+		if err != nil {
+			return err
+		}
+		if exist {
+			return fmt.Errorf("statement id (%v) already exist", *id)
+		}
+		h.StatementID = &_id
 		return nil
 	}
 }
