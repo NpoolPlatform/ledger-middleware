@@ -11,7 +11,7 @@ import (
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
-	ledgerpb "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	"github.com/shopspring/decimal"
 )
@@ -71,35 +71,26 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
-	if h.IOSubType == nil {
-		return fmt.Errorf("invalid io sub type")
-	}
-	if h.IOExtra == nil {
-		return fmt.Errorf("invalid io extra")
-	}
-
-	// get statement
-	ioType := ledgerpb.IOType_Outcoming
 	statement, err := cli.
 		Statement.
 		Query().
 		Where(
 			entstatement.ID(*h.StatementID),
-			entstatement.IoType(ioType.String()),
+			entstatement.IoType(types.IOType_Outcoming.String()),
 			entstatement.DeletedAt(0),
 		).
 		Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("statement not exist")
-		}
 		return err
 	}
-
 	if statement.Amount.Cmp(*h.Locked) != 0 {
-		return fmt.Errorf("rollback amount(%v) not match spend amount(%v)", statement.Amount.String(), h.Locked.String())
+		return fmt.Errorf("mismatch amount")
 	}
 	return nil
+}
+
+func (h *addHandler) statementExtra() string {
+	return fmt.Sprintf(`{"RollbackStatementID":"%v"}`, h.StatementID.String())
 }
 
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
@@ -110,13 +101,9 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 		return fmt.Errorf("invalid statement id")
 	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		// get statement
 		if err := h.getStatement(ctx, cli); err != nil {
 			return err
 		}
-		// get rollback statement
-		ioType := ledgerpb.IOType_Incoming
-		ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.StatementID.String())
 		info, err := cli.
 			Statement.
 			Query().
@@ -124,9 +111,9 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 				entstatement.AppID(*h.AppID),
 				entstatement.UserID(*h.UserID),
 				entstatement.CoinTypeID(*h.CoinTypeID),
-				entstatement.IoType(ioType.String()),
+				entstatement.IoType(types.IOType_Incoming.String()),
 				entstatement.IoSubType(h.IOSubType.String()),
-				entstatement.IoExtra(ioExtra),
+				entstatement.IoExtra(h.statementExtra()),
 				entstatement.DeletedAt(0),
 			).
 			Only(ctx)
@@ -145,13 +132,8 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
-	// already rollback
-	if h.rollback != nil {
-		return fmt.Errorf("statement already rolled back")
-	}
 
-	// rollback
-	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.StatementID.String())
+	ioExtra := h.statementExtra()
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithChangeLedger(),
@@ -174,16 +156,14 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 
-	locked := *h.Locked
 	outcoming := decimal.NewFromInt(0).Sub(*h.Locked)
-
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		h.ledger,
 		&ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,
 			CoinTypeID: h.CoinTypeID,
-			Locked:     &locked,
+			Locked:     h.Locked,
 			Outcoming:  &outcoming,
 		},
 	)
@@ -229,8 +209,7 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		return nil, err
 	}
 
-	ledgerID := handler.ledger.ID
-	h.ID = &ledgerID
+	h.ID = &handler.ledger.ID
 
 	return h.GetLedger(ctx)
 }
