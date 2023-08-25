@@ -66,9 +66,10 @@ func setup(t *testing.T) func(*testing.T) {
 	}
 
 	handler1, err := goodstatement1.NewHandler(context.Background())
-
 	goodstatementID := uuid.MustParse(id)
-	handler1.ID = &goodstatementID
+	handler1.Req = &goodstatement1.Req{
+		ID: &goodstatementID,
+	}
 	assert.Nil(t, err)
 
 	return func(t *testing.T) {
@@ -78,7 +79,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 func getUnsold(t *testing.T) {
 	conds := &unsoldmwpb.Conds{
-		ID:          &basetypes.StringVal{Op: cruder.EQ, Value: id},
+		ID:          &basetypes.StringVal{Op: cruder.EQ, Value: unsoldStatementID},
 		GoodID:      &basetypes.StringVal{Op: cruder.EQ, Value: goodID},
 		CoinTypeID:  &basetypes.StringVal{Op: cruder.EQ, Value: coinTypeID},
 		BenefitDate: &basetypes.Uint32Val{Op: cruder.EQ, Value: benefitDate},
