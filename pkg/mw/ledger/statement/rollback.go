@@ -40,6 +40,8 @@ func (h *rollbackHandler) tryGetAllStatements(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+    h.statementsMap = map[string]*npool.Statement{}
 	for _, info := range infos {
 		h.statementsMap[info.ID] = info
 	}
