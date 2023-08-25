@@ -10,7 +10,6 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
@@ -20,25 +19,31 @@ import (
 
 type rollbackHandler struct {
 	*Handler
+	statementsMap map[string]*npool.Statement
 }
 
-func (h *Handler) tryGetStatement(req *crud.Req, ctx context.Context) error {
-	if req.ID == nil {
-		return fmt.Errorf("invalid statement id")
-	}
-	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		if _, err := cli.
-			Statement.
-			Query().
-			Where(
-				entstatement.ID(*req.ID),
-				entstatement.DeletedAt(0),
-			).
-			Only(ctx); err != nil {
-			return err
+func (h *rollbackHandler) tryGetAllStatements(ctx context.Context) error {
+	ids := []uuid.UUID{}
+	for _, req := range h.Reqs {
+		if req.ID == nil {
+			return fmt.Errorf("invalid statement id")
 		}
-		return nil
-	})
+		ids = append(ids, *req.ID)
+	}
+
+	h.Conds = &crud.Conds{
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	}
+	h.Limit = int32(len(ids))
+
+	infos, _, err := h.GetStatements(ctx)
+	if err != nil {
+		return err
+	}
+	for _, info := range infos {
+		h.statementsMap[info.ID] = info
+	}
+	return nil
 }
 
 func (h *rollbackHandler) tryUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
@@ -134,6 +139,11 @@ func (h *rollbackHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx
 }
 
 func (h *rollbackHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	statement, _ := h.statementsMap[req.ID.String()]
+	if statement.Amount != req.Amount.String() {
+		return fmt.Errorf("amount not matched")
+	}
+
 	now := uint32(time.Now().Unix())
 	if _, err := crud.UpdateSet(
 		tx.Statement.UpdateOneID(*req.ID),
@@ -148,31 +158,20 @@ func (h *rollbackHandler) tryDeleteStatement(req *crud.Req, ctx context.Context,
 
 //nolint
 func (h *Handler) RollbackStatements(ctx context.Context) ([]*npool.Statement, error) {
-	ids := []uuid.UUID{}
-	for _, req := range h.Reqs {
-		if err := h.tryGetStatement(req, ctx); err != nil {
-			return nil, err
-		}
-		ids = append(ids, *req.ID)
-	}
-
-	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
-	}
-	h.Limit = int32(len(ids))
-
-	infos, _, err := h.GetStatements(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	handler := &rollbackHandler{
 		Handler: h,
 	}
+	if err := handler.tryGetAllStatements(ctx); err != nil {
+		return nil, err
+	}
 
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
+				_, ok := handler.statementsMap[req.ID.String()]
+				if !ok {
+					return fmt.Errorf("good statement not found %v", req.ID.String())
+				}
 				if err := handler.tryDeleteStatement(req, ctx, tx); err != nil {
 					return err
 				}
@@ -194,6 +193,10 @@ func (h *Handler) RollbackStatements(ctx context.Context) ([]*npool.Statement, e
 		return nil, err
 	}
 
+	infos := []*npool.Statement{}
+	for _, value := range handler.statementsMap {
+		infos = append(infos, value)
+	}
 	return infos, nil
 }
 
