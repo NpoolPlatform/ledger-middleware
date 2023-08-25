@@ -30,28 +30,21 @@ func init() {
 }
 
 var (
+	id                        = uuid.NewString()
+	unsoldStatementID         = uuid.NewString()
 	goodID                    = uuid.NewString()
 	coinTypeID                = uuid.NewString()
 	totalAmount               = "400"
 	unsoldAmount              = "100"
 	techniqueServiceFeeAmount = "2"
 	benefitDate               = uint32(time.Now().Unix())
-
-	req = goodstatementmwpb.GoodStatementReq{
-		GoodID:                    &goodID,
-		CoinTypeID:                &coinTypeID,
-		TotalAmount:               &totalAmount,
-		UnsoldAmount:              &unsoldAmount,
-		TechniqueServiceFeeAmount: &techniqueServiceFeeAmount,
-		BenefitDate:               &benefitDate,
-	}
-
-	goodStatementID = ""
 )
 
 func setup(t *testing.T) func(*testing.T) {
 	reqs := []*goodstatementmwpb.GoodStatementReq{
 		{
+			ID:                        &id,
+			UnsoldStatementID:         &unsoldStatementID,
 			GoodID:                    &goodID,
 			CoinTypeID:                &coinTypeID,
 			TotalAmount:               &totalAmount,
@@ -69,12 +62,12 @@ func setup(t *testing.T) func(*testing.T) {
 	infos, err := handler.CreateGoodStatements(context.Background())
 	if assert.Nil(t, err) {
 		assert.NotEqual(t, len(infos), 0)
-		goodStatementID = infos[0].ID
+		assert.Equal(t, id, infos[0].ID)
 	}
 
 	handler1, err := goodstatement1.NewHandler(
 		context.Background(),
-		goodstatement1.WithID(&goodStatementID, true),
+		goodstatement1.WithID(&id, true),
 	)
 	assert.Nil(t, err)
 
@@ -85,6 +78,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 func getUnsold(t *testing.T) {
 	conds := &unsoldmwpb.Conds{
+		ID:          &basetypes.StringVal{Op: cruder.EQ, Value: id},
 		GoodID:      &basetypes.StringVal{Op: cruder.EQ, Value: goodID},
 		CoinTypeID:  &basetypes.StringVal{Op: cruder.EQ, Value: coinTypeID},
 		BenefitDate: &basetypes.Uint32Val{Op: cruder.EQ, Value: benefitDate},
@@ -97,7 +91,7 @@ func getUnsold(t *testing.T) {
 	info, err := handler.GetUnsoldStatementOnly(context.Background())
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
-		assert.Equal(t, *req.UnsoldAmount, info.Amount)
+		assert.Equal(t, unsoldAmount, info.Amount)
 	}
 }
 
