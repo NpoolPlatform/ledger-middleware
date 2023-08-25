@@ -1,3 +1,4 @@
+//nolint
 package ledger
 
 import (
@@ -96,7 +97,7 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	})
 }
 
-func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
+func (h *subHandler) tryLock(ctx context.Context) error {
 	if h.Spendable == nil {
 		return nil
 	}
@@ -123,7 +124,7 @@ func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
-func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
+func (h *subHandler) trySpend(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
@@ -174,6 +175,7 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 }
 
 // Lock & Spend
+//nolint
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err error) {
 	if err := h.validate(); err != nil {
 		return nil, err
@@ -193,10 +195,10 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.tryLock(ctx, tx); err != nil {
+		if err := handler.tryLock(ctx); err != nil {
 			return err
 		}
-		if err := handler.trySpend(ctx, tx); err != nil {
+		if err := handler.trySpend(ctx); err != nil {
 			return err
 		}
 		return nil

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	goodstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
-	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
 	unsold1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -61,9 +60,9 @@ func setup(t *testing.T) func(*testing.T) {
 			BenefitDate:               &benefitDate,
 		},
 	}
-	handler, err := statement1.NewHandler(
+	handler, err := goodstatement1.NewHandler(
 		context.Background(),
-		statement1.WithReqs(reqs),
+		goodstatement1.WithReqs(reqs),
 	)
 	assert.Nil(t, err)
 

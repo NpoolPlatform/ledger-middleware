@@ -22,6 +22,7 @@ type addHandler struct {
 	rollback *ent.Statement
 }
 
+//nolint
 func (h *addHandler) getLedger(ctx context.Context) error {
 	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		info, err := cli.
@@ -43,7 +44,7 @@ func (h *addHandler) getLedger(ctx context.Context) error {
 	return err
 }
 
-func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
+func (h *addHandler) tryUnlock(ctx context.Context) error {
 	if h.Spendable == nil {
 		return nil
 	}
@@ -124,7 +125,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	})
 }
 
-func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
+func (h *addHandler) tryUnspend(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
@@ -173,6 +174,7 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 }
 
 // Unlock & Unspend
+//nolint
 func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	if err := h.validate(); err != nil {
 		return nil, err
@@ -193,10 +195,10 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.tryUnlock(ctx, tx); err != nil {
+		if err := handler.tryUnlock(ctx); err != nil {
 			return err
 		}
-		if err := handler.tryUnspend(ctx, tx); err != nil {
+		if err := handler.tryUnspend(ctx); err != nil {
 			return err
 		}
 		return nil

@@ -1,3 +1,4 @@
+//nolint
 package statement
 
 import (
@@ -11,7 +12,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) RollbackGoodStatement(ctx context.Context, in *npool.RollbackGoodStatementRequest) (*npool.RollbackGoodStatementResponse, error) {
+//nolint
+func (s *Server) RollbackGoodStatement(ctx context.Context, in *npool.RollbackGoodStatementRequest) (
+	*npool.RollbackGoodStatementResponse,
+	error,
+) {
 	req := in.GetInfo()
 	handler, err := statement1.NewHandler(
 		ctx,

@@ -42,6 +42,7 @@ func GetStatement(ctx context.Context, id string) (*npool.Statement, error) {
 	return info.(*npool.Statement), nil
 }
 
+//nolint
 func GetStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.Statement, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetStatementOnly(ctx, &npool.GetStatementOnlyRequest{
@@ -78,6 +79,7 @@ func GetStatements(ctx context.Context, conds *npool.Conds, offset, limit int32)
 	return infos.([]*npool.Statement), total, nil
 }
 
+// nolint
 func CreateStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statement, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.CreateStatement(ctx, &npool.CreateStatementRequest{
@@ -94,7 +96,6 @@ func CreateStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statem
 	return info.(*npool.Statement), nil
 }
 
-//nolint
 func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.CreateStatements(ctx, &npool.CreateStatementsRequest{
@@ -111,6 +112,7 @@ func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.S
 	return infos.([]*npool.Statement), nil
 }
 
+//nolint
 func RollbackStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statement, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.RollbackStatement(ctx, &npool.RollbackStatementRequest{
@@ -127,7 +129,6 @@ func RollbackStatement(ctx context.Context, in *npool.StatementReq) (*npool.Stat
 	return info.(*npool.Statement), nil
 }
 
-//nolint
 func RollbackStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.RollbackStatements(ctx, &npool.RollbackStatementsRequest{

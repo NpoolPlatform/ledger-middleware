@@ -114,7 +114,7 @@ func (h *rollbackHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx
 	case basetypes.IOType_Incoming:
 		incoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
 	case basetypes.IOType_Outcoming:
-		outcoming = decimal.RequireFromString(fmt.Sprintf("%v", req.Amount.String()))
+		outcoming = *req.Amount
 	default:
 		return fmt.Errorf("invalid io type %v", *req.IOType)
 	}
@@ -139,11 +139,10 @@ func (h *rollbackHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx
 }
 
 func (h *rollbackHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	statement, _ := h.statementsMap[req.ID.String()]
+	statement, _ := h.statementsMap[req.ID.String()] //nolint
 	if statement.Amount != req.Amount.String() {
 		return fmt.Errorf("amount not matched")
 	}
-
 	now := uint32(time.Now().Unix())
 	if _, err := crud.UpdateSet(
 		tx.Statement.UpdateOneID(*req.ID),
@@ -156,7 +155,6 @@ func (h *rollbackHandler) tryDeleteStatement(req *crud.Req, ctx context.Context,
 	return nil
 }
 
-//nolint
 func (h *Handler) RollbackStatements(ctx context.Context) ([]*npool.Statement, error) {
 	handler := &rollbackHandler{
 		Handler: h,

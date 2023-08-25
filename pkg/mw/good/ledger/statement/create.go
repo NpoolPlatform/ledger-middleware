@@ -20,6 +20,7 @@ type createHandler struct {
 	*Handler
 }
 
+//nolint
 func (h *createHandler) tryCreateGoodStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -44,6 +45,7 @@ func (h *createHandler) tryCreateGoodStatement(req *Req, ctx context.Context, tx
 	return nil
 }
 
+//nolint
 func (h *createHandler) tryCreateUnsoldStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -135,6 +137,7 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *Req, ctx context.Contex
 	return nil
 }
 
+//nolint
 func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
 	for _, req := range h.Reqs {
 		h.Conds = &goodstatementcrud.Conds{

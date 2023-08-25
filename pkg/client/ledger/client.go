@@ -43,6 +43,7 @@ func GetLedger(ctx context.Context, id string) (*npool.Ledger, error) {
 	return info.(*npool.Ledger), nil
 }
 
+//nolint
 func GetLedgerOnly(ctx context.Context, conds *npool.Conds) (*npool.Ledger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetLedgerOnly(ctx, &npool.GetLedgerOnlyRequest{

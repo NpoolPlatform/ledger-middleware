@@ -83,7 +83,6 @@ func (h *rollbackHandler) tryDeleteGoodStatement(req *Req, ctx context.Context, 
 	return nil
 }
 
-//nolint
 func (h *rollbackHandler) tryDeleteUnsoldStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
 	unsold, ok := h.unsoldstatementsMap[req.UnsoldStatementID.String()]
 	if !ok {

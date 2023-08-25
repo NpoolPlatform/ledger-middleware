@@ -94,7 +94,6 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 	return nil
 }
 
-//nolint
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v",
 		commonpb.Prefix_PrefixCreateLedgerStatement,
@@ -198,7 +197,6 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Conte
 	return nil
 }
 
-//nolint
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
 	reqs := []*crud.Req{}
 	for _, req := range h.Reqs {

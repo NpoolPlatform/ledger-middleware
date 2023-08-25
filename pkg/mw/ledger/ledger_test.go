@@ -163,5 +163,4 @@ func TestLedger(t *testing.T) {
 	defer teardown(t)
 
 	t.Run("getLedgerOnly", getLedgerOnly)
-
 }
