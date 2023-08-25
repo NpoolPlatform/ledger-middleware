@@ -84,12 +84,12 @@ func CreateStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statem
 			Info: in,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail create withdraw: %v", err)
+			return nil, fmt.Errorf("fail create statement: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail create withdraw: %v", err)
+		return nil, fmt.Errorf("fail create statement: %v", err)
 	}
 	return info.(*npool.Statement), nil
 }
@@ -111,19 +111,35 @@ func CreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.S
 	return infos.([]*npool.Statement), nil
 }
 
+func RollbackStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.RollbackStatement(ctx, &npool.RollbackStatementRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail rollback statement: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail rollback statement: %v", err)
+	}
+	return info.(*npool.Statement), nil
+}
+
 //nolint
-func UnCreateStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
+func RollbackStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.UnCreateStatements(ctx, &npool.UnCreateStatementsRequest{
+		resp, err := cli.RollbackStatements(ctx, &npool.RollbackStatementsRequest{
 			Infos: in,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail uncreate statements: %v", err)
+			return nil, fmt.Errorf("fail rollback statements: %v", err)
 		}
 		return resp.GetInfos(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail uncreate statements: %v", err)
+		return nil, fmt.Errorf("fail rollback statements: %v", err)
 	}
 	return infos.([]*npool.Statement), nil
 }

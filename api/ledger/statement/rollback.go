@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementRequest) (*npool.CreateStatementResponse, error) {
+func (s *Server) RollbackStatement(ctx context.Context, in *npool.RollbackStatementRequest) (*npool.RollbackStatementResponse, error) {
 	req := in.GetInfo()
 	handler, err := statement1.NewHandler(
 		ctx,
@@ -26,54 +26,54 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateStatement",
+			"RollbackStatement",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.CreateStatementResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.RollbackStatementResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	info, err := handler.CreateStatement(ctx)
+	info, err := handler.RollbackStatement(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateStatement",
+			"RollbackStatement",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.CreateStatementResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.RollbackStatementResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.CreateStatementResponse{
+	return &npool.RollbackStatementResponse{
 		Info: info,
 	}, nil
 }
 
 //nolint
-func (s *Server) CreateStatements(ctx context.Context, in *npool.CreateStatementsRequest) (*npool.CreateStatementsResponse, error) {
+func (s *Server) RollbackStatements(ctx context.Context, in *npool.RollbackStatementsRequest) (*npool.RollbackStatementsResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithReqs(in.GetInfos()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateStatements",
+			"RollbackStatements",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.CreateStatementsResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.RollbackStatementsResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	infos, err := handler.CreateStatements(ctx)
+	infos, err := handler.RollbackStatements(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateStatements",
+			"RollbackStatements",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.CreateStatementsResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.RollbackStatementsResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.CreateStatementsResponse{
+	return &npool.RollbackStatementsResponse{
 		Infos: infos,
 	}, nil
 }

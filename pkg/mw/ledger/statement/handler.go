@@ -198,10 +198,10 @@ func WithCreatedAt(createdAt uint32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithChangeLedger() func(context.Context, *Handler) error {
+func WithChangeLedger(changeable bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		changeable := false
-		h.ChangeLedger = &changeable
+		change := changeable
+		h.ChangeLedger = &change
 		return nil
 	}
 }

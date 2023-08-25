@@ -37,35 +37,17 @@ func CreateSet(c *ent.LedgerCreate, in *Req) *ent.LedgerCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-
-	incoming := decimal.NewFromInt(0)
 	if in.Incoming != nil {
-		incoming = incoming.Add(*in.Incoming)
-	}
-	locked := decimal.NewFromInt(0)
-	if in.Locked != nil {
-		locked = locked.Add(*in.Locked)
-	}
-	outcoming := decimal.NewFromInt(0)
-	if in.Outcoming != nil {
-		outcoming = outcoming.Add(*in.Outcoming)
-	}
-	spendable := decimal.NewFromInt(0)
-	if in.Spendable != nil {
-		spendable = spendable.Add(*in.Spendable)
-	}
-
-	if in.Incoming != nil {
-		c.SetIncoming(incoming)
+		c.SetIncoming(*in.Incoming)
 	}
 	if in.Outcoming != nil {
-		c.SetOutcoming(outcoming)
+		c.SetOutcoming(*in.Outcoming)
 	}
 	if in.Locked != nil {
-		c.SetLocked(locked)
+		c.SetLocked(*in.Locked)
 	}
 	if in.Spendable != nil {
-		c.SetSpendable(spendable)
+		c.SetSpendable(*in.Spendable)
 	}
 	return c
 }

@@ -249,7 +249,7 @@ var (
 )
 
 func unCreateStatements(t *testing.T) {
-	infos, err := UnCreateStatements(context.Background(), []*npool.StatementReq{{
+	infos, err := RollbackStatements(context.Background(), []*npool.StatementReq{{
 		ID:         &miningBenefit.ID,
 		AppID:      &appID,
 		UserID:     &userID,

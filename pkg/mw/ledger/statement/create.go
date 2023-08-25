@@ -3,9 +3,7 @@ package statement
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	profitcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/profit"
@@ -28,7 +26,6 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
 	}
-
 	stm, err := profitcrud.SetQueryConds(
 		tx.Profit.Query(),
 		&profitcrud.Conds{
@@ -121,7 +118,7 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 	return nil
 }
 
-func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
 		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
 		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
@@ -137,7 +134,20 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 		}
 	}
 
-	// create
+	incoming := decimal.NewFromInt(0)
+	outcoming := decimal.NewFromInt(0)
+	switch *req.IOType {
+	case basetypes.IOType_Incoming:
+		incoming = decimal.RequireFromString(req.Amount.String())
+	case basetypes.IOType_Outcoming:
+		outcoming = decimal.RequireFromString(req.Amount.String())
+	default:
+		return fmt.Errorf("invalid io type %v", *req.IOType)
+	}
+
+	spendable := incoming.Sub(outcoming)
+	locked := decimal.NewFromInt(0)
+
 	if info == nil {
 		key := fmt.Sprintf("%v:%v:%v:%v",
 			commonpb.Prefix_PrefixCreateLedger,
@@ -152,34 +162,30 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 			_ = redis2.Unlock(key)
 		}()
 
-		stm, err := ledgercrud.CreateSetWithValidate(
+		if _, err := ledgercrud.CreateSet(
 			tx.Ledger.Create(),
-			req,
-		)
-		if err != nil {
-			return err
-		}
-		if _, err := stm.Save(ctx); err != nil {
+			&ledgercrud.Req{
+				AppID:      req.AppID,
+				UserID:     req.UserID,
+				CoinTypeID: req.CoinTypeID,
+				Incoming:   &incoming,
+				Outcoming:  &outcoming,
+				Locked:     &locked,
+				Spendable:  &spendable,
+			},
+		).Save(ctx); err != nil {
 			return err
 		}
 		return nil
 	}
 
-	// update
-	old, err := tx.Ledger.Get(ctx, info.ID)
-	if err != nil {
-		return err
-	}
-	if old == nil {
-		return fmt.Errorf("ledger not exist, id %v", info.ID)
-	}
-
 	stm1, err := ledgercrud.UpdateSetWithValidate(
-		old,
+		info,
 		&ledgercrud.Req{
-			Incoming:  req.Incoming,
-			Outcoming: req.Outcoming,
-			Spendable: req.Spendable,
+			Incoming:  &incoming,
+			Outcoming: &outcoming,
+			Spendable: &spendable,
+			Locked:    &locked,
 		},
 	)
 	if err != nil {
@@ -192,41 +198,8 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *ledgercrud.Req, ctx context
 	return nil
 }
 
-func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
-	h.Conds = &crud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
-		IOType:     &cruder.Cond{Op: cruder.EQ, Val: *h.IOType},
-		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *h.IOSubType},
-		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra},
-	}
-	if h.ID != nil {
-		h.Conds.ID = &cruder.Cond{Op: cruder.EQ, Val: *h.ID}
-	}
-
-	exist, err := h.ExistStatementConds(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if exist {
-		return nil, fmt.Errorf("statement already exist")
-	}
-
-	h.Reqs = []*crud.Req{&h.Req}
-	infos, err := h.CreateStatements(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if len(infos) == 0 {
-		return nil, nil
-	}
-	return infos[0], nil
-}
-
 //nolint
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
-	// to ensure the accuracy of the ledger, the same batch of data cannot be written repeatedly.
 	reqs := []*crud.Req{}
 	for _, req := range h.Reqs {
 		h.Conds = &crud.Conds{
@@ -245,12 +218,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 			return nil, err
 		}
 		if exist {
-			msg := fmt.Sprintf(
-				"statement exist! AppID(%v), UserID(%v), CoinTypeID(%v), IOType(%v), IOSubType(%v), IOExtra(%v)",
-				*req.AppID, *req.UserID, *req.CoinTypeID, *req.IOType, *req.IOSubType, *req.IOExtra,
-			)
-			logger.Sugar().Errorf(msg)
-			continue
+			return nil, fmt.Errorf("statement already exist, appid(%v),userid(%v),ioextra(%v)", *req.AppID, *req.UserID, *req.IOExtra)
 		}
 		reqs = append(reqs, req)
 	}
@@ -271,37 +239,13 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
 				}
-
 				if err := handler.tryCreateOrUpdateProfit(req, ctx, tx); err != nil {
 					return err
 				}
-
 				if h.ChangeLedger != nil && !*h.ChangeLedger { // just create statement, do not update ledger
 					return nil
 				}
-
-				incoming := decimal.NewFromInt(0)
-				outcoming := decimal.NewFromInt(0)
-				switch *req.IOType {
-				case basetypes.IOType_Incoming:
-					incoming = decimal.RequireFromString(req.Amount.String())
-				case basetypes.IOType_Outcoming:
-					outcoming = decimal.RequireFromString(req.Amount.String())
-				default:
-					return fmt.Errorf("invalid io type %v", *req.IOType)
-				}
-				spendable := incoming.Sub(outcoming)
-				locked := decimal.NewFromInt(0)
-
-				if err := handler.tryCreateOrUpdateLedger(&ledgercrud.Req{
-					AppID:      req.AppID,
-					UserID:     req.UserID,
-					CoinTypeID: req.CoinTypeID,
-					Incoming:   &incoming,
-					Outcoming:  &outcoming,
-					Spendable:  &spendable,
-					Locked:     &locked,
-				}, ctx, tx); err != nil {
+				if err := handler.tryCreateOrUpdateLedger(req, ctx, tx); err != nil {
 					return err
 				}
 
@@ -331,121 +275,14 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	return infos, nil
 }
 
-func (h *createHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	if req.ID == nil {
-		return fmt.Errorf("invalid statement id")
-	}
-	now := uint32(time.Now().Unix())
-	if _, err := crud.UpdateSet(
-		tx.Statement.UpdateOneID(*req.ID),
-		&crud.Req{
-			DeletedAt: &now,
-		},
-	).Save(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
-//nolint
-func (h *Handler) UnCreateStatements(ctx context.Context) ([]*npool.Statement, error) {
-	ids := []uuid.UUID{}
-	for _, req := range h.Reqs {
-		if req.ID == nil {
-			return nil, fmt.Errorf("invalid id in uncrate statements")
-		}
-		ids = append(ids, *req.ID)
-	}
-
-	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
-	}
-	h.Offset = 0
-	h.Limit = int32(len(ids))
-
-	infos, _, err := h.GetStatements(ctx)
+func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
+	h.Reqs = []*crud.Req{&h.Req}
+	infos, err := h.CreateStatements(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	statementMap := map[string]*npool.Statement{}
-	for _, info := range infos {
-		statementMap[info.ID] = info
+	if len(infos) == 0 {
+		return nil, nil
 	}
-
-	reqs := []*crud.Req{}
-	for _, req := range h.Reqs {
-		_, ok := statementMap[req.ID.String()]
-		if !ok {
-			logger.Sugar().Errorf("statement not exist, id %v", req.ID)
-			continue
-		}
-		reqs = append(reqs, req)
-	}
-
-	handler := &createHandler{
-		Handler: h,
-	}
-
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		for _, req := range reqs {
-			_fn := func() error {
-				key := fmt.Sprintf("ledger-uncreate-statement:%v:%v:%v:%v", *req.AppID, *req.UserID, *req.CoinTypeID, *req.IOExtra)
-				if err := redis2.TryLock(key, 0); err != nil {
-					return err
-				}
-				defer func() {
-					_ = redis2.Unlock(key)
-				}()
-
-				if err := handler.tryDeleteStatement(req, ctx, tx); err != nil {
-					return err
-				}
-
-				profitAmount := decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
-				if err := handler.tryCreateOrUpdateProfit(&crud.Req{
-					AppID:      req.AppID,
-					UserID:     req.UserID,
-					CoinTypeID: req.CoinTypeID,
-					Amount:     &profitAmount,
-					IOSubType:  req.IOSubType,
-				}, ctx, tx); err != nil {
-					return err
-				}
-
-				incoming := decimal.NewFromInt(0)
-				outcoming := decimal.NewFromInt(0)
-				switch *req.IOType {
-				case basetypes.IOType_Incoming:
-					incoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
-				case basetypes.IOType_Outcoming:
-					outcoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
-				default:
-					return fmt.Errorf("invalid io type %v", *req.IOType)
-				}
-				spendable := incoming.Sub(outcoming)
-
-				if err := handler.tryCreateOrUpdateLedger(&ledgercrud.Req{
-					AppID:      req.AppID,
-					UserID:     req.UserID,
-					CoinTypeID: req.CoinTypeID,
-					Incoming:   &incoming,
-					Outcoming:  &outcoming,
-					Spendable:  &spendable,
-				}, ctx, tx); err != nil {
-					return err
-				}
-				return nil
-			}
-			if err := _fn(); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return infos, nil
+	return infos[0], nil
 }
