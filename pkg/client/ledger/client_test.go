@@ -164,14 +164,16 @@ func unlockBalance(t *testing.T) {
 }
 
 var (
-	spendable = "10"
-	spendReq  = &ledgerpb.LedgerReq{
-		AppID:      &appID,
-		UserID:     &userID,
-		CoinTypeID: &coinTypeID,
-		IOSubType:  &ioSubType,
-		IOExtra:    &ioExtra,
-		Locked:     &spendable,
+	spendable   = "10"
+	statementID = uuid.NewString()
+	spendReq    = &ledgerpb.LedgerReq{
+		AppID:       &appID,
+		UserID:      &userID,
+		CoinTypeID:  &coinTypeID,
+		IOSubType:   &ioSubType,
+		IOExtra:     &ioExtra,
+		Locked:      &spendable,
+		StatementID: &statementID,
 	}
 )
 
