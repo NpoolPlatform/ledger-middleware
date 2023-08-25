@@ -67,7 +67,7 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
-	if h.StatementID != nil {
+	if h.StatementID == nil {
 		return fmt.Errorf("invalid statement id")
 	}
 
