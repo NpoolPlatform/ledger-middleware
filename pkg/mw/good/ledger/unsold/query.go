@@ -99,6 +99,30 @@ func (h *Handler) GetUnsoldStatement(ctx context.Context) (*npool.UnsoldStatemen
 	return handler.infos[0], nil
 }
 
+func (h *Handler) GetUnsoldStatements(ctx context.Context) ([]*npool.UnsoldStatement, uint32, error) {
+	handler := &queryHandler{
+		Handler: h,
+		infos:   []*npool.UnsoldStatement{},
+	}
+
+	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
+		if err := handler.queryUnsoldStatements(ctx, cli); err != nil {
+			return err
+		}
+		handler.stmSelect.
+			Offset(int(handler.Offset)).
+			Limit(int(handler.Limit))
+		return handler.scan(_ctx)
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	handler.formalize()
+
+	return handler.infos, handler.total, nil
+}
+
 func (h *Handler) GetUnsoldStatementOnly(ctx context.Context) (*npool.UnsoldStatement, error) {
 	handler := &queryHandler{
 		Handler: h,

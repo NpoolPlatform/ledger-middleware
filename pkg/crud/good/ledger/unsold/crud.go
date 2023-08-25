@@ -57,6 +57,7 @@ type Conds struct {
 	CoinTypeID  *cruder.Cond
 	Amount      *cruder.Cond
 	BenefitDate *cruder.Cond
+	IDs         *cruder.Cond
 }
 
 func SetQueryConds(q *ent.UnsoldStatementQuery, conds *Conds) (*ent.UnsoldStatementQuery, error) { //nolint
@@ -130,6 +131,18 @@ func SetQueryConds(q *ent.UnsoldStatementQuery, conds *Conds) (*ent.UnsoldStatem
 			q.Where(entunsoldstatement.BenefitDateEQ(benefitDate))
 		default:
 			return nil, fmt.Errorf("invalid benefit date op field %v", conds.BenefitDate.Op)
+		}
+	}
+	if conds.IDs != nil {
+		ids, ok := conds.IDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid ids %v", conds.IDs.Val)
+		}
+		switch conds.IDs.Op {
+		case cruder.IN:
+			q.Where(entunsoldstatement.IDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid unsold statement op field %v", conds.IDs.Op)
 		}
 	}
 	return q, nil

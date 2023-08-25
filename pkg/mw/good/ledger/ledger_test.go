@@ -9,7 +9,7 @@ import (
 	"time"
 
 	goodstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
-	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement/statement"
+	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
 	unsold1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -38,7 +38,7 @@ var (
 	techniqueServiceFeeAmount = "2"
 	benefitDate               = uint32(time.Now().Unix())
 
-	req = goodstatementmwpb.GoodStatementsReq{
+	req = goodstatementmwpb.GoodStatementReq{
 		GoodID:                    &goodID,
 		CoinTypeID:                &coinTypeID,
 		TotalAmount:               &totalAmount,
@@ -51,7 +51,7 @@ var (
 )
 
 func setup(t *testing.T) func(*testing.T) {
-	reqs := []*goodstatementmwpb.GoodStatementsReq{
+	reqs := []*goodstatementmwpb.GoodStatementReq{
 		{
 			GoodID:                    &goodID,
 			CoinTypeID:                &coinTypeID,
@@ -75,7 +75,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 	handler1, err := goodstatement1.NewHandler(
 		context.Background(),
-		goodstatement1.WithID(&goodStatementID),
+		goodstatement1.WithID(&goodStatementID, true),
 	)
 	assert.Nil(t, err)
 

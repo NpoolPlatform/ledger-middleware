@@ -12,12 +12,23 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type Req struct {
+	ID                        *uuid.UUID
+	UnsoldStatementID         *uuid.UUID
+	GoodID                    *uuid.UUID
+	CoinTypeID                *uuid.UUID
+	TotalAmount               *decimal.Decimal
+	UnsoldAmount              *decimal.Decimal
+	TechniqueServiceFeeAmount *decimal.Decimal
+	BenefitDate               *uint32
+}
+
 type Handler struct {
-	crud.Req
-	Reqs   []*crud.Req
+	*Req
+	Reqs   []*Req
 	Conds  *crud.Conds
-	Offset int32
 	Limit  int32
+	Offset int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -30,9 +41,12 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -44,9 +58,29 @@ func WithID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithGoodID(id *string) func(context.Context, *Handler) error {
+func WithUnsoldStatementID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid unsold statement id")
+			}
+			return nil
+		}
+		_id, err := uuid.Parse(*id)
+		if err != nil {
+			return err
+		}
+		h.UnsoldStatementID = &_id
+		return nil
+	}
+}
+
+func WithGoodID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid good id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -58,9 +92,12 @@ func WithGoodID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
+func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid coin type id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -72,9 +109,34 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAmount(amount *string) func(context.Context, *Handler) error {
+//nolint
+func WithTotalAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid total amount")
+			}
+			return nil
+		}
+		_amount, err := decimal.NewFromString(*amount)
+		if err != nil {
+			return err
+		}
+		if _amount.Cmp(decimal.NewFromInt(0)) <= 0 {
+			return fmt.Errorf("total amount is less than equal 0 %v", *amount)
+		}
+		h.TotalAmount = &_amount
+		return nil
+	}
+}
+
+//nolint
+func WithUnsoldAmount(amount *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid unsold amount")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
@@ -82,19 +144,137 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 			return err
 		}
 		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("amount is less than 0 %v", *amount)
+			return fmt.Errorf("unsold amount is less than 0 %v", *amount)
 		}
-		h.Amount = &_amount
+		h.UnsoldAmount = &_amount
 		return nil
 	}
 }
 
-func WithBenefitDate(date *uint32) func(context.Context, *Handler) error {
+//nolint
+func WithTechniqueServiceFeeAmount(amount *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid technique service fee amount")
+			}
+			return nil
+		}
+		_amount, err := decimal.NewFromString(*amount)
+		if err != nil {
+			return err
+		}
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("technique service fee amount is less than 0 %v", *amount)
+		}
+		h.TechniqueServiceFeeAmount = &_amount
+		return nil
+	}
+}
+
+func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if date == nil {
+			if must {
+				return fmt.Errorf("invalid benefit date is must")
+			}
 			return nil
 		}
 		h.BenefitDate = date
+		return nil
+	}
+}
+
+//nolint
+func WithReqs(reqs []*npool.GoodStatementReq) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		_reqs := []*Req{}
+		for _, req := range reqs {
+			_req := &Req{}
+			if req.GoodID == nil {
+				return fmt.Errorf("invalid good id")
+			}
+			if req.CoinTypeID == nil {
+				return fmt.Errorf("invalid coin type id")
+			}
+			if req.TotalAmount == nil {
+				return fmt.Errorf("invalid total amount")
+			}
+			if req.UnsoldAmount == nil {
+				return fmt.Errorf("invalid unsold amount")
+			}
+			if req.TechniqueServiceFeeAmount == nil {
+				return fmt.Errorf("invalid technique service fee amount")
+			}
+			if req.BenefitDate == nil {
+				return fmt.Errorf("invalid benefit date")
+			}
+			if req.ID != nil {
+				_id, err := uuid.Parse(*req.ID)
+				if err != nil {
+					return err
+				}
+				_req.ID = &_id
+			}
+			if req.UnsoldStatementID != nil {
+				_id, err := uuid.Parse(*req.UnsoldStatementID)
+				if err != nil {
+					return err
+				}
+				_req.UnsoldStatementID = &_id
+			}
+			if req.GoodID != nil {
+				_id, err := uuid.Parse(*req.GoodID)
+				if err != nil {
+					return err
+				}
+				_req.GoodID = &_id
+			}
+			if req.CoinTypeID != nil {
+				_id, err := uuid.Parse(*req.CoinTypeID)
+				if err != nil {
+					return err
+				}
+				_req.CoinTypeID = &_id
+			}
+			if req.TotalAmount != nil {
+				amount, err := decimal.NewFromString(*req.TotalAmount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) <= 0 {
+					return fmt.Errorf("total amount is less than equal 0 %v", *req.TotalAmount)
+				}
+				_req.TotalAmount = &amount
+			}
+			if req.UnsoldAmount != nil {
+				amount, err := decimal.NewFromString(*req.UnsoldAmount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("unsold amount is less than 0 %v", *req.UnsoldAmount)
+				}
+				_req.UnsoldAmount = &amount
+			}
+			if req.TechniqueServiceFeeAmount != nil {
+				amount, err := decimal.NewFromString(*req.TechniqueServiceFeeAmount)
+				if err != nil {
+					return err
+				}
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("technique service fee amount is less than 0 %v", *req.TechniqueServiceFeeAmount)
+				}
+				_req.TechniqueServiceFeeAmount = &amount
+			}
+
+			if req.BenefitDate != nil {
+				_req.BenefitDate = req.BenefitDate
+			}
+
+			_reqs = append(_reqs, _req)
+		}
+		h.Reqs = _reqs
 		return nil
 	}
 }
@@ -133,6 +313,12 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			h.Conds.CoinTypeID = &cruder.Cond{
 				Op:  conds.GetCoinTypeID().GetOp(),
 				Val: id,
+			}
+		}
+		if conds.BenefitDate != nil {
+			h.Conds.CoinTypeID = &cruder.Cond{
+				Op:  conds.GetBenefitDate().GetOp(),
+				Val: conds.GetBenefitDate().GetValue(),
 			}
 		}
 		return nil
