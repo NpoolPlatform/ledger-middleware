@@ -195,6 +195,9 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	h.Conds = &goodstatementcrud.Conds{
 		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
+    h.Offset = 0
+	h.Limit = int32(len(ids))
+
 	infos, _, err := h.GetGoodStatements(ctx)
 	if err != nil {
 		return nil, err
