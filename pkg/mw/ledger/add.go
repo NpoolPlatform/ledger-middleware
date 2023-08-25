@@ -89,10 +89,6 @@ func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
 	return nil
 }
 
-func (h *addHandler) statementExtra() string {
-	return fmt.Sprintf(`{"RollbackStatementID":"%v"}`, h.StatementID.String())
-}
-
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
@@ -113,7 +109,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 				entstatement.CoinTypeID(*h.CoinTypeID),
 				entstatement.IoType(types.IOType_Incoming.String()),
 				entstatement.IoSubType(h.IOSubType.String()),
-				entstatement.IoExtra(h.statementExtra()),
+				entstatement.IoExtra(getStatementExtra(h.StatementID.String())),
 				entstatement.DeletedAt(0),
 			).
 			Only(ctx)
@@ -133,16 +129,16 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
-	ioExtra := h.statementExtra()
+	ioExtra := getStatementExtra(h.StatementID.String())
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithChangeLedger(),
+		statement1.WithChangeLedger(false),
 	)
 	if err != nil {
 		return err
 	}
 
-	ioType := ledgerpb.IOType_Incoming
+	ioType := types.IOType_Incoming
 	handler.Req = statementcrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,

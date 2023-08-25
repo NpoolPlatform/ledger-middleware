@@ -11,7 +11,7 @@ import (
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
-	ledgerpb "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	"github.com/shopspring/decimal"
 )
@@ -44,8 +44,6 @@ func (h *subHandler) getLedger(ctx context.Context) error {
 }
 
 func (h *subHandler) getRollbackStatement(ctx context.Context, cli *ent.Client) error {
-	ioType := ledgerpb.IOType_Incoming
-	ioExtra := fmt.Sprintf(`{"StatementID": "%v", "Rollback": "true"}`, h.statement.ID.String())
 	if _, err := cli.
 		Statement.
 		Query().
@@ -53,15 +51,12 @@ func (h *subHandler) getRollbackStatement(ctx context.Context, cli *ent.Client) 
 			entstatement.AppID(*h.AppID),
 			entstatement.UserID(*h.UserID),
 			entstatement.CoinTypeID(*h.CoinTypeID),
-			entstatement.IoType(ioType.String()),
+			entstatement.IoType(types.IOType_Incoming.String()),
 			entstatement.IoSubType(h.IOSubType.String()),
-			entstatement.IoExtra(ioExtra),
+			entstatement.IoExtra(getStatementExtra(h.StatementID.String())),
 			entstatement.DeletedAt(0),
 		).
 		Only(ctx); err != nil {
-		if ent.IsNotFound(err) {
-			return fmt.Errorf("statement already exist")
-		}
 		return err
 	}
 	return nil
@@ -71,24 +66,17 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
-	if h.IOSubType == nil {
-		return fmt.Errorf("invalid io sub type")
-	}
-	if h.IOExtra == nil {
-		return fmt.Errorf("invalid io extra")
-	}
 	if h.StatementID != nil {
 		return fmt.Errorf("invalid statement id")
 	}
 
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		ioType := ledgerpb.IOType_Outcoming
 		info, err := cli.
 			Statement.
 			Query().
 			Where(
 				entstatement.ID(*h.StatementID),
-				entstatement.IoType(ioType.String()),
+				entstatement.IoType(types.IOType_Outcoming.String()),
 				entstatement.DeletedAt(0),
 			).
 			Only(ctx)
@@ -103,7 +91,6 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 		if err := h.getRollbackStatement(ctx, cli); err != nil {
 			return err
 		}
-		// can create statement, set h.statement = nil
 		h.statement = nil
 		return nil
 	})
@@ -143,13 +130,13 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithChangeLedger(),
+		statement1.WithChangeLedger(false),
 	)
 	if err != nil {
 		return err
 	}
 
-	ioType := ledgerpb.IOType_Outcoming
+	ioType := types.IOType_Outcoming
 	handler.Req = statementcrud.Req{
 		ID:         h.StatementID,
 		AppID:      h.AppID,
@@ -201,7 +188,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	if err := handler.getStatement(ctx); err != nil {
 		return nil, err
 	}
-	if handler.Locked != nil && handler.ledger != nil {
+	if handler.Locked != nil && handler.statement != nil {
 		return nil, fmt.Errorf("statement already exist")
 	}
 
@@ -218,8 +205,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 		return nil, err
 	}
 
-	ledgerID := handler.ledger.ID
-	h.ID = &ledgerID
-
+	h.ID = &handler.ledger.ID
 	return h.GetLedger(ctx)
 }
