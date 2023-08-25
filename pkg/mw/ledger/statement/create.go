@@ -107,7 +107,7 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
-
+    fmt.Println("tryCreateStatement", *req.ID)
 	if _, err := crud.CreateSet(
 		tx.Statement.Create(),
 		req,
@@ -244,7 +244,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 					return err
 				}
 
-				ids = append(ids, id)
+				ids = append(ids, *req.ID)
 				return nil
 			}
 			if err := _fn(); err != nil {

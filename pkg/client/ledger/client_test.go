@@ -215,7 +215,8 @@ func TestClient(t *testing.T) {
 	})
 
 	teardowm := setup(t)
-	teardowm(t)
+	defer teardowm(t)
+
 	t.Run("lockBalance", lockBalance)
 	t.Run("unlockBalance", unlockBalance)
 	t.Run("spendBalance", spendBalance)
