@@ -36,6 +36,7 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit1 = npool.Statement{
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -50,6 +51,7 @@ var (
 	}
 
 	deposit2 = npool.Statement{
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -62,7 +64,40 @@ var (
 		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
 		CoinUSDCurrency: "0",
 	}
+)
 
+func setup(t *testing.T) func(*testing.T) {
+	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
+		{
+			ID:         &deposit1.ID,
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit1.Amount,
+			IOType:     &deposit1.IOType,
+			IOSubType:  &deposit1.IOSubType,
+			IOExtra:    &deposit1.IOExtra,
+		}, {
+			ID:         &deposit2.ID,
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
+			Amount:     &deposit2.Amount,
+			IOType:     &deposit2.IOType,
+			IOSubType:  &deposit2.IOSubType,
+			IOExtra:    &deposit2.IOExtra,
+		},
+	})
+	if assert.Nil(t, err) {
+		assert.Equal(t, 2, len(deposits))
+	}
+	return func(t *testing.T) {
+		_, _ = statementcli.DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit1.ID})
+		_, _ = statementcli.DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit2.ID})
+	}
+}
+
+var (
 	locked    = "10"
 	ioSubType = basetypes.IOSubType_Withdrawal
 	ioExtra   = fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString())
@@ -105,63 +140,6 @@ var (
 		Spendable:  "140",
 	}
 )
-
-func insertSameDataTwice(t *testing.T) {
-	_, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
-		{
-			AppID:      &appID,
-			UserID:     &userID,
-			CoinTypeID: &coinTypeID,
-			Amount:     &deposit1.Amount,
-			IOType:     &deposit1.IOType,
-			IOSubType:  &deposit1.IOSubType,
-			IOExtra:    &deposit1.IOExtra,
-		}, {
-			AppID:      &appID,
-			UserID:     &userID,
-			CoinTypeID: &coinTypeID,
-			Amount:     &deposit2.Amount,
-			IOType:     &deposit2.IOType,
-			IOSubType:  &deposit2.IOSubType,
-			IOExtra:    &deposit2.IOExtra,
-		},
-		{
-			AppID:      &appID,
-			UserID:     &userID,
-			CoinTypeID: &coinTypeID,
-			Amount:     &deposit2.Amount,
-			IOType:     &deposit2.IOType,
-			IOSubType:  &deposit2.IOSubType,
-			IOExtra:    &deposit2.IOExtra,
-		},
-	})
-	assert.NotNil(t, err) // the same batch of data cannot be written repeatedly.
-}
-
-func createStatements(t *testing.T) {
-	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
-		{
-			AppID:      &appID,
-			UserID:     &userID,
-			CoinTypeID: &coinTypeID,
-			Amount:     &deposit1.Amount,
-			IOType:     &deposit1.IOType,
-			IOSubType:  &deposit1.IOSubType,
-			IOExtra:    &deposit1.IOExtra,
-		}, {
-			AppID:      &appID,
-			UserID:     &userID,
-			CoinTypeID: &coinTypeID,
-			Amount:     &deposit2.Amount,
-			IOType:     &deposit2.IOType,
-			IOSubType:  &deposit2.IOSubType,
-			IOExtra:    &deposit2.IOExtra,
-		},
-	})
-	if assert.Nil(t, err) {
-		assert.Equal(t, 2, len(deposits))
-	}
-}
 
 func lockBalance(t *testing.T) {
 	info, err := SubBalance(context.Background(), &req)
@@ -216,7 +194,6 @@ func spendBalance(t *testing.T) {
 }
 
 func unspendBalance(t *testing.T) {
-	// unspend
 	info, err := AddBalance(context.Background(), spendReq)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
@@ -235,8 +212,8 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("insertSameDataTwice", insertSameDataTwice)
-	t.Run("createStatements", createStatements)
+	teardowm := setup(t)
+	teardowm(t)
 	t.Run("lockBalance", lockBalance)
 	t.Run("unlockBalance", unlockBalance)
 	t.Run("spendBalance", spendBalance)

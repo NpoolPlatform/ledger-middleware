@@ -208,9 +208,6 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
 			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
 		}
-		if req.ID != nil {
-			h.Conds.ID = &cruder.Cond{Op: cruder.EQ, Val: req.ID}
-		}
 		exist, err := h.ExistStatementConds(ctx)
 		if err != nil {
 			return nil, err

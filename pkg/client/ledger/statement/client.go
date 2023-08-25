@@ -144,3 +144,19 @@ func RollbackStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool
 	}
 	return infos.([]*npool.Statement), nil
 }
+
+func DeleteStatement(ctx context.Context, req *npool.StatementReq) (*npool.Statement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.DeleteStatement(ctx, &npool.DeleteStatementRequest{
+			Info: req,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return resp.Info, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return info.(*npool.Statement), nil
+}

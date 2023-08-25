@@ -111,3 +111,19 @@ func GetWithdraws(ctx context.Context, conds *npool.Conds, offset, limit int32) 
 	}
 	return infos.([]*npool.Withdraw), total, nil
 }
+
+func DeleteWithdraw(ctx context.Context, req *npool.WithdrawReq) (*npool.Withdraw, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.DeleteWithdraw(ctx, &npool.DeleteWithdrawRequest{
+			Info: req,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return resp.Info, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return info.(*npool.Withdraw), nil
+}
