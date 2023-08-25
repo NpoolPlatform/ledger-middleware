@@ -41,7 +41,7 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit = npool.Statement{
-		ID:              "",
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -55,7 +55,7 @@ var (
 		CoinUSDCurrency: "0",
 	}
 	payment = npool.Statement{
-		ID:              "",
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -69,7 +69,7 @@ var (
 		CoinUSDCurrency: "0",
 	}
 	miningBenefit = npool.Statement{
-		ID:              "",
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -94,7 +94,7 @@ var (
 	}
 )
 
-func createStatements(t *testing.T) {
+func setup(t *testing.T) func(*testing.T) {
 	deposits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
 		AppID:      &appID,
 		UserID:     &userID,
@@ -144,6 +144,11 @@ func createStatements(t *testing.T) {
 		miningBenefit.UpdatedAt = benefits[0].UpdatedAt
 		miningBenefit.ID = benefits[0].ID
 		assert.Equal(t, &miningBenefit, benefits[0])
+	}
+	return func(t *testing.T) {
+		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit.ID})
+		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &payment.ID})
+		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &miningBenefit.ID})
 	}
 }
 
@@ -248,7 +253,7 @@ var (
 	}
 )
 
-func unCreateStatements(t *testing.T) {
+func rollbackStatements(t *testing.T) {
 	infos, err := RollbackStatements(context.Background(), []*npool.StatementReq{{
 		ID:         &miningBenefit.ID,
 		AppID:      &appID,
@@ -298,13 +303,14 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
-	t.Run("createStatements", createStatements)
+	teardown := setup(t)
+	teardown(t)
 	t.Run("compareLedger", compareLedger)
 	t.Run("compareProfit", compareProfit)
 	t.Run("getStatement", getStatement)
 	t.Run("getStatementOnly", getStatementOnly)
 	t.Run("getStatements", getStatements)
-	t.Run("unCreateStatements", unCreateStatements)
+	t.Run("rollbackStatements", rollbackStatements)
 	t.Run("compareProfit1", compareProfit1)
 	t.Run("tryGetStatement", tryGetStatement)
 }
