@@ -56,6 +56,7 @@ func (h *createHandler) tryCreateUnsoldStatement(req *Req, ctx context.Context, 
 	if _, err := unsoldcrud.CreateSet(
 		tx.UnsoldStatement.Create(),
 		&unsoldcrud.Req{
+			ID:          req.UnsoldStatementID,
 			GoodID:      req.GoodID,
 			CoinTypeID:  req.CoinTypeID,
 			Amount:      req.UnsoldAmount,
@@ -161,6 +162,10 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				id := uuid.New()
 				if req.ID == nil {
 					req.ID = &id
+				}
+				unsoldID := uuid.New()
+				if req.UnsoldStatementID == nil {
+					req.UnsoldStatementID = &unsoldID
 				}
 				if err := handler.tryCreateGoodStatement(req, ctx, tx); err != nil {
 					return err
