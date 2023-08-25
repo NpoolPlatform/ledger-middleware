@@ -304,7 +304,7 @@ func TestClient(t *testing.T) {
 	})
 
 	teardown := setup(t)
-	teardown(t)
+	defer teardown(t)
 	t.Run("compareLedger", compareLedger)
 	t.Run("compareProfit", compareProfit)
 	t.Run("getStatement", getStatement)
