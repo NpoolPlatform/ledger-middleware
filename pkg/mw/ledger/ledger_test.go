@@ -33,7 +33,7 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit = statementmwpb.Statement{
-		ID:              "",
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -47,7 +47,7 @@ var (
 		CoinUSDCurrency: "0",
 	}
 	payment = statementmwpb.Statement{
-		ID:              "",
+		ID:              uuid.NewString(),
 		AppID:           appID,
 		UserID:          userID,
 		CoinTypeID:      coinTypeID,
@@ -75,6 +75,7 @@ var (
 func setup(t *testing.T) func(*testing.T) {
 	reqs1 := []*statementmwpb.StatementReq{
 		{
+			ID:         &deposit.ID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -102,6 +103,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 	reqs2 := []*statementmwpb.StatementReq{
 		{
+			ID:         &payment.ID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -127,9 +129,20 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, &payment, payments[0])
 	}
 
+	st1, err := statement1.NewHandler(
+		context.Background(),
+		statement1.WithID(&deposit.ID),
+	)
+	assert.Nil(t, err)
+	st2, err := statement1.NewHandler(
+		context.Background(),
+		statement1.WithID(&payment.ID),
+	)
+	assert.Nil(t, err)
+
 	return func(t *testing.T) {
-		_, _ = handler.DeleteStatement(context.Background())
-		_, _ = handler2.DeleteStatement(context.Background())
+		_, _ = st1.DeleteStatement(context.Background())
+		_, _ = st2.DeleteStatement(context.Background())
 	}
 }
 
