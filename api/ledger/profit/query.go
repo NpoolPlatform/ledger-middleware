@@ -73,35 +73,3 @@ func (s *Server) GetProfit(ctx context.Context, in *npool.GetProfitRequest) (*np
 		Info: info,
 	}, nil
 }
-
-func (s *Server) GetProfitOnly(ctx context.Context, in *npool.GetProfitOnlyRequest) (
-	*npool.GetProfitOnlyResponse,
-	error,
-) {
-	handler, err := profit1.NewHandler(
-		ctx,
-		profit1.WithConds(in.GetConds()),
-	)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"GetProfitOnly",
-			"In", in,
-			"error", err,
-		)
-		return &npool.GetProfitOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	info, err := handler.GetProfitOnly(ctx)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"GetProfitOnly",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.GetProfitOnlyResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &npool.GetProfitOnlyResponse{
-		Info: info,
-	}, nil
-}
