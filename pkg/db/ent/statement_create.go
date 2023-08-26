@@ -150,34 +150,6 @@ func (sc *StatementCreate) SetNillableAmount(d *decimal.Decimal) *StatementCreat
 	return sc
 }
 
-// SetFromCoinTypeID sets the "from_coin_type_id" field.
-func (sc *StatementCreate) SetFromCoinTypeID(u uuid.UUID) *StatementCreate {
-	sc.mutation.SetFromCoinTypeID(u)
-	return sc
-}
-
-// SetNillableFromCoinTypeID sets the "from_coin_type_id" field if the given value is not nil.
-func (sc *StatementCreate) SetNillableFromCoinTypeID(u *uuid.UUID) *StatementCreate {
-	if u != nil {
-		sc.SetFromCoinTypeID(*u)
-	}
-	return sc
-}
-
-// SetCoinUsdCurrency sets the "coin_usd_currency" field.
-func (sc *StatementCreate) SetCoinUsdCurrency(d decimal.Decimal) *StatementCreate {
-	sc.mutation.SetCoinUsdCurrency(d)
-	return sc
-}
-
-// SetNillableCoinUsdCurrency sets the "coin_usd_currency" field if the given value is not nil.
-func (sc *StatementCreate) SetNillableCoinUsdCurrency(d *decimal.Decimal) *StatementCreate {
-	if d != nil {
-		sc.SetCoinUsdCurrency(*d)
-	}
-	return sc
-}
-
 // SetIoExtra sets the "io_extra" field.
 func (sc *StatementCreate) SetIoExtra(s string) *StatementCreate {
 	sc.mutation.SetIoExtra(s)
@@ -335,13 +307,6 @@ func (sc *StatementCreate) defaults() error {
 		v := statement.DefaultIoSubType
 		sc.mutation.SetIoSubType(v)
 	}
-	if _, ok := sc.mutation.FromCoinTypeID(); !ok {
-		if statement.DefaultFromCoinTypeID == nil {
-			return fmt.Errorf("ent: uninitialized statement.DefaultFromCoinTypeID (forgotten import ent/runtime?)")
-		}
-		v := statement.DefaultFromCoinTypeID()
-		sc.mutation.SetFromCoinTypeID(v)
-	}
 	if _, ok := sc.mutation.IoExtra(); !ok {
 		v := statement.DefaultIoExtra
 		sc.mutation.SetIoExtra(v)
@@ -480,22 +445,6 @@ func (sc *StatementCreate) createSpec() (*Statement, *sqlgraph.CreateSpec) {
 			Column: statement.FieldAmount,
 		})
 		_node.Amount = value
-	}
-	if value, ok := sc.mutation.FromCoinTypeID(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
-			Value:  value,
-			Column: statement.FieldFromCoinTypeID,
-		})
-		_node.FromCoinTypeID = value
-	}
-	if value, ok := sc.mutation.CoinUsdCurrency(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: statement.FieldCoinUsdCurrency,
-		})
-		_node.CoinUsdCurrency = &value
 	}
 	if value, ok := sc.mutation.IoExtra(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -724,48 +673,6 @@ func (u *StatementUpsert) AddAmount(v decimal.Decimal) *StatementUpsert {
 // ClearAmount clears the value of the "amount" field.
 func (u *StatementUpsert) ClearAmount() *StatementUpsert {
 	u.SetNull(statement.FieldAmount)
-	return u
-}
-
-// SetFromCoinTypeID sets the "from_coin_type_id" field.
-func (u *StatementUpsert) SetFromCoinTypeID(v uuid.UUID) *StatementUpsert {
-	u.Set(statement.FieldFromCoinTypeID, v)
-	return u
-}
-
-// UpdateFromCoinTypeID sets the "from_coin_type_id" field to the value that was provided on create.
-func (u *StatementUpsert) UpdateFromCoinTypeID() *StatementUpsert {
-	u.SetExcluded(statement.FieldFromCoinTypeID)
-	return u
-}
-
-// ClearFromCoinTypeID clears the value of the "from_coin_type_id" field.
-func (u *StatementUpsert) ClearFromCoinTypeID() *StatementUpsert {
-	u.SetNull(statement.FieldFromCoinTypeID)
-	return u
-}
-
-// SetCoinUsdCurrency sets the "coin_usd_currency" field.
-func (u *StatementUpsert) SetCoinUsdCurrency(v decimal.Decimal) *StatementUpsert {
-	u.Set(statement.FieldCoinUsdCurrency, v)
-	return u
-}
-
-// UpdateCoinUsdCurrency sets the "coin_usd_currency" field to the value that was provided on create.
-func (u *StatementUpsert) UpdateCoinUsdCurrency() *StatementUpsert {
-	u.SetExcluded(statement.FieldCoinUsdCurrency)
-	return u
-}
-
-// AddCoinUsdCurrency adds v to the "coin_usd_currency" field.
-func (u *StatementUpsert) AddCoinUsdCurrency(v decimal.Decimal) *StatementUpsert {
-	u.Add(statement.FieldCoinUsdCurrency, v)
-	return u
-}
-
-// ClearCoinUsdCurrency clears the value of the "coin_usd_currency" field.
-func (u *StatementUpsert) ClearCoinUsdCurrency() *StatementUpsert {
-	u.SetNull(statement.FieldCoinUsdCurrency)
 	return u
 }
 
@@ -1030,55 +937,6 @@ func (u *StatementUpsertOne) UpdateAmount() *StatementUpsertOne {
 func (u *StatementUpsertOne) ClearAmount() *StatementUpsertOne {
 	return u.Update(func(s *StatementUpsert) {
 		s.ClearAmount()
-	})
-}
-
-// SetFromCoinTypeID sets the "from_coin_type_id" field.
-func (u *StatementUpsertOne) SetFromCoinTypeID(v uuid.UUID) *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.SetFromCoinTypeID(v)
-	})
-}
-
-// UpdateFromCoinTypeID sets the "from_coin_type_id" field to the value that was provided on create.
-func (u *StatementUpsertOne) UpdateFromCoinTypeID() *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.UpdateFromCoinTypeID()
-	})
-}
-
-// ClearFromCoinTypeID clears the value of the "from_coin_type_id" field.
-func (u *StatementUpsertOne) ClearFromCoinTypeID() *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.ClearFromCoinTypeID()
-	})
-}
-
-// SetCoinUsdCurrency sets the "coin_usd_currency" field.
-func (u *StatementUpsertOne) SetCoinUsdCurrency(v decimal.Decimal) *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.SetCoinUsdCurrency(v)
-	})
-}
-
-// AddCoinUsdCurrency adds v to the "coin_usd_currency" field.
-func (u *StatementUpsertOne) AddCoinUsdCurrency(v decimal.Decimal) *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.AddCoinUsdCurrency(v)
-	})
-}
-
-// UpdateCoinUsdCurrency sets the "coin_usd_currency" field to the value that was provided on create.
-func (u *StatementUpsertOne) UpdateCoinUsdCurrency() *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.UpdateCoinUsdCurrency()
-	})
-}
-
-// ClearCoinUsdCurrency clears the value of the "coin_usd_currency" field.
-func (u *StatementUpsertOne) ClearCoinUsdCurrency() *StatementUpsertOne {
-	return u.Update(func(s *StatementUpsert) {
-		s.ClearCoinUsdCurrency()
 	})
 }
 
@@ -1512,55 +1370,6 @@ func (u *StatementUpsertBulk) UpdateAmount() *StatementUpsertBulk {
 func (u *StatementUpsertBulk) ClearAmount() *StatementUpsertBulk {
 	return u.Update(func(s *StatementUpsert) {
 		s.ClearAmount()
-	})
-}
-
-// SetFromCoinTypeID sets the "from_coin_type_id" field.
-func (u *StatementUpsertBulk) SetFromCoinTypeID(v uuid.UUID) *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.SetFromCoinTypeID(v)
-	})
-}
-
-// UpdateFromCoinTypeID sets the "from_coin_type_id" field to the value that was provided on create.
-func (u *StatementUpsertBulk) UpdateFromCoinTypeID() *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.UpdateFromCoinTypeID()
-	})
-}
-
-// ClearFromCoinTypeID clears the value of the "from_coin_type_id" field.
-func (u *StatementUpsertBulk) ClearFromCoinTypeID() *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.ClearFromCoinTypeID()
-	})
-}
-
-// SetCoinUsdCurrency sets the "coin_usd_currency" field.
-func (u *StatementUpsertBulk) SetCoinUsdCurrency(v decimal.Decimal) *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.SetCoinUsdCurrency(v)
-	})
-}
-
-// AddCoinUsdCurrency adds v to the "coin_usd_currency" field.
-func (u *StatementUpsertBulk) AddCoinUsdCurrency(v decimal.Decimal) *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.AddCoinUsdCurrency(v)
-	})
-}
-
-// UpdateCoinUsdCurrency sets the "coin_usd_currency" field to the value that was provided on create.
-func (u *StatementUpsertBulk) UpdateCoinUsdCurrency() *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.UpdateCoinUsdCurrency()
-	})
-}
-
-// ClearCoinUsdCurrency clears the value of the "coin_usd_currency" field.
-func (u *StatementUpsertBulk) ClearCoinUsdCurrency() *StatementUpsertBulk {
-	return u.Update(func(s *StatementUpsert) {
-		s.ClearCoinUsdCurrency()
 	})
 }
 

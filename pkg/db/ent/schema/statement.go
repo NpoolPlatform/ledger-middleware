@@ -64,20 +64,6 @@ func (Statement) Fields() []ent.Field {
 			}).
 			Optional(),
 		field.
-			UUID("from_coin_type_id", uuid.UUID{}).
-			Optional().
-			Default(func() uuid.UUID {
-				return uuid.UUID{}
-			}),
-		field.
-			Float("coin_usd_currency").
-			GoType(decimal.Decimal{}).
-			SchemaType(map[string]string{
-				dialect.MySQL: "decimal(37, 18)",
-			}).
-			Optional().
-			Nillable(),
-		field.
 			String("io_extra").
 			Optional().
 			Default("").

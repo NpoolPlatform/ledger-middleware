@@ -30,10 +30,6 @@ const (
 	FieldIoSubType = "io_sub_type"
 	// FieldAmount holds the string denoting the amount field in the database.
 	FieldAmount = "amount"
-	// FieldFromCoinTypeID holds the string denoting the from_coin_type_id field in the database.
-	FieldFromCoinTypeID = "from_coin_type_id"
-	// FieldCoinUsdCurrency holds the string denoting the coin_usd_currency field in the database.
-	FieldCoinUsdCurrency = "coin_usd_currency"
 	// FieldIoExtra holds the string denoting the io_extra field in the database.
 	FieldIoExtra = "io_extra"
 	// Table holds the table name of the statement in the database.
@@ -52,8 +48,6 @@ var Columns = []string{
 	FieldIoType,
 	FieldIoSubType,
 	FieldAmount,
-	FieldFromCoinTypeID,
-	FieldCoinUsdCurrency,
 	FieldIoExtra,
 }
 
@@ -94,8 +88,6 @@ var (
 	DefaultIoType string
 	// DefaultIoSubType holds the default value on creation for the "io_sub_type" field.
 	DefaultIoSubType string
-	// DefaultFromCoinTypeID holds the default value on creation for the "from_coin_type_id" field.
-	DefaultFromCoinTypeID func() uuid.UUID
 	// DefaultIoExtra holds the default value on creation for the "io_extra" field.
 	DefaultIoExtra string
 	// IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.

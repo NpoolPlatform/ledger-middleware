@@ -243,12 +243,8 @@ func init() {
 	statementDescIoSubType := statementFields[5].Descriptor()
 	// statement.DefaultIoSubType holds the default value on creation for the io_sub_type field.
 	statement.DefaultIoSubType = statementDescIoSubType.Default.(string)
-	// statementDescFromCoinTypeID is the schema descriptor for from_coin_type_id field.
-	statementDescFromCoinTypeID := statementFields[7].Descriptor()
-	// statement.DefaultFromCoinTypeID holds the default value on creation for the from_coin_type_id field.
-	statement.DefaultFromCoinTypeID = statementDescFromCoinTypeID.Default.(func() uuid.UUID)
 	// statementDescIoExtra is the schema descriptor for io_extra field.
-	statementDescIoExtra := statementFields[9].Descriptor()
+	statementDescIoExtra := statementFields[7].Descriptor()
 	// statement.DefaultIoExtra holds the default value on creation for the io_extra field.
 	statement.DefaultIoExtra = statementDescIoExtra.Default.(string)
 	// statement.IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.

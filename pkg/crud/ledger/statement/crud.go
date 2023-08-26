@@ -14,18 +14,16 @@ import (
 )
 
 type Req struct {
-	ID              *uuid.UUID
-	AppID           *uuid.UUID
-	UserID          *uuid.UUID
-	CoinTypeID      *uuid.UUID
-	IOType          *basetypes.IOType
-	IOSubType       *basetypes.IOSubType
-	Amount          *decimal.Decimal
-	FromCoinTypeID  *uuid.UUID
-	CoinUSDCurrency *decimal.Decimal
-	IOExtra         *string
-	CreatedAt       *uint32
-	DeletedAt       *uint32
+	ID         *uuid.UUID
+	AppID      *uuid.UUID
+	UserID     *uuid.UUID
+	CoinTypeID *uuid.UUID
+	IOType     *basetypes.IOType
+	IOSubType  *basetypes.IOSubType
+	Amount     *decimal.Decimal
+	IOExtra    *string
+	CreatedAt  *uint32
+	DeletedAt  *uint32
 }
 
 func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
@@ -49,12 +47,6 @@ func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
 	}
 	if in.Amount != nil {
 		c.SetAmount(*in.Amount)
-	}
-	if in.FromCoinTypeID != nil {
-		c.SetFromCoinTypeID(*in.FromCoinTypeID)
-	}
-	if in.CoinUSDCurrency != nil {
-		c.SetCoinUsdCurrency(*in.CoinUSDCurrency)
 	}
 	if in.IOExtra != nil {
 		c.SetIoExtra(*in.IOExtra)
@@ -179,18 +171,6 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			q.Where(entstatement.AmountEQ(amount))
 		default:
 			return nil, fmt.Errorf("invalid amount op field %v", conds.Amount.Op)
-		}
-	}
-	if conds.FromCoinTypeID != nil {
-		fromCoinTypeID, ok := conds.FromCoinTypeID.Val.(uuid.UUID)
-		if !ok {
-			return nil, fmt.Errorf("invalid from coin type id %v", conds.FromCoinTypeID.Val)
-		}
-		switch conds.FromCoinTypeID.Op {
-		case cruder.EQ:
-			q.Where(entstatement.FromCoinTypeID(fromCoinTypeID))
-		default:
-			return nil, fmt.Errorf("invalid from coin type id op field %v", conds.FromCoinTypeID.Op)
 		}
 	}
 	if conds.CoinUSDCurrency != nil {

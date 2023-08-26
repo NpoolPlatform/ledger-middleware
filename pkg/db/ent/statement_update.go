@@ -211,53 +211,6 @@ func (su *StatementUpdate) ClearAmount() *StatementUpdate {
 	return su
 }
 
-// SetFromCoinTypeID sets the "from_coin_type_id" field.
-func (su *StatementUpdate) SetFromCoinTypeID(u uuid.UUID) *StatementUpdate {
-	su.mutation.SetFromCoinTypeID(u)
-	return su
-}
-
-// SetNillableFromCoinTypeID sets the "from_coin_type_id" field if the given value is not nil.
-func (su *StatementUpdate) SetNillableFromCoinTypeID(u *uuid.UUID) *StatementUpdate {
-	if u != nil {
-		su.SetFromCoinTypeID(*u)
-	}
-	return su
-}
-
-// ClearFromCoinTypeID clears the value of the "from_coin_type_id" field.
-func (su *StatementUpdate) ClearFromCoinTypeID() *StatementUpdate {
-	su.mutation.ClearFromCoinTypeID()
-	return su
-}
-
-// SetCoinUsdCurrency sets the "coin_usd_currency" field.
-func (su *StatementUpdate) SetCoinUsdCurrency(d decimal.Decimal) *StatementUpdate {
-	su.mutation.ResetCoinUsdCurrency()
-	su.mutation.SetCoinUsdCurrency(d)
-	return su
-}
-
-// SetNillableCoinUsdCurrency sets the "coin_usd_currency" field if the given value is not nil.
-func (su *StatementUpdate) SetNillableCoinUsdCurrency(d *decimal.Decimal) *StatementUpdate {
-	if d != nil {
-		su.SetCoinUsdCurrency(*d)
-	}
-	return su
-}
-
-// AddCoinUsdCurrency adds d to the "coin_usd_currency" field.
-func (su *StatementUpdate) AddCoinUsdCurrency(d decimal.Decimal) *StatementUpdate {
-	su.mutation.AddCoinUsdCurrency(d)
-	return su
-}
-
-// ClearCoinUsdCurrency clears the value of the "coin_usd_currency" field.
-func (su *StatementUpdate) ClearCoinUsdCurrency() *StatementUpdate {
-	su.mutation.ClearCoinUsdCurrency()
-	return su
-}
-
 // SetIoExtra sets the "io_extra" field.
 func (su *StatementUpdate) SetIoExtra(s string) *StatementUpdate {
 	su.mutation.SetIoExtra(s)
@@ -513,39 +466,6 @@ func (su *StatementUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: statement.FieldAmount,
 		})
 	}
-	if value, ok := su.mutation.FromCoinTypeID(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
-			Value:  value,
-			Column: statement.FieldFromCoinTypeID,
-		})
-	}
-	if su.mutation.FromCoinTypeIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
-			Column: statement.FieldFromCoinTypeID,
-		})
-	}
-	if value, ok := su.mutation.CoinUsdCurrency(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: statement.FieldCoinUsdCurrency,
-		})
-	}
-	if value, ok := su.mutation.AddedCoinUsdCurrency(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: statement.FieldCoinUsdCurrency,
-		})
-	}
-	if su.mutation.CoinUsdCurrencyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Column: statement.FieldCoinUsdCurrency,
-		})
-	}
 	if value, ok := su.mutation.IoExtra(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -757,53 +677,6 @@ func (suo *StatementUpdateOne) AddAmount(d decimal.Decimal) *StatementUpdateOne 
 // ClearAmount clears the value of the "amount" field.
 func (suo *StatementUpdateOne) ClearAmount() *StatementUpdateOne {
 	suo.mutation.ClearAmount()
-	return suo
-}
-
-// SetFromCoinTypeID sets the "from_coin_type_id" field.
-func (suo *StatementUpdateOne) SetFromCoinTypeID(u uuid.UUID) *StatementUpdateOne {
-	suo.mutation.SetFromCoinTypeID(u)
-	return suo
-}
-
-// SetNillableFromCoinTypeID sets the "from_coin_type_id" field if the given value is not nil.
-func (suo *StatementUpdateOne) SetNillableFromCoinTypeID(u *uuid.UUID) *StatementUpdateOne {
-	if u != nil {
-		suo.SetFromCoinTypeID(*u)
-	}
-	return suo
-}
-
-// ClearFromCoinTypeID clears the value of the "from_coin_type_id" field.
-func (suo *StatementUpdateOne) ClearFromCoinTypeID() *StatementUpdateOne {
-	suo.mutation.ClearFromCoinTypeID()
-	return suo
-}
-
-// SetCoinUsdCurrency sets the "coin_usd_currency" field.
-func (suo *StatementUpdateOne) SetCoinUsdCurrency(d decimal.Decimal) *StatementUpdateOne {
-	suo.mutation.ResetCoinUsdCurrency()
-	suo.mutation.SetCoinUsdCurrency(d)
-	return suo
-}
-
-// SetNillableCoinUsdCurrency sets the "coin_usd_currency" field if the given value is not nil.
-func (suo *StatementUpdateOne) SetNillableCoinUsdCurrency(d *decimal.Decimal) *StatementUpdateOne {
-	if d != nil {
-		suo.SetCoinUsdCurrency(*d)
-	}
-	return suo
-}
-
-// AddCoinUsdCurrency adds d to the "coin_usd_currency" field.
-func (suo *StatementUpdateOne) AddCoinUsdCurrency(d decimal.Decimal) *StatementUpdateOne {
-	suo.mutation.AddCoinUsdCurrency(d)
-	return suo
-}
-
-// ClearCoinUsdCurrency clears the value of the "coin_usd_currency" field.
-func (suo *StatementUpdateOne) ClearCoinUsdCurrency() *StatementUpdateOne {
-	suo.mutation.ClearCoinUsdCurrency()
 	return suo
 }
 
@@ -1090,39 +963,6 @@ func (suo *StatementUpdateOne) sqlSave(ctx context.Context) (_node *Statement, e
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: statement.FieldAmount,
-		})
-	}
-	if value, ok := suo.mutation.FromCoinTypeID(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
-			Value:  value,
-			Column: statement.FieldFromCoinTypeID,
-		})
-	}
-	if suo.mutation.FromCoinTypeIDCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeUUID,
-			Column: statement.FieldFromCoinTypeID,
-		})
-	}
-	if value, ok := suo.mutation.CoinUsdCurrency(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: statement.FieldCoinUsdCurrency,
-		})
-	}
-	if value, ok := suo.mutation.AddedCoinUsdCurrency(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: statement.FieldCoinUsdCurrency,
-		})
-	}
-	if suo.mutation.CoinUsdCurrencyCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Column: statement.FieldCoinUsdCurrency,
 		})
 	}
 	if value, ok := suo.mutation.IoExtra(); ok {

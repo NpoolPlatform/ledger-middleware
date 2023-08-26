@@ -115,18 +115,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Statement",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			statement.FieldCreatedAt:       {Type: field.TypeUint32, Column: statement.FieldCreatedAt},
-			statement.FieldUpdatedAt:       {Type: field.TypeUint32, Column: statement.FieldUpdatedAt},
-			statement.FieldDeletedAt:       {Type: field.TypeUint32, Column: statement.FieldDeletedAt},
-			statement.FieldAppID:           {Type: field.TypeUUID, Column: statement.FieldAppID},
-			statement.FieldUserID:          {Type: field.TypeUUID, Column: statement.FieldUserID},
-			statement.FieldCoinTypeID:      {Type: field.TypeUUID, Column: statement.FieldCoinTypeID},
-			statement.FieldIoType:          {Type: field.TypeString, Column: statement.FieldIoType},
-			statement.FieldIoSubType:       {Type: field.TypeString, Column: statement.FieldIoSubType},
-			statement.FieldAmount:          {Type: field.TypeFloat64, Column: statement.FieldAmount},
-			statement.FieldFromCoinTypeID:  {Type: field.TypeUUID, Column: statement.FieldFromCoinTypeID},
-			statement.FieldCoinUsdCurrency: {Type: field.TypeFloat64, Column: statement.FieldCoinUsdCurrency},
-			statement.FieldIoExtra:         {Type: field.TypeString, Column: statement.FieldIoExtra},
+			statement.FieldCreatedAt:  {Type: field.TypeUint32, Column: statement.FieldCreatedAt},
+			statement.FieldUpdatedAt:  {Type: field.TypeUint32, Column: statement.FieldUpdatedAt},
+			statement.FieldDeletedAt:  {Type: field.TypeUint32, Column: statement.FieldDeletedAt},
+			statement.FieldAppID:      {Type: field.TypeUUID, Column: statement.FieldAppID},
+			statement.FieldUserID:     {Type: field.TypeUUID, Column: statement.FieldUserID},
+			statement.FieldCoinTypeID: {Type: field.TypeUUID, Column: statement.FieldCoinTypeID},
+			statement.FieldIoType:     {Type: field.TypeString, Column: statement.FieldIoType},
+			statement.FieldIoSubType:  {Type: field.TypeString, Column: statement.FieldIoSubType},
+			statement.FieldAmount:     {Type: field.TypeFloat64, Column: statement.FieldAmount},
+			statement.FieldIoExtra:    {Type: field.TypeString, Column: statement.FieldIoExtra},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
@@ -586,16 +584,6 @@ func (f *StatementFilter) WhereIoSubType(p entql.StringP) {
 // WhereAmount applies the entql float64 predicate on the amount field.
 func (f *StatementFilter) WhereAmount(p entql.Float64P) {
 	f.Where(p.Field(statement.FieldAmount))
-}
-
-// WhereFromCoinTypeID applies the entql [16]byte predicate on the from_coin_type_id field.
-func (f *StatementFilter) WhereFromCoinTypeID(p entql.ValueP) {
-	f.Where(p.Field(statement.FieldFromCoinTypeID))
-}
-
-// WhereCoinUsdCurrency applies the entql float64 predicate on the coin_usd_currency field.
-func (f *StatementFilter) WhereCoinUsdCurrency(p entql.Float64P) {
-	f.Where(p.Field(statement.FieldCoinUsdCurrency))
 }
 
 // WhereIoExtra applies the entql string predicate on the io_extra field.
