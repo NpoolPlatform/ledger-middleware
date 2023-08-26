@@ -73,35 +73,3 @@ func (s *Server) GetLedger(ctx context.Context, in *npool.GetLedgerRequest) (*np
 		Info: info,
 	}, nil
 }
-
-func (s *Server) GetLedgerOnly(ctx context.Context, in *npool.GetLedgerOnlyRequest) (
-	*npool.GetLedgerOnlyResponse,
-	error,
-) {
-	handler, err := ledger1.NewHandler(
-		ctx,
-		ledger1.WithConds(in.GetConds()),
-	)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"GetLedgerOnly",
-			"In", in,
-			"error", err,
-		)
-		return &npool.GetLedgerOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	info, err := handler.GetLedgerOnly(ctx)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"GetLedgerOnly",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.GetLedgerOnlyResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &npool.GetLedgerOnlyResponse{
-		Info: info,
-	}, nil
-}

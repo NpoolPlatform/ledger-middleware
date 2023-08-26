@@ -45,19 +45,25 @@ func GetLedger(ctx context.Context, id string) (*npool.Ledger, error) {
 
 //nolint
 func GetLedgerOnly(ctx context.Context, conds *npool.Conds) (*npool.Ledger, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetLedgerOnly(ctx, &npool.GetLedgerOnlyRequest{
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetLedgers(ctx, &npool.GetLedgersRequest{
 			Conds: conds,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get ledger only: %v", err)
 		}
-		return resp.GetInfo(), nil
+		return resp.GetInfos(), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fail get ledger only: %v", err)
 	}
-	return info.(*npool.Ledger), nil
+	if len(infos.([]*npool.Ledger)) == 0 {
+		return nil, nil
+	}
+	if len(infos.([]*npool.Ledger)) > 1 {
+		return nil, fmt.Errorf("too many record")
+	}
+	return infos.([]*npool.Ledger)[0], nil
 }
 
 func GetLedgers(ctx context.Context, conds *npool.Conds, offset, limit int32) ([]*npool.Ledger, uint32, error) {
