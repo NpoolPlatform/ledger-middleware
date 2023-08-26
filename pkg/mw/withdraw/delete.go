@@ -12,10 +12,6 @@ import (
 )
 
 func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	info, err := h.GetWithdraw(ctx)
 	if err != nil {
 		return nil, err

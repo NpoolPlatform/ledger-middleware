@@ -78,10 +78,6 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetWithdraw(ctx context.Context) (*npool.Withdraw, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	handler := &queryHandler{
 		Handler: h,
 		infos:   []*npool.Withdraw{},

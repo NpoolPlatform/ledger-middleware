@@ -14,13 +14,13 @@ func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawReq
 	req := in.GetInfo()
 	handler, err := withdraw1.NewHandler(
 		ctx,
-		withdraw1.WithID(req.ID),
-		withdraw1.WithAppID(req.AppID),
-		withdraw1.WithUserID(req.UserID),
-		withdraw1.WithCoinTypeID(req.CoinTypeID),
-		withdraw1.WithAccountID(req.AccountID),
-		withdraw1.WithAmount(req.Amount),
-		withdraw1.WithAddress(req.Address),
+		withdraw1.WithID(req.ID, false),
+		withdraw1.WithAppID(req.AppID, true),
+		withdraw1.WithUserID(req.UserID, true),
+		withdraw1.WithCoinTypeID(req.CoinTypeID, true),
+		withdraw1.WithAccountID(req.AccountID, true),
+		withdraw1.WithAmount(req.Amount, true),
+		withdraw1.WithAddress(req.Address, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

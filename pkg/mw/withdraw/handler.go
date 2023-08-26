@@ -31,9 +31,12 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -45,9 +48,12 @@ func WithID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAppID(id *string) func(context.Context, *Handler) error {
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid app id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -59,9 +65,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id *string) func(context.Context, *Handler) error {
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid user id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -73,9 +82,12 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
+func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid coin type id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -87,9 +99,12 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAccountID(id *string) func(context.Context, *Handler) error {
+func WithAccountID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid account id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -101,9 +116,12 @@ func WithAccountID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithPlatformTransactionID(id *string) func(context.Context, *Handler) error {
+func WithPlatformTransactionID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid platform transaction id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -115,9 +133,12 @@ func WithPlatformTransactionID(id *string) func(context.Context, *Handler) error
 	}
 }
 
-func WithChainTransactionID(id *string) func(context.Context, *Handler) error {
+func WithChainTransactionID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid chain transaction id")
+			}
 			return nil
 		}
 		h.ChainTransactionID = id
@@ -125,9 +146,12 @@ func WithChainTransactionID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAmount(amount *string) func(context.Context, *Handler) error {
+func WithAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid amount")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
@@ -142,9 +166,12 @@ func WithAmount(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAddress(address *string) func(context.Context, *Handler) error {
+func WithAddress(address *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if address == nil {
+			if must {
+				return fmt.Errorf("invalid address")
+			}
 			return nil
 		}
 		h.Address = address
@@ -152,9 +179,12 @@ func WithAddress(address *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithState(state *basetypes.WithdrawState) func(context.Context, *Handler) error {
+func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if state == nil {
+			if must {
+				return fmt.Errorf("invalid state")
+			}
 			return nil
 		}
 		flag := false

@@ -44,13 +44,13 @@ var (
 func createWithdraw(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
-		WithAppID(&ret.AppID),
-		WithUserID(&ret.UserID),
-		WithCoinTypeID(&ret.CoinTypeID),
-		WithAccountID(&ret.AccountID),
-		WithAddress(&ret.Address),
-		WithAmount(&ret.Amount),
+		WithID(&ret.ID, true),
+		WithAppID(&ret.AppID, true),
+		WithUserID(&ret.UserID, true),
+		WithCoinTypeID(&ret.CoinTypeID, true),
+		WithAccountID(&ret.AccountID, true),
+		WithAddress(&ret.Address, true),
+		WithAmount(&ret.Amount, true),
 	)
 	assert.Nil(t, err)
 
@@ -69,9 +69,9 @@ func updateWithdraw(t *testing.T) {
 
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
-		WithState(&ret.State),
-		WithPlatformTransactionID(&ret.PlatformTransactionID),
+		WithID(&ret.ID, true),
+		WithState(&ret.State, false),
+		WithPlatformTransactionID(&ret.PlatformTransactionID, false),
 	)
 	assert.Nil(t, err)
 
@@ -85,7 +85,7 @@ func updateWithdraw(t *testing.T) {
 func getWithdraw(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
+		WithID(&ret.ID, true),
 	)
 	assert.Nil(t, err)
 
@@ -121,7 +121,7 @@ func getWithdraws(t *testing.T) {
 func deleteWithdraw(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
+		WithID(&ret.ID, true),
 	)
 	assert.Nil(t, err)
 

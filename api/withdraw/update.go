@@ -14,10 +14,10 @@ func (s *Server) UpdateWithdraw(ctx context.Context, in *npool.UpdateWithdrawReq
 	req := in.GetInfo()
 	handler, err := withdraw1.NewHandler(
 		ctx,
-		withdraw1.WithID(req.ID),
-		withdraw1.WithPlatformTransactionID(req.PlatformTransactionID),
-		withdraw1.WithChainTransactionID(req.ChainTransactionID),
-		withdraw1.WithState(req.State),
+		withdraw1.WithID(req.ID, true),
+		withdraw1.WithPlatformTransactionID(req.PlatformTransactionID, false),
+		withdraw1.WithChainTransactionID(req.ChainTransactionID, false),
+		withdraw1.WithState(req.State, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

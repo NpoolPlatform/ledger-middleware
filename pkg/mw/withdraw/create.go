@@ -2,7 +2,6 @@ package withdraw
 
 import (
 	"context"
-	"fmt"
 
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -28,25 +27,6 @@ func (h *createHandler) createWithdraw(ctx context.Context) error {
 }
 
 func (h *Handler) CreateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
-	if h.AppID == nil {
-		return nil, fmt.Errorf("invalid app id")
-	}
-	if h.UserID == nil {
-		return nil, fmt.Errorf("invalid user id")
-	}
-	if h.CoinTypeID == nil {
-		return nil, fmt.Errorf("invalid coin type id")
-	}
-	if h.AccountID == nil {
-		return nil, fmt.Errorf("invalid account id")
-	}
-	if h.Address == nil {
-		return nil, fmt.Errorf("invalid address")
-	}
-	if h.Amount == nil {
-		return nil, fmt.Errorf("invalid amount")
-	}
-
 	id := uuid.New()
 	if h.ID == nil {
 		h.ID = &id

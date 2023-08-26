@@ -2,7 +2,6 @@ package withdraw
 
 import (
 	"context"
-	"fmt"
 
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -11,10 +10,6 @@ import (
 )
 
 func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
 		if _, err := crud.UpdateSet(
 			cli.Withdraw.UpdateOneID(*h.ID),

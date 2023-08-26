@@ -14,7 +14,7 @@ func (s *Server) DeleteWithdraw(ctx context.Context, in *npool.DeleteWithdrawReq
 	req := in.GetInfo()
 	handler, err := withdraw1.NewHandler(
 		ctx,
-		withdraw1.WithID(req.ID),
+		withdraw1.WithID(req.ID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
