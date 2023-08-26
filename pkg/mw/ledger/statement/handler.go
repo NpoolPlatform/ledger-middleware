@@ -186,15 +186,18 @@ func WithIOExtra(extra *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
-func WithCreatedAt(createdAt uint32, must bool) func(context.Context, *Handler) error {
+func WithCreatedAt(createdAt *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if createdAt == 0 {
+		if createdAt == nil {
 			if must {
 				return fmt.Errorf("invalid created at")
 			}
 			return nil
 		}
-		h.CreatedAt = &createdAt
+		if *createdAt == 0 {
+			return fmt.Errorf("invalid created at 0")
+		}
+		h.CreatedAt = createdAt
 		return nil
 	}
 }

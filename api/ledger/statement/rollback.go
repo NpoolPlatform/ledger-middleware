@@ -23,7 +23,7 @@ func (s *Server) RollbackStatement(ctx context.Context, in *npool.RollbackStatem
 		statement1.WithIOSubType(req.IOSubType, true),
 		statement1.WithAmount(req.Amount, true),
 		statement1.WithIOExtra(req.IOExtra, true),
-		statement1.WithCreatedAt(*req.CreatedAt, false),
+		statement1.WithCreatedAt(req.CreatedAt, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
