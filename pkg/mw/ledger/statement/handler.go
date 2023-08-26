@@ -268,16 +268,6 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: id,
 			}
 		}
-		if conds.FromCoinTypeID != nil {
-			id, err := uuid.Parse(conds.GetFromCoinTypeID().GetValue())
-			if err != nil {
-				return err
-			}
-			h.Conds.FromCoinTypeID = &cruder.Cond{
-				Op:  conds.GetFromCoinTypeID().GetOp(),
-				Val: id,
-			}
-		}
 		if conds.IOType != nil {
 			ioType := conds.GetIOType().GetValue()
 			h.Conds.IOType = &cruder.Cond{

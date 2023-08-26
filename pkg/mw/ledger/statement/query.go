@@ -66,12 +66,6 @@ func (h *queryHandler) scan(ctx context.Context) error {
 
 func (h *queryHandler) formalize() {
 	for _, info := range h.infos {
-		currency := decimal.NewFromInt(0).String()
-		if _currency, err := decimal.NewFromString(info.CoinUSDCurrency); err == nil {
-			currency = _currency.String()
-		}
-		info.CoinUSDCurrency = currency
-
 		amount := decimal.NewFromInt(0).String()
 		if _amount, err := decimal.NewFromString(info.Amount); err == nil {
 			amount = _amount.String()

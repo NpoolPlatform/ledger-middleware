@@ -65,19 +65,17 @@ func UpdateSet(u *ent.StatementUpdateOne, req *Req) *ent.StatementUpdateOne {
 }
 
 type Conds struct {
-	ID              *cruder.Cond
-	AppID           *cruder.Cond
-	UserID          *cruder.Cond
-	CoinTypeID      *cruder.Cond
-	IOType          *cruder.Cond
-	IOSubType       *cruder.Cond
-	Amount          *cruder.Cond
-	FromCoinTypeID  *cruder.Cond
-	CoinUSDCurrency *cruder.Cond
-	IOExtra         *cruder.Cond
-	StartAt         *cruder.Cond
-	EndAt           *cruder.Cond
-	IDs             *cruder.Cond
+	ID         *cruder.Cond
+	AppID      *cruder.Cond
+	UserID     *cruder.Cond
+	CoinTypeID *cruder.Cond
+	IOType     *cruder.Cond
+	IOSubType  *cruder.Cond
+	Amount     *cruder.Cond
+	IOExtra    *cruder.Cond
+	StartAt    *cruder.Cond
+	EndAt      *cruder.Cond
+	IDs        *cruder.Cond
 }
 
 func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
