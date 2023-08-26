@@ -21,7 +21,7 @@ type createHandler struct {
 }
 
 //nolint
-func (h *createHandler) tryCreateGoodStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -37,7 +37,7 @@ func (h *createHandler) tryCreateGoodStatement(req *Req, ctx context.Context, tx
 			GoodID:      req.GoodID,
 			CoinTypeID:  req.CoinTypeID,
 			BenefitDate: req.BenefitDate,
-			Amount:      req.TotalAmount,
+			TotalAmount: req.TotalAmount,
 		},
 	).Save(ctx); err != nil {
 		return err
@@ -46,7 +46,7 @@ func (h *createHandler) tryCreateGoodStatement(req *Req, ctx context.Context, tx
 }
 
 //nolint
-func (h *createHandler) tryCreateUnsoldStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -70,7 +70,7 @@ func (h *createHandler) tryCreateUnsoldStatement(req *Req, ctx context.Context, 
 	return nil
 }
 
-func (h *createHandler) tryCreateOrUpdateGoodLedger(req *Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := goodledgercrud.SetQueryConds(tx.GoodLedger.Query(), &goodledgercrud.Conds{
 		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
 		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
@@ -195,7 +195,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	h.Conds = &goodstatementcrud.Conds{
 		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
-    h.Offset = 0
+	h.Offset = 0
 	h.Limit = int32(len(ids))
 
 	infos, _, err := h.GetGoodStatements(ctx)

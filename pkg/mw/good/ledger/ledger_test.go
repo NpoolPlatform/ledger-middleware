@@ -67,9 +67,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 	handler1, err := goodstatement1.NewHandler(context.Background())
 	goodstatementID := uuid.MustParse(id)
-	handler1.Req = &goodstatement1.Req{
-		ID: &goodstatementID,
-	}
+	handler1.ID = &goodstatementID
 	assert.Nil(t, err)
 
 	return func(t *testing.T) {

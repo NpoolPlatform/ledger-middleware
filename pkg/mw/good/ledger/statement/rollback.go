@@ -24,7 +24,7 @@ type rollbackHandler struct {
 	unsoldstatementsMap map[string]*ledgermwpb.UnsoldStatement
 }
 
-func (h *rollbackHandler) tryUpdateGoodLedger(req *Req, ctx context.Context, tx *ent.Tx) error {
+func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := goodledgercrud.SetQueryConds(tx.GoodLedger.Query(), &goodledgercrud.Conds{
 		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
 		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
@@ -65,7 +65,7 @@ func (h *rollbackHandler) tryUpdateGoodLedger(req *Req, ctx context.Context, tx 
 }
 
 //nolint
-func (h *rollbackHandler) tryDeleteGoodStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
+func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	statement, _ := h.statementsMap[req.ID.String()]
 	if statement.Amount != req.TotalAmount.String() {
 		return fmt.Errorf("total amount not matched")
@@ -83,7 +83,7 @@ func (h *rollbackHandler) tryDeleteGoodStatement(req *Req, ctx context.Context, 
 	return nil
 }
 
-func (h *rollbackHandler) tryDeleteUnsoldStatement(req *Req, ctx context.Context, tx *ent.Tx) error {
+func (h *rollbackHandler) tryDeleteUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	unsold, ok := h.unsoldstatementsMap[req.UnsoldStatementID.String()]
 	if !ok {
 		return nil

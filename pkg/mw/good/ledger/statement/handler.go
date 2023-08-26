@@ -12,20 +12,9 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type Req struct {
-	ID                        *uuid.UUID
-	UnsoldStatementID         *uuid.UUID
-	GoodID                    *uuid.UUID
-	CoinTypeID                *uuid.UUID
-	TotalAmount               *decimal.Decimal
-	UnsoldAmount              *decimal.Decimal
-	TechniqueServiceFeeAmount *decimal.Decimal
-	BenefitDate               *uint32
-}
-
 type Handler struct {
-	*Req
-	Reqs   []*Req
+	*crud.Req
+	Reqs   []*crud.Req
 	Conds  *crud.Conds
 	Limit  int32
 	Offset int32
@@ -188,9 +177,9 @@ func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) er
 //nolint
 func WithReqs(reqs []*npool.GoodStatementReq) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		_reqs := []*Req{}
+		_reqs := []*crud.Req{}
 		for _, req := range reqs {
-			_req := &Req{}
+			_req := &crud.Req{}
 			if req.GoodID == nil {
 				return fmt.Errorf("invalid good id")
 			}
