@@ -38,7 +38,7 @@ var (
 func createProfit(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
+		WithID(&ret.ID, true),
 		WithAppID(&ret.AppID),
 		WithUserID(&ret.UserID),
 		WithCoinTypeID(&ret.CoinTypeID),
@@ -57,7 +57,7 @@ func createProfit(t *testing.T) {
 func getProfit(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
+		WithID(&ret.ID, true),
 	)
 	assert.Nil(t, err)
 
@@ -90,7 +90,7 @@ func getProfits(t *testing.T) {
 func deleteProfit(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID),
+		WithID(&ret.ID, true),
 	)
 	assert.Nil(t, err)
 

@@ -10,12 +10,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
 func (s *Server) DeleteProfit(ctx context.Context, in *npool.DeleteProfitRequest) (*npool.DeleteProfitResponse, error) {
 	req := in.GetInfo()
 	handler, err := profit1.NewHandler(
 		ctx,
-		profit1.WithID(req.ID),
+		profit1.WithID(req.ID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

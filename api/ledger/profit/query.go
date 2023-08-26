@@ -48,7 +48,7 @@ func (s *Server) GetProfits(ctx context.Context, in *npool.GetProfitsRequest) (
 func (s *Server) GetProfit(ctx context.Context, in *npool.GetProfitRequest) (*npool.GetProfitResponse, error) {
 	handler, err := profit1.NewHandler(
 		ctx,
-		profit1.WithID(&in.ID),
+		profit1.WithID(&in.ID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

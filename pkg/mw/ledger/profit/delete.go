@@ -12,10 +12,6 @@ import (
 )
 
 func (h *Handler) DeleteProfit(ctx context.Context) (*npool.Profit, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	info, err := h.GetProfit(ctx)
 	if err != nil {
 		return nil, err
