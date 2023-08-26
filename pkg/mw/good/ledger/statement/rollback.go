@@ -204,7 +204,7 @@ func (h *Handler) RollbackGoodStatements(ctx context.Context) ([]*npool.GoodStat
 }
 
 func (h *Handler) RollbackGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	h.Reqs = append(h.Reqs, h.Req)
+	h.Reqs = append(h.Reqs, &h.Req)
 
 	infos, err := h.RollbackGoodStatements(ctx)
 	if err != nil {

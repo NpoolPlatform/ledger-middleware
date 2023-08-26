@@ -13,7 +13,7 @@ import (
 )
 
 type Handler struct {
-	*crud.Req
+	crud.Req
 	Reqs   []*crud.Req
 	Conds  *crud.Conds
 	Limit  int32

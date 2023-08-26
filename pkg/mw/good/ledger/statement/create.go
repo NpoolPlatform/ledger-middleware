@@ -207,7 +207,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 }
 
 func (h *Handler) CreateGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	h.Reqs = append(h.Reqs, h.Req)
+	h.Reqs = append(h.Reqs, &h.Req)
 
 	infos, err := h.CreateGoodStatements(ctx)
 	if err != nil {

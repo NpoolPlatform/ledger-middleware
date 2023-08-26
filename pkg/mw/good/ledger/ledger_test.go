@@ -65,9 +65,7 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, id, infos[0].ID)
 	}
 
-	handler1, err := goodstatement1.NewHandler(context.Background())
-	goodstatementID := uuid.MustParse(id)
-	handler1.ID = &goodstatementID
+    handler1, err := goodstatement1.NewHandler(context.Background(), goodstatement1.WithID(&id, true))
 	assert.Nil(t, err)
 
 	return func(t *testing.T) {
