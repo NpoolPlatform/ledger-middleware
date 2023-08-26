@@ -221,7 +221,6 @@ func WithEndAt(endAt uint32) func(context.Context, *Handler) error {
 	}
 }
 
-//nolint
 func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Conds = &crud.Conds{}
