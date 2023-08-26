@@ -36,33 +36,29 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit1 = npool.Statement{
-		ID:              uuid.NewString(),
-		AppID:           appID,
-		UserID:          userID,
-		CoinTypeID:      coinTypeID,
-		Amount:          "100",
-		IOType:          basetypes.IOType_Incoming,
-		IOTypeStr:       basetypes.IOType_Incoming.String(),
-		IOSubType:       basetypes.IOSubType_Deposit,
-		IOSubTypeStr:    basetypes.IOSubType_Deposit.String(),
-		IOExtra:         fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
-		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
-		CoinUSDCurrency: "0",
+		ID:           uuid.NewString(),
+		AppID:        appID,
+		UserID:       userID,
+		CoinTypeID:   coinTypeID,
+		Amount:       "100",
+		IOType:       basetypes.IOType_Incoming,
+		IOTypeStr:    basetypes.IOType_Incoming.String(),
+		IOSubType:    basetypes.IOSubType_Deposit,
+		IOSubTypeStr: basetypes.IOSubType_Deposit.String(),
+		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 
 	deposit2 = npool.Statement{
-		ID:              uuid.NewString(),
-		AppID:           appID,
-		UserID:          userID,
-		CoinTypeID:      coinTypeID,
-		Amount:          "50",
-		IOType:          basetypes.IOType_Incoming,
-		IOTypeStr:       basetypes.IOType_Incoming.String(),
-		IOSubType:       basetypes.IOSubType_Deposit,
-		IOSubTypeStr:    basetypes.IOSubType_Deposit.String(),
-		IOExtra:         fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
-		FromCoinTypeID:  "00000000-0000-0000-0000-000000000000",
-		CoinUSDCurrency: "0",
+		ID:           uuid.NewString(),
+		AppID:        appID,
+		UserID:       userID,
+		CoinTypeID:   coinTypeID,
+		Amount:       "50",
+		IOType:       basetypes.IOType_Incoming,
+		IOTypeStr:    basetypes.IOType_Incoming.String(),
+		IOSubType:    basetypes.IOSubType_Deposit,
+		IOSubTypeStr: basetypes.IOSubType_Deposit.String(),
+		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 )
 
