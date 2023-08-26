@@ -44,19 +44,25 @@ func GetStatement(ctx context.Context, id string) (*npool.Statement, error) {
 
 //nolint
 func GetStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.Statement, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetStatementOnly(ctx, &npool.GetStatementOnlyRequest{
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetStatements(ctx, &npool.GetStatementsRequest{
 			Conds: conds,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get statement: %v", err)
 		}
-		return resp.GetInfo(), nil
+		return resp.GetInfos(), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fail get statement: %v", err)
 	}
-	return info.(*npool.Statement), nil
+	if len(infos.([]*npool.Statement)) == 0 {
+		return nil, nil
+	}
+	if len(infos.([]*npool.Statement)) > 1 {
+		return nil, fmt.Errorf("too many record")
+	}
+	return infos.([]*npool.Statement)[0], nil
 }
 
 func GetStatements(ctx context.Context, conds *npool.Conds, offset, limit int32) ([]*npool.Statement, uint32, error) {
