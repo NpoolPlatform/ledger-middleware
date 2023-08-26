@@ -42,7 +42,6 @@ func GetStatement(ctx context.Context, id string) (*npool.Statement, error) {
 	return info.(*npool.Statement), nil
 }
 
-//nolint
 func GetStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.Statement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetStatements(ctx, &npool.GetStatementsRequest{
