@@ -152,6 +152,16 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: id,
 			}
 		}
+		if conds.Incoming != nil {
+			incoming, err := decimal.NewFromString(conds.GetIncoming().GetValue())
+			if err != nil {
+				return err
+			}
+			h.Conds.Incoming = &cruder.Cond{
+				Op:  conds.GetIncoming().GetOp(),
+				Val: incoming,
+			}
+		}
 		return nil
 	}
 }
