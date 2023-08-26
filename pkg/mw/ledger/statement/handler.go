@@ -103,6 +103,7 @@ func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
+//nolint
 func WithIOType(_type *basetypes.IOType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {
@@ -125,6 +126,7 @@ func WithIOType(_type *basetypes.IOType, must bool) func(context.Context, *Handl
 	}
 }
 
+//nolint
 func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {

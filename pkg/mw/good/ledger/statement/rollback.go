@@ -126,7 +126,7 @@ func (h *rollbackHandler) tryGetAllUnsoldGoodStatements(ctx context.Context) err
 		return err
 	}
 
-    h.unsoldstatementsMap = map[string]*ledgermwpb.UnsoldStatement{}
+	h.unsoldstatementsMap = map[string]*ledgermwpb.UnsoldStatement{}
 	for _, info := range infos {
 		h.unsoldstatementsMap[info.ID] = info
 	}
@@ -150,8 +150,7 @@ func (h *rollbackHandler) tryGetAllGoodStatements(ctx context.Context) error {
 		return err
 	}
 
-
-    h.statementsMap = map[string]*npool.GoodStatement{}
+	h.statementsMap = map[string]*npool.GoodStatement{}
 	for _, info := range infos {
 		h.statementsMap[info.ID] = info
 	}

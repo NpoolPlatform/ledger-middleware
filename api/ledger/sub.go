@@ -1,3 +1,4 @@
+//nolint
 package ledger
 
 import (
@@ -10,7 +11,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//nolint
 func (s *Server) SubBalance(ctx context.Context, in *npool.SubBalanceRequest) (
 	*npool.SubBalanceResponse,
 	error,
