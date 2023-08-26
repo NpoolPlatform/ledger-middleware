@@ -195,6 +195,7 @@ func unspendBalance(t *testing.T) {
 	info, err := AddBalance(context.Background(), spendReq)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
+        ledgerResult1.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult1, info)
 	}
 }
