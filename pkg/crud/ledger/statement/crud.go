@@ -173,22 +173,6 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			return nil, fmt.Errorf("invalid amount op field %v", conds.Amount.Op)
 		}
 	}
-	if conds.CoinUSDCurrency != nil {
-		currency, ok := conds.CoinUSDCurrency.Val.(decimal.Decimal)
-		if !ok {
-			return nil, fmt.Errorf("invalid coin usd currency %v", conds.CoinUSDCurrency.Val)
-		}
-		switch conds.CoinUSDCurrency.Op {
-		case cruder.LT:
-			q.Where(entstatement.AmountLT(currency))
-		case cruder.GT:
-			q.Where(entstatement.AmountGT(currency))
-		case cruder.EQ:
-			q.Where(entstatement.AmountEQ(currency))
-		default:
-			return nil, fmt.Errorf("invalid coin usd currency op field %v", conds.CoinUSDCurrency.Op)
-		}
-	}
 	if conds.IOExtra != nil {
 		extra, ok := conds.IOExtra.Val.(string)
 		if !ok {

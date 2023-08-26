@@ -169,40 +169,6 @@ func WithAmount(amount *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
-func WithFromCoinTypeID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid from coin type id")
-			}
-			return nil
-		}
-		_id, err := uuid.Parse(*id)
-		if err != nil {
-			return err
-		}
-		h.FromCoinTypeID = &_id
-		return nil
-	}
-}
-
-func WithCoinUSDCurrency(currency *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if currency == nil {
-			if must {
-				return fmt.Errorf("invalid coin usd currency")
-			}
-			return nil
-		}
-		_currency, err := decimal.NewFromString(*currency)
-		if err != nil {
-			return err
-		}
-		h.CoinUSDCurrency = &_currency
-		return nil
-	}
-}
-
 func WithIOExtra(extra *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if extra == nil {
@@ -403,13 +369,6 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				}
 				_req.CoinTypeID = &_id
 			}
-			if req.FromCoinTypeID != nil {
-				_id, err := uuid.Parse(*req.FromCoinTypeID)
-				if err != nil {
-					return err
-				}
-				_req.FromCoinTypeID = &_id
-			}
 			if req.Amount != nil {
 				amount, err := decimal.NewFromString(*req.Amount)
 				if err != nil {
@@ -419,16 +378,6 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 					return fmt.Errorf("amount is less than 0 %v", *req.Amount)
 				}
 				_req.Amount = &amount
-			}
-			if req.CoinUSDCurrency != nil {
-				currency, err := decimal.NewFromString(*req.CoinUSDCurrency)
-				if err != nil {
-					return err
-				}
-				if currency.Cmp(decimal.NewFromInt(0)) < 0 {
-					return fmt.Errorf("coin usd currency is less than 0 %v", *req.CoinUSDCurrency)
-				}
-				_req.CoinUSDCurrency = &currency
 			}
 			if req.IOExtra != nil {
 				if !json.Valid([]byte(*req.IOExtra)) {
