@@ -18,14 +18,14 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 	req := in.GetInfo()
 	handler, err := lock1.NewHandler(
 		ctx,
-		lock1.WithAppID(req.AppID),
-		lock1.WithUserID(req.UserID),
-		lock1.WithCoinTypeID(req.CoinTypeID),
-		lock1.WithLocked(req.Locked),
-		lock1.WithSpendable(req.Spendable),
-		lock1.WithIOSubType(req.IOSubType),
-		lock1.WithIOExtra(req.IOExtra),
-		lock1.WithStatementID(req.StatementID),
+		lock1.WithAppID(req.AppID, true),
+		lock1.WithUserID(req.UserID, true),
+		lock1.WithCoinTypeID(req.CoinTypeID, true),
+		lock1.WithLocked(req.Locked, false),
+		lock1.WithSpendable(req.Spendable, false),
+		lock1.WithIOSubType(req.IOSubType, true),
+		lock1.WithIOExtra(req.IOExtra, false),
+		lock1.WithStatementID(req.StatementID, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

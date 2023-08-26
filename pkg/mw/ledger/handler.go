@@ -34,9 +34,12 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -48,9 +51,12 @@ func WithID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAppID(id *string) func(context.Context, *Handler) error {
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid app id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -62,9 +68,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id *string) func(context.Context, *Handler) error {
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid user id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -76,9 +85,12 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithStatementID(id *string) func(context.Context, *Handler) error {
+func WithStatementID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid statement id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -91,9 +103,12 @@ func WithStatementID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
+func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid coin type id")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -105,9 +120,12 @@ func WithCoinTypeID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithIOSubType(_type *basetypes.IOSubType) func(context.Context, *Handler) error {
+func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {
+			if must {
+				return fmt.Errorf("invalid io sub type")
+			}
 			return nil
 		}
 		switch *_type {
@@ -121,9 +139,12 @@ func WithIOSubType(_type *basetypes.IOSubType) func(context.Context, *Handler) e
 	}
 }
 
-func WithIOExtra(extra *string) func(context.Context, *Handler) error {
+func WithIOExtra(extra *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if extra == nil {
+			if must {
+				return fmt.Errorf("invalid extra")
+			}
 			return nil
 		}
 		if !json.Valid([]byte(*extra)) {
@@ -135,9 +156,12 @@ func WithIOExtra(extra *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithLocked(amount *string) func(context.Context, *Handler) error {
+func WithLocked(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid locked")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
@@ -152,9 +176,12 @@ func WithLocked(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithSpendable(amount *string) func(context.Context, *Handler) error {
+func WithSpendable(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid spendable")
+			}
 			return nil
 		}
 		_amount, err := decimal.NewFromString(*amount)
