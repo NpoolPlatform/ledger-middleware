@@ -15,15 +15,15 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 	req := in.GetInfo()
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithID(req.ID),
-		statement1.WithAppID(req.AppID),
-		statement1.WithUserID(req.UserID),
-		statement1.WithCoinTypeID(req.CoinTypeID),
-		statement1.WithIOType(req.IOType),
-		statement1.WithIOSubType(req.IOSubType),
-		statement1.WithAmount(req.Amount),
-		statement1.WithIOExtra(req.IOExtra),
-		statement1.WithCreatedAt(*req.CreatedAt),
+		statement1.WithID(req.ID, false),
+		statement1.WithAppID(req.AppID, true),
+		statement1.WithUserID(req.UserID, true),
+		statement1.WithCoinTypeID(req.CoinTypeID, true),
+		statement1.WithIOType(req.IOType, true),
+		statement1.WithIOSubType(req.IOSubType, true),
+		statement1.WithAmount(req.Amount, true),
+		statement1.WithIOExtra(req.IOExtra, true),
+		statement1.WithCreatedAt(*req.CreatedAt, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -13,7 +13,7 @@ import (
 func (s *Server) GetStatement(ctx context.Context, in *npool.GetStatementRequest) (*npool.GetStatementResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithID(&in.ID),
+		statement1.WithID(&in.ID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

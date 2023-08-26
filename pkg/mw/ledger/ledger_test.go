@@ -131,12 +131,12 @@ func setup(t *testing.T) func(*testing.T) {
 
 	st1, err := statement1.NewHandler(
 		context.Background(),
-		statement1.WithID(&deposit.ID),
+		statement1.WithID(&deposit.ID, true),
 	)
 	assert.Nil(t, err)
 	st2, err := statement1.NewHandler(
 		context.Background(),
-		statement1.WithID(&payment.ID),
+		statement1.WithID(&payment.ID, true),
 	)
 	assert.Nil(t, err)
 

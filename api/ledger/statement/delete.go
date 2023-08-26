@@ -14,7 +14,7 @@ func (s *Server) DeleteStatement(ctx context.Context, in *npool.DeleteStatementR
 	req := in.GetInfo()
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithID(req.ID),
+		statement1.WithID(req.ID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -41,7 +41,7 @@ func (h *rollbackHandler) tryGetAllStatements(ctx context.Context) error {
 		return err
 	}
 
-    h.statementsMap = map[string]*npool.Statement{}
+	h.statementsMap = map[string]*npool.Statement{}
 	for _, info := range infos {
 		h.statementsMap[info.ID] = info
 	}
@@ -170,7 +170,7 @@ func (h *Handler) RollbackStatements(ctx context.Context) ([]*npool.Statement, e
 			_fn := func() error {
 				_, ok := handler.statementsMap[req.ID.String()]
 				if !ok {
-					return fmt.Errorf("good statement not found %v", req.ID.String())
+					return fmt.Errorf("statement not found %v", req.ID.String())
 				}
 				if err := handler.tryDeleteStatement(req, ctx, tx); err != nil {
 					return err
