@@ -18,12 +18,16 @@ import (
 
 type addHandler struct {
 	*Handler
-	ledger   *ent.Ledger
-	rollback *ent.Statement
+	ledger    *ent.Ledger
+	statement *ent.Statement
+	rollback  *ent.Statement
 }
 
 //nolint
 func (h *addHandler) getLedger(ctx context.Context) error {
+	if h.Spendable == nil {
+		return nil
+	}
 	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		info, err := cli.
 			Ledger.
@@ -72,7 +76,7 @@ func (h *addHandler) tryUnlock(ctx context.Context) error {
 }
 
 func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
-	statement, err := cli.
+	info, err := cli.
 		Statement.
 		Query().
 		Where(
@@ -81,17 +85,16 @@ func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
 			entstatement.DeletedAt(0),
 		).
 		Only(ctx)
+
 	if err != nil {
 		return err
 	}
-	if statement.Amount.Cmp(*h.Locked) != 0 {
-		return fmt.Errorf("mismatch amount")
-	}
+	h.statement = info
 	return nil
 }
 
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
-	if h.Locked == nil {
+	if h.Spendable != nil {
 		return nil
 	}
 	if h.StatementID == nil {
@@ -105,11 +108,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 			Statement.
 			Query().
 			Where(
-				entstatement.AppID(*h.AppID),
-				entstatement.UserID(*h.UserID),
-				entstatement.CoinTypeID(*h.CoinTypeID),
 				entstatement.IoType(types.IOType_Incoming.String()),
-				entstatement.IoSubType(h.IOSubType.String()),
 				entstatement.IoExtra(getStatementExtra(h.StatementID.String())),
 				entstatement.DeletedAt(0),
 			).
@@ -125,8 +124,8 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	})
 }
 
-func (h *addHandler) tryUnspend(ctx context.Context) error {
-	if h.Locked == nil {
+func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
+	if h.Spendable != nil {
 		return nil
 	}
 
@@ -140,28 +139,40 @@ func (h *addHandler) tryUnspend(ctx context.Context) error {
 	}
 
 	ioType := types.IOType_Incoming
+	ioSubType := types.IOSubType(types.IOSubType_value[h.statement.IoSubType])
 	handler.Req = statementcrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
+		AppID:      &h.statement.AppID,
+		UserID:     &h.statement.UserID,
+		CoinTypeID: &h.statement.CoinTypeID,
 		IOType:     &ioType,
-		IOSubType:  h.IOSubType,
+		IOSubType:  &ioSubType,
 		IOExtra:    &ioExtra,
-		Amount:     h.Locked,
+		Amount:     &h.statement.Amount,
 	}
 	if _, err := handler.CreateStatement(ctx); err != nil {
 		return err
 	}
 
-	outcoming := decimal.NewFromInt(0).Sub(*h.Locked)
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(h.statement.AppID),
+			entledger.UserID(h.statement.UserID),
+			entledger.CoinTypeID(h.statement.CoinTypeID),
+			entledger.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	outcoming := decimal.NewFromInt(0).Sub(h.statement.Amount)
 	stm, err := ledgercrud.UpdateSetWithValidate(
-		h.ledger,
+		info,
 		&ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     h.Locked,
-			Outcoming:  &outcoming,
+			Locked:    &h.statement.Amount,
+			Outcoming: &outcoming,
 		},
 	)
 	if err != nil {
@@ -173,7 +184,6 @@ func (h *addHandler) tryUnspend(ctx context.Context) error {
 	return nil
 }
 
-// Unlock & Unspend
 //nolint
 func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	if err := h.validate(); err != nil {
@@ -190,7 +200,7 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	if err := handler.getRollbackStatement(ctx); err != nil {
 		return nil, err
 	}
-	if h.Locked != nil && handler.rollback != nil {
+	if h.Spendable == nil && handler.rollback != nil {
 		return nil, fmt.Errorf("statement already rolled back")
 	}
 
@@ -198,7 +208,7 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		if err := handler.tryUnlock(ctx); err != nil {
 			return err
 		}
-		if err := handler.tryUnspend(ctx); err != nil {
+		if err := handler.tryUnspend(ctx, tx); err != nil {
 			return err
 		}
 		return nil
@@ -211,3 +221,4 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 
 	return h.GetLedger(ctx)
 }
+

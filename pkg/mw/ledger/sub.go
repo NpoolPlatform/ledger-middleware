@@ -45,6 +45,9 @@ func (h *subHandler) getLedger(ctx context.Context) error {
 }
 
 func (h *subHandler) getRollbackStatement(ctx context.Context, cli *ent.Client) error {
+    if h.IOSubType == nil {
+        return fmt.Errorf("invalid io subtype")
+    }
 	if _, err := cli.
 		Statement.
 		Query().
