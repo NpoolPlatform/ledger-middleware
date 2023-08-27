@@ -34,6 +34,25 @@ func (h *addHandler) validate() error {
 	return nil
 }
 
+func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
+	info, err := cli.
+		Statement.
+		Query().
+		Where(
+			entstatement.ID(*h.StatementID),
+			entstatement.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	if info.IoType != types.IOType_Outcoming.String() {
+		return fmt.Errorf("io type should be outcoming")
+	}
+	h.statement = info
+	return nil
+}
+
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	if h.Spendable != nil {
 		return nil
@@ -42,6 +61,9 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 		return fmt.Errorf("invalid statement id")
 	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		if err := h.getStatement(ctx, cli); err != nil {
+			return err
+		}
 		info, err := cli.
 			Statement.
 			Query().
