@@ -206,7 +206,7 @@ func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error)
 		return nil, err
 	}
 	if info == nil {
-		return nil, nil
+		return nil, fmt.Errorf("statement not found")
 	}
 
 	appID := uuid.MustParse(info.AppID)
