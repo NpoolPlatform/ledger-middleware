@@ -129,7 +129,6 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
-	ioExtra := getStatementExtra(h.StatementID.String())
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithChangeLedger(false),
@@ -140,6 +139,7 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 
 	ioType := types.IOType_Incoming
 	ioSubType := types.IOSubType(types.IOSubType_value[h.statement.IoSubType])
+	ioExtra := getStatementExtra(h.StatementID.String())
 	handler.Req = statementcrud.Req{
 		AppID:      &h.statement.AppID,
 		UserID:     &h.statement.UserID,
