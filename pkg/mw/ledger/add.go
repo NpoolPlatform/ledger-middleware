@@ -40,12 +40,14 @@ func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
 		Query().
 		Where(
 			entstatement.ID(*h.StatementID),
-			entstatement.IoType(types.IOType_Outcoming.String()),
 			entstatement.DeletedAt(0),
 		).
 		Only(ctx)
 	if err != nil {
 		return err
+	}
+	if info.IoType != types.IOType_Outcoming.String() {
+		return fmt.Errorf("io type should be outcoming")
 	}
 	h.statement = info
 	return nil
