@@ -78,7 +78,7 @@ func getUnsold(t *testing.T) {
 		unsold1.WithID(&unsoldStatementID),
 	)
 	assert.Nil(t, err)
-	info, err := handler.GetUnsoldStatementOnly(context.Background())
+	info, err := handler.GetUnsoldStatement(context.Background())
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		assert.Equal(t, unsoldAmount, info.Amount)

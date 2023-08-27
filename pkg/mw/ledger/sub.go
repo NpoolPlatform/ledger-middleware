@@ -118,7 +118,7 @@ func (h *subHandler) tryLock(ctx context.Context) error {
 	return nil
 }
 
-func (h *subHandler) trySpend(ctx context.Context) error {
+func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
@@ -188,7 +188,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 		if err := handler.tryLock(ctx); err != nil {
 			return err
 		}
-		if err := handler.trySpend(ctx); err != nil {
+		if err := handler.trySpend(ctx, tx); err != nil {
 			return err
 		}
 		return nil
