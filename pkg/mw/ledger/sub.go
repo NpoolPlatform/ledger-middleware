@@ -10,7 +10,6 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
-	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	"github.com/shopspring/decimal"
@@ -35,27 +34,6 @@ func (h *subHandler) validate() error {
 		}
 	}
 	return nil
-}
-
-func (h *subHandler) getLedger(ctx context.Context) error {
-	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		info, err := cli.
-			Ledger.
-			Query().
-			Where(
-				entledger.AppID(*h.AppID),
-				entledger.UserID(*h.UserID),
-				entledger.CoinTypeID(*h.CoinTypeID),
-				entledger.DeletedAt(0),
-			).
-			Only(ctx)
-		if err != nil {
-			return err
-		}
-		h.ledger = info
-		return nil
-	})
-	return err
 }
 
 func (h *subHandler) getStatement(ctx context.Context) error {
@@ -91,16 +69,31 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	})
 }
 
-func (h *subHandler) tryLock(ctx context.Context) error {
+func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
 	}
+
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(*h.AppID),
+			entledger.UserID(*h.UserID),
+			entledger.CoinTypeID(*h.CoinTypeID),
+			entledger.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	h.ledger = info
 
 	spendable := decimal.NewFromInt(0).Sub(*h.Spendable)
 	locked := *h.Spendable
 
 	stm, err := ledgercrud.UpdateSetWithValidate(
-		h.ledger,
+		info,
 		&ledgercrud.Req{
 			AppID:      h.AppID,
 			UserID:     h.UserID,
@@ -122,31 +115,40 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
-	handler, err := statement1.NewHandler(
-		ctx,
-		statement1.WithChangeLedger(false),
-	)
-	if err != nil {
-		return err
-	}
-
 	ioType := types.IOType_Outcoming
-	handler.Req = statementcrud.Req{
-		ID:         h.StatementID,
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		IOType:     &ioType,
-		IOSubType:  h.IOSubType,
-		IOExtra:    h.IOExtra,
-		Amount:     h.Locked,
-	}
-	if _, err := handler.CreateStatement(ctx); err != nil {
+	if _, err := statementcrud.CreateSet(
+		tx.Statement.Create(),
+		&statementcrud.Req{
+			ID:         h.StatementID,
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  h.IOSubType,
+			IOExtra:    h.IOExtra,
+			Amount:     h.Locked,
+		},
+	).Save(ctx); err != nil {
 		return err
 	}
 
 	locked := decimal.NewFromInt(0).Sub(*h.Locked)
 	outcoming := *h.Locked
+
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(*h.AppID),
+			entledger.UserID(*h.UserID),
+			entledger.CoinTypeID(*h.CoinTypeID),
+			entledger.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	h.ledger = info
 
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		h.ledger,
@@ -174,9 +176,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	if err := handler.validate(); err != nil {
 		return nil, err
 	}
-	if err := handler.getLedger(ctx); err != nil {
-		return nil, err
-	}
 	if err := handler.getStatement(ctx); err != nil {
 		return nil, err
 	}
@@ -185,7 +184,7 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.tryLock(ctx); err != nil {
+		if err := handler.tryLock(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.trySpend(ctx, tx); err != nil {

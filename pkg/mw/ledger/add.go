@@ -34,30 +34,6 @@ func (h *addHandler) validate() error {
 	return nil
 }
 
-func (h *addHandler) getLedger(ctx context.Context) error {
-	if h.Spendable == nil {
-		return nil
-	}
-	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		info, err := cli.
-			Ledger.
-			Query().
-			Where(
-				entledger.AppID(*h.AppID),
-				entledger.UserID(*h.UserID),
-				entledger.CoinTypeID(*h.CoinTypeID),
-				entledger.DeletedAt(0),
-			).
-			Only(ctx)
-		if err != nil {
-			return err
-		}
-		h.ledger = info
-		return nil
-	})
-	return err
-}
-
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	if h.Spendable != nil {
 		return nil
@@ -107,6 +83,7 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	if err != nil {
 		return err
 	}
+	h.ledger = info
 
 	spendable := *h.Spendable
 	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
@@ -190,9 +167,6 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		Handler: h,
 	}
 	if err := handler.validate(); err != nil {
-		return nil, err
-	}
-	if err := handler.getLedger(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getRollbackStatement(ctx); err != nil {
