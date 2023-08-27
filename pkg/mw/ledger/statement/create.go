@@ -50,6 +50,7 @@ func (h *Handler) validateType() error {
 	}
 	return nil
 }
+
 func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
@@ -146,11 +147,13 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 }
 
 func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
-		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-	})
+	stm, err := ledgercrud.SetQueryConds(
+		tx.Ledger.Query(),
+		&ledgercrud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+		})
 	if err != nil {
 		return err
 	}
@@ -268,9 +271,6 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				}
 				if err := handler.tryCreateOrUpdateProfit(req, ctx, tx); err != nil {
 					return err
-				}
-				if h.ChangeLedger != nil && !*h.ChangeLedger { // just create statement, do not update ledger
-					return nil
 				}
 				if err := handler.tryCreateOrUpdateLedger(req, ctx, tx); err != nil {
 					return err
