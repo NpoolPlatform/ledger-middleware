@@ -126,20 +126,26 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if req.ID == nil {
-		h.Conds = &crud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
-			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
-			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
+		stm, err := crud.SetQueryConds(
+			tx.Statement.Query(),
+			&crud.Conds{
+				AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+				UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+				IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
+				IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
+				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
+			},
+		)
+		if err != nil {
+			return err
 		}
-		exist, err := h.ExistStatementConds(ctx)
+		exist, err := stm.Exist(ctx)
 		if err != nil {
 			return err
 		}
 		if exist {
-			return fmt.Errorf("statement already exist, appid(%v),userid(%v),ioextra(%v)", *req.AppID, *req.UserID, *req.IOExtra)
+			return fmt.Errorf("statement already exist")
 		}
 	}
 	key := fmt.Sprintf("%v:%v:%v:%v",
