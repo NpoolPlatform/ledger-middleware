@@ -248,7 +248,7 @@ var (
 )
 
 func rollbackStatements(t *testing.T) {
-	infos, err := RollbackStatements(context.Background(), []*npool.StatementReq{{
+	infos, err := DeleteStatements(context.Background(), []*npool.StatementReq{{
 		ID:         &miningBenefit.ID,
 		AppID:      &appID,
 		UserID:     &userID,

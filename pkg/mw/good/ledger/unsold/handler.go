@@ -6,7 +6,6 @@ import (
 
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/unsold"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -104,36 +103,6 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 		h.Conds = &crud.Conds{}
 		if conds == nil {
 			return nil
-		}
-		if conds.ID != nil {
-			id, err := uuid.Parse(conds.GetID().GetValue())
-			if err != nil {
-				return err
-			}
-			h.Conds.ID = &cruder.Cond{
-				Op:  conds.GetID().GetOp(),
-				Val: id,
-			}
-		}
-		if conds.GoodID != nil {
-			id, err := uuid.Parse(conds.GetGoodID().GetValue())
-			if err != nil {
-				return err
-			}
-			h.Conds.GoodID = &cruder.Cond{
-				Op:  conds.GetGoodID().GetOp(),
-				Val: id,
-			}
-		}
-		if conds.CoinTypeID != nil {
-			id, err := uuid.Parse(conds.GetCoinTypeID().GetValue())
-			if err != nil {
-				return err
-			}
-			h.Conds.CoinTypeID = &cruder.Cond{
-				Op:  conds.GetCoinTypeID().GetOp(),
-				Val: id,
-			}
 		}
 		return nil
 	}

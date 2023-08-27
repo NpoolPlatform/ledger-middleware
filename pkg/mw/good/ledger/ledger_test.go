@@ -15,7 +15,6 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	goodledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger"
 	goodstatementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
-	unsoldmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/unsold"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -74,15 +73,9 @@ func setup(t *testing.T) func(*testing.T) {
 }
 
 func getUnsold(t *testing.T) {
-	conds := &unsoldmwpb.Conds{
-		ID:          &basetypes.StringVal{Op: cruder.EQ, Value: unsoldStatementID},
-		GoodID:      &basetypes.StringVal{Op: cruder.EQ, Value: goodID},
-		CoinTypeID:  &basetypes.StringVal{Op: cruder.EQ, Value: coinTypeID},
-		BenefitDate: &basetypes.Uint32Val{Op: cruder.EQ, Value: benefitDate},
-	}
 	handler, err := unsold1.NewHandler(
 		context.Background(),
-		unsold1.WithConds(conds),
+		unsold1.WithID(&unsoldStatementID),
 	)
 	assert.Nil(t, err)
 	info, err := handler.GetUnsoldStatementOnly(context.Background())

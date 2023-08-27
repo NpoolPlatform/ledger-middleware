@@ -13,8 +13,8 @@ import (
 )
 
 //nolint
-func (s *Server) RollbackGoodStatement(ctx context.Context, in *npool.RollbackGoodStatementRequest) (
-	*npool.RollbackGoodStatementResponse,
+func (s *Server) DeleteGoodStatement(ctx context.Context, in *npool.DeleteGoodStatementRequest) (
+	*npool.DeleteGoodStatementResponse,
 	error,
 ) {
 	req := in.GetInfo()
@@ -30,54 +30,54 @@ func (s *Server) RollbackGoodStatement(ctx context.Context, in *npool.RollbackGo
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"RollbackGoodStatement",
+			"DeleteGoodStatement",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.RollbackGoodStatementResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.DeleteGoodStatementResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	info, err := handler.RollbackGoodStatement(ctx)
+	info, err := handler.DeleteGoodStatement(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"RollbackGoodStatement",
+			"DeleteGoodStatement",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.RollbackGoodStatementResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.DeleteGoodStatementResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.RollbackGoodStatementResponse{
+	return &npool.DeleteGoodStatementResponse{
 		Info: info,
 	}, nil
 }
 
 //nolint
-func (s *Server) RollbackGoodStatements(ctx context.Context, in *npool.RollbackGoodStatementsRequest) (*npool.RollbackGoodStatementsResponse, error) {
+func (s *Server) DeleteGoodStatements(ctx context.Context, in *npool.DeleteGoodStatementsRequest) (*npool.DeleteGoodStatementsResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
 		goodstatement1.WithReqs(in.GetInfos()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"RollbackGoodStatements",
+			"DeleteGoodStatements",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.RollbackGoodStatementsResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.DeleteGoodStatementsResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	infos, err := handler.RollbackGoodStatements(ctx)
+	infos, err := handler.DeleteGoodStatements(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"RollbackGoodStatements",
+			"DeleteGoodStatements",
 			"Req", in,
 			"Error", err,
 		)
-		return &npool.RollbackGoodStatementsResponse{}, status.Error(codes.Aborted, err.Error())
+		return &npool.DeleteGoodStatementsResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	return &npool.RollbackGoodStatementsResponse{
+	return &npool.DeleteGoodStatementsResponse{
 		Infos: infos,
 	}, nil
 }
