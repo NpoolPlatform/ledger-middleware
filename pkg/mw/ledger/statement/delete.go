@@ -76,10 +76,7 @@ func (h *deleteHandler) tryUpdateProfit(req *crud.Req, ctx context.Context, tx *
 	stm1, err := profitcrud.UpdateSetWithValidate(
 		info,
 		&profitcrud.Req{
-			AppID:      req.AppID,
-			UserID:     req.UserID,
-			CoinTypeID: req.CoinTypeID,
-			Incoming:   &amount,
+			Incoming: &amount,
 		},
 	)
 	if err != nil {
@@ -201,7 +198,28 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error) {
-	h.Reqs = append(h.Reqs, &h.Req)
+	info, err := h.GetStatement(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, fmt.Errorf("statement not found")
+	}
+
+	appID := uuid.MustParse(info.AppID)
+	userID := uuid.MustParse(info.UserID)
+	coinTypeID := uuid.MustParse(info.CoinTypeID)
+	amount := decimal.RequireFromString(info.Amount)
+	h.Reqs = append(h.Reqs, &crud.Req{
+		ID:         h.ID,
+		AppID:      &appID,
+		UserID:     &userID,
+		CoinTypeID: &coinTypeID,
+		IOType:     &info.IOType,
+		IOSubType:  &info.IOSubType,
+		IOExtra:    &info.IOExtra,
+		Amount:     &amount,
+	})
 	infos, err := h.DeleteStatements(ctx)
 	if err != nil {
 		return nil, err
