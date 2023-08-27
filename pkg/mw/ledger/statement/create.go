@@ -20,6 +20,7 @@ import (
 
 type createHandler struct {
 	*Handler
+	ids []uuid.UUID
 }
 
 func (h *Handler) validateType() error {
@@ -154,6 +155,12 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 		_ = redis2.Unlock(key)
 	}()
 
+	id := uuid.New()
+	if req.ID == nil {
+		req.ID = &id
+	}
+	h.ids = append(h.ids, *req.ID)
+
 	if _, err := crud.CreateSet(
 		tx.Statement.Create(),
 		req,
@@ -270,19 +277,14 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 		reqs = append(reqs, req)
 	}
 
-	ids := []uuid.UUID{}
 	handler := &createHandler{
 		Handler: h,
 	}
+	handler.ids = []uuid.UUID{}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range reqs {
 			_fn := func() error {
-				id := uuid.New()
-				if req.ID == nil {
-					req.ID = &id
-				}
-
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
 				}
@@ -292,8 +294,6 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.tryCreateOrUpdateLedger(req, ctx, tx); err != nil {
 					return err
 				}
-
-				ids = append(ids, *req.ID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -307,10 +307,10 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	}
 
 	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		IDs: &cruder.Cond{Op: cruder.IN, Val: handler.ids},
 	}
 	h.Offset = 0
-	h.Limit = int32(len(ids))
+	h.Limit = int32(len(handler.ids))
 
 	infos, _, err := h.GetStatements(ctx)
 	if err != nil {
