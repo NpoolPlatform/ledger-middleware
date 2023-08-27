@@ -166,6 +166,7 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	if err != nil {
 		return err
 	}
+    h.ledger = info
 
 	outcoming := decimal.NewFromInt(0).Sub(h.statement.Amount)
 	stm, err := ledgercrud.UpdateSetWithValidate(

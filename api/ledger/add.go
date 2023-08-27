@@ -18,9 +18,9 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 	req := in.GetInfo()
 	handler, err := lock1.NewHandler(
 		ctx,
-		lock1.WithAppID(req.AppID, true),
-		lock1.WithUserID(req.UserID, true),
-		lock1.WithCoinTypeID(req.CoinTypeID, true),
+		lock1.WithAppID(req.AppID, false),
+		lock1.WithUserID(req.UserID, false),
+		lock1.WithCoinTypeID(req.CoinTypeID, false),
 		lock1.WithLocked(req.Locked, false),
 		lock1.WithSpendable(req.Spendable, false),
 		lock1.WithIOSubType(req.IOSubType, false),

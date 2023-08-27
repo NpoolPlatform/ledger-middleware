@@ -25,6 +25,7 @@ func (s *Server) CreateGoodStatement(ctx context.Context, in *npool.CreateGoodSt
 		goodstatement1.WithTotalAmount(req.TotalAmount, true),
 		goodstatement1.WithUnsoldAmount(req.UnsoldAmount, true),
 		goodstatement1.WithTechniqueServiceFeeAmount(req.TechniqueServiceFeeAmount, true),
+		goodstatement1.WithBenefitDate(req.BenefitDate, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -165,7 +165,7 @@ func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) er
 	return func(ctx context.Context, h *Handler) error {
 		if date == nil {
 			if must {
-				return fmt.Errorf("invalid benefit date is must")
+				return fmt.Errorf("invalid benefit date")
 			}
 			return nil
 		}
