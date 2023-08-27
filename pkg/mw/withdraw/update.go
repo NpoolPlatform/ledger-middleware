@@ -64,7 +64,7 @@ func (h *updateHandler) tryGetLedger(ctx context.Context) error {
 	})
 }
 
-func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
+func (h *updateHandler) updateLedger(ctx context.Context) error {
 	if h.State == nil {
 		return nil
 	}
@@ -122,7 +122,7 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		if err := handler.updateWithdraw(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.updateLedger(ctx, tx); err != nil {
+		if err := handler.updateLedger(ctx); err != nil {
 			return err
 		}
 		return nil
