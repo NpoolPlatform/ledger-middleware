@@ -23,7 +23,6 @@ type addHandler struct {
 	rollback  *ent.Statement
 }
 
-//nolint
 func (h *addHandler) getLedger(ctx context.Context) error {
 	if h.Spendable == nil {
 		return nil
@@ -166,7 +165,7 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	if err != nil {
 		return err
 	}
-    h.ledger = info
+	h.ledger = info
 
 	outcoming := decimal.NewFromInt(0).Sub(h.statement.Amount)
 	stm, err := ledgercrud.UpdateSetWithValidate(
@@ -185,12 +184,10 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
-//nolint
 func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
-	if err := h.validate(); err != nil {
-		return nil, err
+	if h.Spendable != nil && h.Locked != nil {
+		return nil, fmt.Errorf("spendable & locked is not allowed")
 	}
-
 	handler := &addHandler{
 		Handler: h,
 	}
@@ -222,4 +219,3 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 
 	return h.GetLedger(ctx)
 }
-

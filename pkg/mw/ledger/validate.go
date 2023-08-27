@@ -16,4 +16,3 @@ func (h *Handler) validate() error {
 	}
 	return nil
 }
-

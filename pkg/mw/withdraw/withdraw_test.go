@@ -102,7 +102,6 @@ func getWithdraws(t *testing.T) {
 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
 		AccountID:  &commonpb.StringVal{Op: cruder.EQ, Value: ret.AccountID},
 		State:      &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
-		Amount:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.Amount},
 	}
 	handler, err := NewHandler(
 		context.Background(),

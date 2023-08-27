@@ -1,4 +1,3 @@
-//nolint
 package ledger
 
 import (
@@ -65,12 +64,12 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
-    if h.IOSubType == nil {
-        return fmt.Errorf("invalid io sub type")
-    }
-    if h.IOExtra == nil {
-        return fmt.Errorf("invalid io extra")
-    }
+	if h.IOSubType == nil {
+		return fmt.Errorf("invalid io sub type")
+	}
+	if h.IOExtra == nil {
+		return fmt.Errorf("invalid io extra")
+	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		info, err := cli.
 			Statement.
@@ -183,7 +182,6 @@ func (h *subHandler) trySpend(ctx context.Context) error {
 	return nil
 }
 
-//nolint
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err error) {
 	if err := h.validate(); err != nil {
 		return nil, err
@@ -218,4 +216,3 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 	h.ID = &handler.ledger.ID
 	return h.GetLedger(ctx)
 }
-
