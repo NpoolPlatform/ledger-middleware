@@ -200,6 +200,10 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Conte
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
 	reqs := []*crud.Req{}
 	for _, req := range h.Reqs {
+		if req.ID != nil {
+			reqs = append(reqs, req)
+			continue
+		}
 		h.Conds = &crud.Conds{
 			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
 			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
