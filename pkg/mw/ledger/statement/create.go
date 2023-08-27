@@ -22,6 +22,34 @@ type createHandler struct {
 	*Handler
 }
 
+func (h *Handler) validateType(ctx context.Context) error {
+	switch *h.IOType {
+	case basetypes.IOType_Incoming:
+		switch *h.IOSubType {
+		case basetypes.IOSubType_Payment:
+		case basetypes.IOSubType_MiningBenefit:
+		case basetypes.IOSubType_Commission:
+		case basetypes.IOSubType_TechniqueFeeCommission:
+		case basetypes.IOSubType_Deposit:
+		case basetypes.IOSubType_Transfer:
+		case basetypes.IOSubType_OrderRevoke:
+		default:
+			return fmt.Errorf("io subtype not match io type")
+		}
+	case basetypes.IOType_Outcoming:
+		switch *h.IOSubType {
+		case basetypes.IOSubType_Payment:
+		case basetypes.IOSubType_Withdrawal:
+		case basetypes.IOSubType_Transfer:
+		case basetypes.IOSubType_CommissionRevoke:
+		default:
+			return fmt.Errorf("io subtype not match io type")
+		}
+	default:
+		return fmt.Errorf("invalid io type %v", *h.IOType)
+	}
+	return nil
+}
 func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
@@ -275,6 +303,9 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
+	if err := h.validateType(ctx); err != nil {
+		return nil, err
+	}
 	h.Reqs = []*crud.Req{&h.Req}
 	infos, err := h.CreateStatements(ctx)
 	if err != nil {
