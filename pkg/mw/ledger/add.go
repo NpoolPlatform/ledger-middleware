@@ -23,6 +23,18 @@ type addHandler struct {
 	rollback  *ent.Statement
 }
 
+func (h *addHandler) validate(ctx context.Context) error {
+	if h.Spendable != nil && h.Locked != nil {
+		return fmt.Errorf("spendable & locked is not allowed")
+	}
+	if h.Spendable != nil {
+		if h.AppID == nil || h.UserID == nil || h.CoinTypeID == nil {
+			return fmt.Errorf("invalid appid or userid or cointypeid")
+		}
+	}
+	return nil
+}
+
 func (h *addHandler) getLedger(ctx context.Context) error {
 	if h.Spendable == nil {
 		return nil
@@ -84,7 +96,6 @@ func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
 			entstatement.DeletedAt(0),
 		).
 		Only(ctx)
-
 	if err != nil {
 		return err
 	}
@@ -107,7 +118,11 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 			Statement.
 			Query().
 			Where(
+				entstatement.AppID(h.statement.AppID),
+				entstatement.UserID(h.statement.UserID),
+				entstatement.CoinTypeID(h.statement.CoinTypeID),
 				entstatement.IoType(types.IOType_Incoming.String()),
+				entstatement.IoSubType(h.statement.IoSubType),
 				entstatement.IoExtra(getStatementExtra(h.StatementID.String())),
 				entstatement.DeletedAt(0),
 			).
@@ -185,21 +200,25 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
-	if h.Spendable != nil && h.Locked != nil {
-		return nil, fmt.Errorf("spendable & locked is not allowed")
-	}
 	handler := &addHandler{
 		Handler: h,
 	}
-
+	if err := handler.validate(ctx); err != nil {
+		return nil, err
+	}
 	if err := handler.getLedger(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getRollbackStatement(ctx); err != nil {
 		return nil, err
 	}
-	if h.Spendable == nil && handler.rollback != nil {
-		return nil, fmt.Errorf("statement already rolled back")
+	if handler.Spendable == nil {
+		if handler.statement == nil {
+			return nil, fmt.Errorf("old statement not found")
+		}
+		if handler.rollback != nil {
+			return nil, fmt.Errorf("statement already rolled back")
+		}
 	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {

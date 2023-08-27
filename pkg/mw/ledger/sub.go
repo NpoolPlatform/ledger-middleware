@@ -13,7 +13,6 @@ import (
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -21,6 +20,21 @@ type subHandler struct {
 	*Handler
 	ledger    *ent.Ledger
 	statement *ent.Statement
+}
+
+func (h *subHandler) validate() error {
+	if h.Spendable != nil && h.Locked != nil {
+		return fmt.Errorf("spendable & locked is not allowed")
+	}
+	if h.Spendable == nil && h.Locked == nil {
+		return fmt.Errorf("spendable or locked needed")
+	}
+	if h.Spendable != nil {
+		if h.AppID == nil || h.UserID == nil || h.CoinTypeID == nil {
+			return fmt.Errorf("invalid appid or userid or cointypeid")
+		}
+	}
+	return nil
 }
 
 func (h *subHandler) getLedger(ctx context.Context) error {
@@ -44,22 +58,6 @@ func (h *subHandler) getLedger(ctx context.Context) error {
 	return err
 }
 
-func (h *subHandler) getRollbackStatement(ctx context.Context, cli *ent.Client) error {
-	if _, err := cli.
-		Statement.
-		Query().
-		Where(
-			entstatement.ID(h.statement.ID),
-			entstatement.IoType(types.IOType_Incoming.String()),
-			entstatement.IoExtra(getStatementExtra(h.statement.ID.String())),
-			entstatement.DeletedAt(0),
-		).
-		Only(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (h *subHandler) getStatement(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
@@ -70,17 +68,15 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	if h.IOExtra == nil {
 		return fmt.Errorf("invalid io extra")
 	}
+	if h.StatementID == nil {
+		return fmt.Errorf("invalid statement id")
+	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		info, err := cli.
 			Statement.
 			Query().
 			Where(
-				entstatement.AppID(*h.AppID),
-				entstatement.UserID(*h.UserID),
-				entstatement.CoinTypeID(*h.CoinTypeID),
-				entstatement.IoType(types.IOType_Outcoming.String()),
-				entstatement.IoSubType(h.IOSubType.String()),
-				entstatement.IoExtra(*h.IOExtra),
+				entstatement.ID(*h.StatementID),
 				entstatement.DeletedAt(0),
 			).
 			Only(ctx)
@@ -91,11 +87,6 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 			return err
 		}
 		h.statement = info
-
-		if err := h.getRollbackStatement(ctx, cli); err != nil {
-			return err
-		}
-		h.statement = nil
 		return nil
 	})
 }
@@ -131,18 +122,12 @@ func (h *subHandler) trySpend(ctx context.Context) error {
 	if h.Locked == nil {
 		return nil
 	}
-
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithChangeLedger(false),
 	)
 	if err != nil {
 		return err
-	}
-
-	id := uuid.New()
-	if h.StatementID == nil {
-		h.StatementID = &id
 	}
 
 	ioType := types.IOType_Outcoming
@@ -183,12 +168,11 @@ func (h *subHandler) trySpend(ctx context.Context) error {
 }
 
 func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err error) {
-	if err := h.validate(); err != nil {
-		return nil, err
-	}
-
 	handler := &subHandler{
 		Handler: h,
+	}
+	if err := handler.validate(); err != nil {
+		return nil, err
 	}
 	if err := handler.getLedger(ctx); err != nil {
 		return nil, err
