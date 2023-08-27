@@ -10,7 +10,6 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
-	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
 	"github.com/shopspring/decimal"
@@ -59,50 +58,6 @@ func (h *addHandler) getLedger(ctx context.Context) error {
 	return err
 }
 
-func (h *addHandler) tryUnlock(ctx context.Context) error {
-	if h.Spendable == nil {
-		return nil
-	}
-
-	spendable := *h.Spendable
-	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
-
-	stm, err := ledgercrud.UpdateSetWithValidate(
-		h.ledger,
-		&ledgercrud.Req{
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
-			Locked:     &locked,
-			Spendable:  &spendable,
-		},
-	)
-	if err != nil {
-		return err
-	}
-	if _, err := stm.Save(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
-	info, err := cli.
-		Statement.
-		Query().
-		Where(
-			entstatement.ID(*h.StatementID),
-			entstatement.IoType(types.IOType_Outcoming.String()),
-			entstatement.DeletedAt(0),
-		).
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-	h.statement = info
-	return nil
-}
-
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	if h.Spendable != nil {
 		return nil
@@ -111,9 +66,6 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 		return fmt.Errorf("invalid statement id")
 	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		if err := h.getStatement(ctx, cli); err != nil {
-			return err
-		}
 		info, err := cli.
 			Statement.
 			Query().
@@ -138,32 +90,66 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	})
 }
 
+func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
+	if h.Spendable == nil {
+		return nil
+	}
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(*h.AppID),
+			entledger.UserID(*h.UserID),
+			entledger.CoinTypeID(*h.CoinTypeID),
+			entledger.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	spendable := *h.Spendable
+	locked := decimal.NewFromInt(0).Sub(*h.Spendable)
+
+	stm, err := ledgercrud.UpdateSetWithValidate(
+		info,
+		&ledgercrud.Req{
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			Locked:     &locked,
+			Spendable:  &spendable,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm.Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable != nil {
 		return nil
 	}
 
-	handler, err := statement1.NewHandler(
-		ctx,
-		statement1.WithChangeLedger(false),
-	)
-	if err != nil {
-		return err
-	}
-
 	ioType := types.IOType_Incoming
 	ioSubType := types.IOSubType(types.IOSubType_value[h.statement.IoSubType])
 	ioExtra := getStatementExtra(h.StatementID.String())
-	handler.Req = statementcrud.Req{
-		AppID:      &h.statement.AppID,
-		UserID:     &h.statement.UserID,
-		CoinTypeID: &h.statement.CoinTypeID,
-		IOType:     &ioType,
-		IOSubType:  &ioSubType,
-		IOExtra:    &ioExtra,
-		Amount:     &h.statement.Amount,
-	}
-	if _, err := handler.CreateStatement(ctx); err != nil {
+	if _, err := statementcrud.CreateSet(
+		tx.Statement.Create(),
+		&statementcrud.Req{
+			AppID:      &h.statement.AppID,
+			UserID:     &h.statement.UserID,
+			CoinTypeID: &h.statement.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  &ioSubType,
+			IOExtra:    &ioExtra,
+			Amount:     &h.statement.Amount,
+		},
+	).Save(ctx); err != nil {
 		return err
 	}
 
@@ -212,17 +198,9 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	if err := handler.getRollbackStatement(ctx); err != nil {
 		return nil, err
 	}
-	if handler.Spendable == nil {
-		if handler.statement == nil {
-			return nil, fmt.Errorf("old statement not found")
-		}
-		if handler.rollback != nil {
-			return nil, fmt.Errorf("statement already rolled back")
-		}
-	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.tryUnlock(ctx); err != nil {
+		if err := handler.tryUnlock(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.tryUnspend(ctx, tx); err != nil {
