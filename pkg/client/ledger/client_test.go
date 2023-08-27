@@ -88,7 +88,6 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, 2, len(deposits))
 	}
 	return func(t *testing.T) {
-		_, _ = statementcli.DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit1.ID})
 		_, _ = statementcli.DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit2.ID})
 	}
 }

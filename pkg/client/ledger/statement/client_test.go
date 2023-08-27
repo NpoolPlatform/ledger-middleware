@@ -140,7 +140,6 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
 	return func(t *testing.T) {
-		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit.ID})
 		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &payment.ID})
 		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &miningBenefit.ID})
 	}

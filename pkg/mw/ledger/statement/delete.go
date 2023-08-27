@@ -106,7 +106,6 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 	if info == nil {
 		return fmt.Errorf("ledger not found")
 	}
-
 	incoming := decimal.NewFromInt(0)
 	outcoming := decimal.NewFromInt(0)
 	spendable := decimal.NewFromInt(0)

@@ -34,6 +34,23 @@ func (h *addHandler) validate() error {
 	return nil
 }
 
+func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
+	info, err := cli.
+		Statement.
+		Query().
+		Where(
+			entstatement.ID(*h.StatementID),
+			entstatement.IoType(types.IOType_Outcoming.String()),
+			entstatement.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	h.statement = info
+	return nil
+}
+
 func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	if h.Spendable != nil {
 		return nil
@@ -42,15 +59,14 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 		return fmt.Errorf("invalid statement id")
 	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		if err := h.getStatement(ctx, cli); err != nil {
+			return err
+		}
 		info, err := cli.
 			Statement.
 			Query().
 			Where(
-				entstatement.AppID(h.statement.AppID),
-				entstatement.UserID(h.statement.UserID),
-				entstatement.CoinTypeID(h.statement.CoinTypeID),
 				entstatement.IoType(types.IOType_Incoming.String()),
-				entstatement.IoSubType(h.statement.IoSubType),
 				entstatement.IoExtra(getStatementExtra(h.StatementID.String())),
 				entstatement.DeletedAt(0),
 			).
@@ -190,3 +206,4 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 
 	return h.GetLedger(ctx)
 }
+
