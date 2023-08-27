@@ -141,7 +141,7 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *deleteHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	_, ok := h.statementsMap[req.ID.String()] //nolint
+	_, ok := h.statementsMap[req.ID.String()]
 	if !ok {
 		return nil
 	}

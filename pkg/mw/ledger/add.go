@@ -208,4 +208,3 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 
 	return h.GetLedger(ctx)
 }
-
