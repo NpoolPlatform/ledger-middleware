@@ -141,9 +141,9 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *deleteHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	statement, _ := h.statementsMap[req.ID.String()] //nolint
-	if statement.Amount != req.Amount.String() {
-		return fmt.Errorf("amount not matched")
+	_, ok := h.statementsMap[req.ID.String()] //nolint
+	if !ok {
+		return nil
 	}
 	now := uint32(time.Now().Unix())
 	if _, err := crud.UpdateSet(
