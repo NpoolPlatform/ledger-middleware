@@ -22,7 +22,7 @@ type createHandler struct {
 	*Handler
 }
 
-func (h *Handler) validateType(ctx context.Context) error {
+func (h *Handler) validateType() error {
 	switch *h.IOType {
 	case basetypes.IOType_Incoming:
 		switch *h.IOSubType {
@@ -303,7 +303,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
-	if err := h.validateType(ctx); err != nil {
+	if err := h.validateType(); err != nil {
 		return nil, err
 	}
 	h.Reqs = []*crud.Req{&h.Req}

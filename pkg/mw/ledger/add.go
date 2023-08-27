@@ -23,7 +23,7 @@ type addHandler struct {
 	rollback  *ent.Statement
 }
 
-func (h *addHandler) validate(ctx context.Context) error {
+func (h *addHandler) validate() error {
 	if h.Spendable != nil && h.Locked != nil {
 		return fmt.Errorf("spendable & locked is not allowed")
 	}
@@ -203,7 +203,7 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	handler := &addHandler{
 		Handler: h,
 	}
-	if err := handler.validate(ctx); err != nil {
+	if err := handler.validate(); err != nil {
 		return nil, err
 	}
 	if err := handler.getLedger(ctx); err != nil {
