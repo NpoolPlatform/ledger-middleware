@@ -12,8 +12,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger/statement"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 )
 
@@ -35,11 +36,33 @@ var (
 		AccountID:             uuid.NewString(),
 		Address:               uuid.NewString(),
 		Amount:                "999.999999999",
-		State:                 basetypes.WithdrawState_Reviewing,
-		StateStr:              basetypes.WithdrawState_Reviewing.String(),
+		State:                 types.WithdrawState_Reviewing,
+		StateStr:              types.WithdrawState_Reviewing.String(),
 		PlatformTransactionID: "00000000-0000-0000-0000-000000000000",
 	}
 )
+
+func createStatement(t *testing.T) {
+	ioType := types.IOType_Incoming
+	ioSubType := types.IOSubType_Deposit
+	ioExtra := "{}"
+	amount := "100000"
+
+	handler, err := statement1.NewHandler(
+		context.Background(),
+		statement1.WithAppID(&ret.AppID, true),
+		statement1.WithUserID(&ret.UserID, true),
+		statement1.WithCoinTypeID(&ret.CoinTypeID, true),
+		statement1.WithIOExtra(&ioExtra, true),
+		statement1.WithIOType(&ioType, true),
+		statement1.WithIOSubType(&ioSubType, true),
+		statement1.WithAmount(&amount, true),
+	)
+	assert.Nil(t, err)
+	info, err := handler.CreateStatement(context.Background())
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
+}
 
 func createWithdraw(t *testing.T) {
 	handler, err := NewHandler(
@@ -63,8 +86,8 @@ func createWithdraw(t *testing.T) {
 }
 
 func updateWithdraw(t *testing.T) {
-	ret.State = basetypes.WithdrawState_Rejected
-	ret.StateStr = basetypes.WithdrawState_Rejected.String()
+	ret.State = types.WithdrawState_Rejected
+	ret.StateStr = types.WithdrawState_Rejected.String()
 	ret.PlatformTransactionID = uuid.NewString()
 
 	handler, err := NewHandler(
@@ -97,11 +120,11 @@ func getWithdraw(t *testing.T) {
 
 func getWithdraws(t *testing.T) {
 	conds := &npool.Conds{
-		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: ret.AppID},
-		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.UserID},
-		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
-		AccountID:  &commonpb.StringVal{Op: cruder.EQ, Value: ret.AccountID},
-		State:      &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: ret.AppID},
+		UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: ret.UserID},
+		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
+		AccountID:  &basetypes.StringVal{Op: cruder.EQ, Value: ret.AccountID},
+		State:      &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
 	}
 	handler, err := NewHandler(
 		context.Background(),
@@ -138,6 +161,7 @@ func TestWithdraw(t *testing.T) {
 		return
 	}
 
+	t.Run("createStatement", createStatement)
 	t.Run("createWithdraw", createWithdraw)
 	t.Run("updateWithdraw", updateWithdraw)
 	t.Run("getWithdraw", getWithdraw)

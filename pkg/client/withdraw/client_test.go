@@ -15,8 +15,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	statementmwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/statement"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	statementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -40,11 +42,33 @@ var (
 		AccountID:             uuid.NewString(),
 		Address:               uuid.NewString(),
 		Amount:                "999.999999999",
-		State:                 basetypes.WithdrawState_Reviewing,
-		StateStr:              basetypes.WithdrawState_Reviewing.String(),
+		State:                 types.WithdrawState_Reviewing,
+		StateStr:              types.WithdrawState_Reviewing.String(),
 		PlatformTransactionID: "00000000-0000-0000-0000-000000000000",
 	}
 )
+
+func createLedger(t *testing.T) {
+	ioType := types.IOType_Incoming
+	ioSubType := types.IOSubType_Deposit
+	ioExtra := "{}"
+	amount := "10000"
+
+	info, err := statementmwcli.CreateStatement(
+		context.Background(),
+		&statementmwpb.StatementReq{
+			AppID:      &ret.AppID,
+			UserID:     &ret.UserID,
+			CoinTypeID: &ret.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  &ioSubType,
+			IOExtra:    &ioExtra,
+			Amount:     &amount,
+		},
+	)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
+}
 
 func createWithdraw(t *testing.T) {
 	info, err := CreateWithdraw(context.Background(), &npool.WithdrawReq{
@@ -64,8 +88,8 @@ func createWithdraw(t *testing.T) {
 }
 
 func updateWithdraw(t *testing.T) {
-	ret.State = basetypes.WithdrawState_Rejected
-	ret.StateStr = basetypes.WithdrawState_Rejected.String()
+	ret.State = types.WithdrawState_Rejected
+	ret.StateStr = types.WithdrawState_Rejected.String()
 	ret.PlatformTransactionID = uuid.NewString()
 
 	info, err := UpdateWithdraw(context.Background(), &npool.WithdrawReq{
@@ -116,6 +140,7 @@ func TestClient(t *testing.T) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
 
+	t.Run("createLedger", createLedger)
 	t.Run("createWithdraw", createWithdraw)
 	t.Run("updateWithdraw", updateWithdraw)
 	t.Run("getWithdraw", getWithdraw)

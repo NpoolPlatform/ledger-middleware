@@ -11,6 +11,7 @@ import (
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -37,6 +38,7 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	if h.State.String() == info.StateStr {
 		return fmt.Errorf("current state not need to update")
 	}
+	h.withdraw = info
 	return nil
 }
 
@@ -48,9 +50,9 @@ func (h *updateHandler) tryGetLedger(ctx context.Context) error {
 		stm, err := ledgercrud.SetQueryConds(
 			cli.Ledger.Query(),
 			&ledgercrud.Conds{
-				AppID:      &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
-				UserID:     &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
-				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *h.CoinTypeID},
+				AppID:      &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(h.withdraw.AppID)},
+				UserID:     &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(h.withdraw.UserID)},
+				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(h.withdraw.CoinTypeID)},
 			})
 		if err != nil {
 			return err
