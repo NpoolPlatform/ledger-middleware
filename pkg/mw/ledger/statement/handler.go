@@ -16,13 +16,12 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs         []*crud.Req
-	StartAt      uint32
-	EndAT        uint32
-	Conds        *crud.Conds
-	Offset       int32
-	Limit        int32
-	ChangeLedger *bool
+	Reqs    []*crud.Req
+	StartAt uint32
+	EndAT   uint32
+	Conds   *crud.Conds
+	Offset  int32
+	Limit   int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -198,14 +197,6 @@ func WithCreatedAt(createdAt *uint32, must bool) func(context.Context, *Handler)
 			return fmt.Errorf("invalid created at 0")
 		}
 		h.CreatedAt = createdAt
-		return nil
-	}
-}
-
-func WithChangeLedger(changeable bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		change := changeable
-		h.ChangeLedger = &change
 		return nil
 	}
 }
