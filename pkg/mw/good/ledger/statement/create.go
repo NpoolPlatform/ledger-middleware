@@ -22,45 +22,44 @@ type createHandler struct {
 }
 
 func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-    if req.GoodID == nil {
-        return fmt.Errorf("invalid good id")
-    }
-    if req.CoinTypeID == nil {
-        return fmt.Errorf("invalid coin type id")
-    }
-    if req.TotalAmount == nil {
-        return fmt.Errorf("invalid total amount")
-    }
-    if req.UnsoldAmount == nil {
-        return fmt.Errorf("invalid unsold amount")
-    }
-    if req.TechniqueServiceFeeAmount == nil {
-        return fmt.Errorf("invalid technique service fee amount")
-    }
-    if req.BenefitDate == nil {
-        return fmt.Errorf("invalid benefit date")
-    }
-    if req.ID == nil {
-        exist, err := tx.
-            GoodStatement.
-            Query().
-            Where(
-            entgoodstatement.GoodID(*req.GoodID),
-            entgoodstatement.CoinTypeID(*req.CoinTypeID),
-            entgoodstatement.BenefitDate(*req.BenefitDate),
-            ).
-            Exist(ctx)
-        if err != nil {
-            return err
-        }
-        if exist {
-            return fmt.Errorf("good statement already exist")
-        }
-    }
-    return nil
+	if req.GoodID == nil {
+		return fmt.Errorf("invalid good id")
+	}
+	if req.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if req.TotalAmount == nil {
+		return fmt.Errorf("invalid total amount")
+	}
+	if req.UnsoldAmount == nil {
+		return fmt.Errorf("invalid unsold amount")
+	}
+	if req.TechniqueServiceFeeAmount == nil {
+		return fmt.Errorf("invalid technique service fee amount")
+	}
+	if req.BenefitDate == nil {
+		return fmt.Errorf("invalid benefit date")
+	}
+	if req.ID == nil {
+		exist, err := tx.
+			GoodStatement.
+			Query().
+			Where(
+				entgoodstatement.GoodID(*req.GoodID),
+				entgoodstatement.CoinTypeID(*req.CoinTypeID),
+				entgoodstatement.BenefitDate(*req.BenefitDate),
+			).
+			Exist(ctx)
+		if err != nil {
+			return err
+		}
+		if exist {
+			return fmt.Errorf("good statement already exist")
+		}
+	}
+	return nil
 }
 
-//nolint
 func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -78,13 +77,13 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 	if _, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		&goodstatementcrud.Req{
-			ID:          req.ID,
-			GoodID:      req.GoodID,
-			CoinTypeID:  req.CoinTypeID,
-			BenefitDate: req.BenefitDate,
-			TotalAmount: req.TotalAmount,
-			ToPlatform:  &toPlatform,
-			ToUser:      &toUser,
+			ID:                        req.ID,
+			GoodID:                    req.GoodID,
+			CoinTypeID:                req.CoinTypeID,
+			BenefitDate:               req.BenefitDate,
+			TotalAmount:               req.TotalAmount,
+			ToPlatform:                &toPlatform,
+			ToUser:                    &toUser,
 			TechniqueServiceFeeAmount: req.TechniqueServiceFeeAmount,
 		},
 	).Save(ctx); err != nil {
@@ -93,7 +92,6 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 	return nil
 }
 
-//nolint
 func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -186,7 +184,6 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, 
 	return nil
 }
 
-//nolint
 func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
 	handler := &createHandler{
 		Handler: h,

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	goodstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
-	unsold1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -30,7 +29,6 @@ func init() {
 
 var (
 	id                        = uuid.NewString()
-	unsoldStatementID         = uuid.NewString()
 	goodID                    = uuid.NewString()
 	coinTypeID                = uuid.NewString()
 	totalAmount               = "400"
@@ -71,19 +69,6 @@ func setup(t *testing.T) func(*testing.T) {
 	}
 }
 
-func getUnsold(t *testing.T) {
-	handler, err := unsold1.NewHandler(
-		context.Background(),
-		unsold1.WithID(&unsoldStatementID),
-	)
-	assert.Nil(t, err)
-	info, err := handler.GetUnsoldStatement(context.Background())
-	if assert.Nil(t, err) {
-		assert.NotNil(t, info)
-		assert.Equal(t, unsoldAmount, info.Amount)
-	}
-}
-
 func getGoodLedger(t *testing.T) {
 	conds := &goodledgermwpb.Conds{
 		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: goodID},
@@ -111,6 +96,5 @@ func TestGoodLedger(t *testing.T) {
 	teardown := setup(t)
 	defer teardown(t)
 
-	t.Run("getUnsold", getUnsold)
 	t.Run("getGoodLedger", getGoodLedger)
 }

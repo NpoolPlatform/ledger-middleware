@@ -23,43 +23,42 @@ type rollbackHandler struct {
 }
 
 func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-    statement, _ := h.statementsMap[req.ID.String()]
-    stm, err := goodledgercrud.SetQueryConds(
-        tx.GoodLedger.Query(),
-        &goodledgercrud.Conds{
-            GoodID:     &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.GoodID)},
-            CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.CoinTypeID)},
-        })
-    if err != nil {
-        return err
-    }
-    info, err := stm.Only(ctx)
-    if err != nil {
-        return err
-    }
+	statement, _ := h.statementsMap[req.ID.String()] //nolint
+	stm, err := goodledgercrud.SetQueryConds(
+		tx.GoodLedger.Query(),
+		&goodledgercrud.Conds{
+			GoodID:     &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.GoodID)},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.CoinTypeID)},
+		})
+	if err != nil {
+		return err
+	}
+	info, err := stm.Only(ctx)
+	if err != nil {
+		return err
+	}
 
-    amount := decimal.RequireFromString(fmt.Sprintf("-%v", statement.Amount))
-    toUser := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToUser))
-    toPlatform := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToPlatform))
+	amount := decimal.RequireFromString(fmt.Sprintf("-%v", statement.Amount))
+	toUser := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToUser))
+	toPlatform := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToPlatform))
 
-    stm1, err := goodledgercrud.UpdateSetWithValidate(
-        info,
-        &goodledgercrud.Req{
-            Amount:     &amount,
-            ToUser:     &toUser,
-            ToPlatform: &toPlatform,
-        },
-    )
-    if err != nil {
-        return err
-    }
-    if _, err := stm1.Save(ctx); err != nil {
-        return err
-    }
-    return nil
+	stm1, err := goodledgercrud.UpdateSetWithValidate(
+		info,
+		&goodledgercrud.Req{
+			Amount:     &amount,
+			ToUser:     &toUser,
+			ToPlatform: &toPlatform,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := stm1.Save(ctx); err != nil {
+		return err
+	}
+	return nil
 }
 
-//nolint
 func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	now := uint32(time.Now().Unix())
 	if _, err := goodstatementcrud.UpdateSet(
