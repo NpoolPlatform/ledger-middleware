@@ -145,6 +145,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			unsoldstatement.FieldCoinTypeID:  {Type: field.TypeUUID, Column: unsoldstatement.FieldCoinTypeID},
 			unsoldstatement.FieldAmount:      {Type: field.TypeFloat64, Column: unsoldstatement.FieldAmount},
 			unsoldstatement.FieldBenefitDate: {Type: field.TypeUint32, Column: unsoldstatement.FieldBenefitDate},
+			unsoldstatement.FieldStatementID: {Type: field.TypeUUID, Column: unsoldstatement.FieldStatementID},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -664,6 +665,11 @@ func (f *UnsoldStatementFilter) WhereAmount(p entql.Float64P) {
 // WhereBenefitDate applies the entql uint32 predicate on the benefit_date field.
 func (f *UnsoldStatementFilter) WhereBenefitDate(p entql.Uint32P) {
 	f.Where(p.Field(unsoldstatement.FieldBenefitDate))
+}
+
+// WhereStatementID applies the entql [16]byte predicate on the statement_id field.
+func (f *UnsoldStatementFilter) WhereStatementID(p entql.ValueP) {
+	f.Where(p.Field(unsoldstatement.FieldStatementID))
 }
 
 // addPredicate implements the predicateAdder interface.

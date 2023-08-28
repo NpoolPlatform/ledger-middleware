@@ -178,6 +178,26 @@ func (usu *UnsoldStatementUpdate) ClearBenefitDate() *UnsoldStatementUpdate {
 	return usu
 }
 
+// SetStatementID sets the "statement_id" field.
+func (usu *UnsoldStatementUpdate) SetStatementID(u uuid.UUID) *UnsoldStatementUpdate {
+	usu.mutation.SetStatementID(u)
+	return usu
+}
+
+// SetNillableStatementID sets the "statement_id" field if the given value is not nil.
+func (usu *UnsoldStatementUpdate) SetNillableStatementID(u *uuid.UUID) *UnsoldStatementUpdate {
+	if u != nil {
+		usu.SetStatementID(*u)
+	}
+	return usu
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (usu *UnsoldStatementUpdate) ClearStatementID() *UnsoldStatementUpdate {
+	usu.mutation.ClearStatementID()
+	return usu
+}
+
 // Mutation returns the UnsoldStatementMutation object of the builder.
 func (usu *UnsoldStatementUpdate) Mutation() *UnsoldStatementMutation {
 	return usu.mutation
@@ -378,6 +398,19 @@ func (usu *UnsoldStatementUpdate) sqlSave(ctx context.Context) (n int, err error
 			Column: unsoldstatement.FieldBenefitDate,
 		})
 	}
+	if value, ok := usu.mutation.StatementID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: unsoldstatement.FieldStatementID,
+		})
+	}
+	if usu.mutation.StatementIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: unsoldstatement.FieldStatementID,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, usu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{unsoldstatement.Label}
@@ -543,6 +576,26 @@ func (usuo *UnsoldStatementUpdateOne) AddBenefitDate(u int32) *UnsoldStatementUp
 // ClearBenefitDate clears the value of the "benefit_date" field.
 func (usuo *UnsoldStatementUpdateOne) ClearBenefitDate() *UnsoldStatementUpdateOne {
 	usuo.mutation.ClearBenefitDate()
+	return usuo
+}
+
+// SetStatementID sets the "statement_id" field.
+func (usuo *UnsoldStatementUpdateOne) SetStatementID(u uuid.UUID) *UnsoldStatementUpdateOne {
+	usuo.mutation.SetStatementID(u)
+	return usuo
+}
+
+// SetNillableStatementID sets the "statement_id" field if the given value is not nil.
+func (usuo *UnsoldStatementUpdateOne) SetNillableStatementID(u *uuid.UUID) *UnsoldStatementUpdateOne {
+	if u != nil {
+		usuo.SetStatementID(*u)
+	}
+	return usuo
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (usuo *UnsoldStatementUpdateOne) ClearStatementID() *UnsoldStatementUpdateOne {
+	usuo.mutation.ClearStatementID()
 	return usuo
 }
 
@@ -774,6 +827,19 @@ func (usuo *UnsoldStatementUpdateOne) sqlSave(ctx context.Context) (_node *Unsol
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint32,
 			Column: unsoldstatement.FieldBenefitDate,
+		})
+	}
+	if value, ok := usuo.mutation.StatementID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: unsoldstatement.FieldStatementID,
+		})
+	}
+	if usuo.mutation.StatementIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: unsoldstatement.FieldStatementID,
 		})
 	}
 	_node = &UnsoldStatement{config: usuo.config}

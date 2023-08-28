@@ -26,6 +26,8 @@ const (
 	FieldAmount = "amount"
 	// FieldBenefitDate holds the string denoting the benefit_date field in the database.
 	FieldBenefitDate = "benefit_date"
+	// FieldStatementID holds the string denoting the statement_id field in the database.
+	FieldStatementID = "statement_id"
 	// Table holds the table name of the unsoldstatement in the database.
 	Table = "mining_unsolds"
 )
@@ -40,6 +42,7 @@ var Columns = []string{
 	FieldCoinTypeID,
 	FieldAmount,
 	FieldBenefitDate,
+	FieldStatementID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -75,6 +78,8 @@ var (
 	DefaultCoinTypeID func() uuid.UUID
 	// DefaultBenefitDate holds the default value on creation for the "benefit_date" field.
 	DefaultBenefitDate uint32
+	// DefaultStatementID holds the default value on creation for the "statement_id" field.
+	DefaultStatementID func() uuid.UUID
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

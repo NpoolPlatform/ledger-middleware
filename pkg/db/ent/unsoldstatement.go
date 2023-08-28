@@ -31,6 +31,8 @@ type UnsoldStatement struct {
 	Amount decimal.Decimal `json:"amount,omitempty"`
 	// BenefitDate holds the value of the "benefit_date" field.
 	BenefitDate uint32 `json:"benefit_date,omitempty"`
+	// StatementID holds the value of the "statement_id" field.
+	StatementID uuid.UUID `json:"statement_id,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -42,7 +44,7 @@ func (*UnsoldStatement) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(decimal.Decimal)
 		case unsoldstatement.FieldCreatedAt, unsoldstatement.FieldUpdatedAt, unsoldstatement.FieldDeletedAt, unsoldstatement.FieldBenefitDate:
 			values[i] = new(sql.NullInt64)
-		case unsoldstatement.FieldID, unsoldstatement.FieldGoodID, unsoldstatement.FieldCoinTypeID:
+		case unsoldstatement.FieldID, unsoldstatement.FieldGoodID, unsoldstatement.FieldCoinTypeID, unsoldstatement.FieldStatementID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type UnsoldStatement", columns[i])
@@ -107,6 +109,12 @@ func (us *UnsoldStatement) assignValues(columns []string, values []interface{}) 
 			} else if value.Valid {
 				us.BenefitDate = uint32(value.Int64)
 			}
+		case unsoldstatement.FieldStatementID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field statement_id", values[i])
+			} else if value != nil {
+				us.StatementID = *value
+			}
 		}
 	}
 	return nil
@@ -155,6 +163,9 @@ func (us *UnsoldStatement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("benefit_date=")
 	builder.WriteString(fmt.Sprintf("%v", us.BenefitDate))
+	builder.WriteString(", ")
+	builder.WriteString("statement_id=")
+	builder.WriteString(fmt.Sprintf("%v", us.StatementID))
 	builder.WriteByte(')')
 	return builder.String()
 }

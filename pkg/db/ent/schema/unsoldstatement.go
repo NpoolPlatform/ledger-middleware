@@ -53,6 +53,12 @@ func (UnsoldStatement) Fields() []ent.Field {
 			Uint32("benefit_date").
 			Optional().
 			Default(0),
+		field.
+			UUID("statement_id", uuid.UUID{}).
+			Optional().
+			Default(func() uuid.UUID {
+				return uuid.UUID{}
+			}),
 	}
 }
 

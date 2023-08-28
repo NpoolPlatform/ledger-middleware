@@ -122,6 +122,20 @@ func (usc *UnsoldStatementCreate) SetNillableBenefitDate(u *uint32) *UnsoldState
 	return usc
 }
 
+// SetStatementID sets the "statement_id" field.
+func (usc *UnsoldStatementCreate) SetStatementID(u uuid.UUID) *UnsoldStatementCreate {
+	usc.mutation.SetStatementID(u)
+	return usc
+}
+
+// SetNillableStatementID sets the "statement_id" field if the given value is not nil.
+func (usc *UnsoldStatementCreate) SetNillableStatementID(u *uuid.UUID) *UnsoldStatementCreate {
+	if u != nil {
+		usc.SetStatementID(*u)
+	}
+	return usc
+}
+
 // SetID sets the "id" field.
 func (usc *UnsoldStatementCreate) SetID(u uuid.UUID) *UnsoldStatementCreate {
 	usc.mutation.SetID(u)
@@ -254,6 +268,13 @@ func (usc *UnsoldStatementCreate) defaults() error {
 		v := unsoldstatement.DefaultBenefitDate
 		usc.mutation.SetBenefitDate(v)
 	}
+	if _, ok := usc.mutation.StatementID(); !ok {
+		if unsoldstatement.DefaultStatementID == nil {
+			return fmt.Errorf("ent: uninitialized unsoldstatement.DefaultStatementID (forgotten import ent/runtime?)")
+		}
+		v := unsoldstatement.DefaultStatementID()
+		usc.mutation.SetStatementID(v)
+	}
 	if _, ok := usc.mutation.ID(); !ok {
 		if unsoldstatement.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized unsoldstatement.DefaultID (forgotten import ent/runtime?)")
@@ -367,6 +388,14 @@ func (usc *UnsoldStatementCreate) createSpec() (*UnsoldStatement, *sqlgraph.Crea
 			Column: unsoldstatement.FieldBenefitDate,
 		})
 		_node.BenefitDate = value
+	}
+	if value, ok := usc.mutation.StatementID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: unsoldstatement.FieldStatementID,
+		})
+		_node.StatementID = value
 	}
 	return _node, _spec
 }
@@ -557,6 +586,24 @@ func (u *UnsoldStatementUpsert) AddBenefitDate(v uint32) *UnsoldStatementUpsert 
 // ClearBenefitDate clears the value of the "benefit_date" field.
 func (u *UnsoldStatementUpsert) ClearBenefitDate() *UnsoldStatementUpsert {
 	u.SetNull(unsoldstatement.FieldBenefitDate)
+	return u
+}
+
+// SetStatementID sets the "statement_id" field.
+func (u *UnsoldStatementUpsert) SetStatementID(v uuid.UUID) *UnsoldStatementUpsert {
+	u.Set(unsoldstatement.FieldStatementID, v)
+	return u
+}
+
+// UpdateStatementID sets the "statement_id" field to the value that was provided on create.
+func (u *UnsoldStatementUpsert) UpdateStatementID() *UnsoldStatementUpsert {
+	u.SetExcluded(unsoldstatement.FieldStatementID)
+	return u
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (u *UnsoldStatementUpsert) ClearStatementID() *UnsoldStatementUpsert {
+	u.SetNull(unsoldstatement.FieldStatementID)
 	return u
 }
 
@@ -768,6 +815,27 @@ func (u *UnsoldStatementUpsertOne) UpdateBenefitDate() *UnsoldStatementUpsertOne
 func (u *UnsoldStatementUpsertOne) ClearBenefitDate() *UnsoldStatementUpsertOne {
 	return u.Update(func(s *UnsoldStatementUpsert) {
 		s.ClearBenefitDate()
+	})
+}
+
+// SetStatementID sets the "statement_id" field.
+func (u *UnsoldStatementUpsertOne) SetStatementID(v uuid.UUID) *UnsoldStatementUpsertOne {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.SetStatementID(v)
+	})
+}
+
+// UpdateStatementID sets the "statement_id" field to the value that was provided on create.
+func (u *UnsoldStatementUpsertOne) UpdateStatementID() *UnsoldStatementUpsertOne {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.UpdateStatementID()
+	})
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (u *UnsoldStatementUpsertOne) ClearStatementID() *UnsoldStatementUpsertOne {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.ClearStatementID()
 	})
 }
 
@@ -1145,6 +1213,27 @@ func (u *UnsoldStatementUpsertBulk) UpdateBenefitDate() *UnsoldStatementUpsertBu
 func (u *UnsoldStatementUpsertBulk) ClearBenefitDate() *UnsoldStatementUpsertBulk {
 	return u.Update(func(s *UnsoldStatementUpsert) {
 		s.ClearBenefitDate()
+	})
+}
+
+// SetStatementID sets the "statement_id" field.
+func (u *UnsoldStatementUpsertBulk) SetStatementID(v uuid.UUID) *UnsoldStatementUpsertBulk {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.SetStatementID(v)
+	})
+}
+
+// UpdateStatementID sets the "statement_id" field to the value that was provided on create.
+func (u *UnsoldStatementUpsertBulk) UpdateStatementID() *UnsoldStatementUpsertBulk {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.UpdateStatementID()
+	})
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (u *UnsoldStatementUpsertBulk) ClearStatementID() *UnsoldStatementUpsertBulk {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.ClearStatementID()
 	})
 }
 

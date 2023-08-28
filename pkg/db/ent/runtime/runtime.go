@@ -293,6 +293,10 @@ func init() {
 	unsoldstatementDescBenefitDate := unsoldstatementFields[4].Descriptor()
 	// unsoldstatement.DefaultBenefitDate holds the default value on creation for the benefit_date field.
 	unsoldstatement.DefaultBenefitDate = unsoldstatementDescBenefitDate.Default.(uint32)
+	// unsoldstatementDescStatementID is the schema descriptor for statement_id field.
+	unsoldstatementDescStatementID := unsoldstatementFields[5].Descriptor()
+	// unsoldstatement.DefaultStatementID holds the default value on creation for the statement_id field.
+	unsoldstatement.DefaultStatementID = unsoldstatementDescStatementID.Default.(func() uuid.UUID)
 	// unsoldstatementDescID is the schema descriptor for id field.
 	unsoldstatementDescID := unsoldstatementFields[0].Descriptor()
 	// unsoldstatement.DefaultID holds the default value on creation for the id field.

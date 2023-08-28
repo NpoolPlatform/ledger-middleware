@@ -5053,6 +5053,7 @@ type UnsoldStatementMutation struct {
 	addamount       *decimal.Decimal
 	benefit_date    *uint32
 	addbenefit_date *int32
+	statement_id    *uuid.UUID
 	clearedFields   map[string]struct{}
 	done            bool
 	oldValue        func(context.Context) (*UnsoldStatement, error)
@@ -5569,6 +5570,55 @@ func (m *UnsoldStatementMutation) ResetBenefitDate() {
 	delete(m.clearedFields, unsoldstatement.FieldBenefitDate)
 }
 
+// SetStatementID sets the "statement_id" field.
+func (m *UnsoldStatementMutation) SetStatementID(u uuid.UUID) {
+	m.statement_id = &u
+}
+
+// StatementID returns the value of the "statement_id" field in the mutation.
+func (m *UnsoldStatementMutation) StatementID() (r uuid.UUID, exists bool) {
+	v := m.statement_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatementID returns the old "statement_id" field's value of the UnsoldStatement entity.
+// If the UnsoldStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UnsoldStatementMutation) OldStatementID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatementID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatementID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatementID: %w", err)
+	}
+	return oldValue.StatementID, nil
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (m *UnsoldStatementMutation) ClearStatementID() {
+	m.statement_id = nil
+	m.clearedFields[unsoldstatement.FieldStatementID] = struct{}{}
+}
+
+// StatementIDCleared returns if the "statement_id" field was cleared in this mutation.
+func (m *UnsoldStatementMutation) StatementIDCleared() bool {
+	_, ok := m.clearedFields[unsoldstatement.FieldStatementID]
+	return ok
+}
+
+// ResetStatementID resets all changes to the "statement_id" field.
+func (m *UnsoldStatementMutation) ResetStatementID() {
+	m.statement_id = nil
+	delete(m.clearedFields, unsoldstatement.FieldStatementID)
+}
+
 // Where appends a list predicates to the UnsoldStatementMutation builder.
 func (m *UnsoldStatementMutation) Where(ps ...predicate.UnsoldStatement) {
 	m.predicates = append(m.predicates, ps...)
@@ -5588,7 +5638,7 @@ func (m *UnsoldStatementMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UnsoldStatementMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, unsoldstatement.FieldCreatedAt)
 	}
@@ -5609,6 +5659,9 @@ func (m *UnsoldStatementMutation) Fields() []string {
 	}
 	if m.benefit_date != nil {
 		fields = append(fields, unsoldstatement.FieldBenefitDate)
+	}
+	if m.statement_id != nil {
+		fields = append(fields, unsoldstatement.FieldStatementID)
 	}
 	return fields
 }
@@ -5632,6 +5685,8 @@ func (m *UnsoldStatementMutation) Field(name string) (ent.Value, bool) {
 		return m.Amount()
 	case unsoldstatement.FieldBenefitDate:
 		return m.BenefitDate()
+	case unsoldstatement.FieldStatementID:
+		return m.StatementID()
 	}
 	return nil, false
 }
@@ -5655,6 +5710,8 @@ func (m *UnsoldStatementMutation) OldField(ctx context.Context, name string) (en
 		return m.OldAmount(ctx)
 	case unsoldstatement.FieldBenefitDate:
 		return m.OldBenefitDate(ctx)
+	case unsoldstatement.FieldStatementID:
+		return m.OldStatementID(ctx)
 	}
 	return nil, fmt.Errorf("unknown UnsoldStatement field %s", name)
 }
@@ -5712,6 +5769,13 @@ func (m *UnsoldStatementMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBenefitDate(v)
+		return nil
+	case unsoldstatement.FieldStatementID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatementID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UnsoldStatement field %s", name)
@@ -5818,6 +5882,9 @@ func (m *UnsoldStatementMutation) ClearedFields() []string {
 	if m.FieldCleared(unsoldstatement.FieldBenefitDate) {
 		fields = append(fields, unsoldstatement.FieldBenefitDate)
 	}
+	if m.FieldCleared(unsoldstatement.FieldStatementID) {
+		fields = append(fields, unsoldstatement.FieldStatementID)
+	}
 	return fields
 }
 
@@ -5843,6 +5910,9 @@ func (m *UnsoldStatementMutation) ClearField(name string) error {
 		return nil
 	case unsoldstatement.FieldBenefitDate:
 		m.ClearBenefitDate()
+		return nil
+	case unsoldstatement.FieldStatementID:
+		m.ClearStatementID()
 		return nil
 	}
 	return fmt.Errorf("unknown UnsoldStatement nullable field %s", name)
@@ -5872,6 +5942,9 @@ func (m *UnsoldStatementMutation) ResetField(name string) error {
 		return nil
 	case unsoldstatement.FieldBenefitDate:
 		m.ResetBenefitDate()
+		return nil
+	case unsoldstatement.FieldStatementID:
+		m.ResetStatementID()
 		return nil
 	}
 	return fmt.Errorf("unknown UnsoldStatement field %s", name)

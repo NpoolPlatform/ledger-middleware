@@ -129,6 +129,13 @@ func BenefitDate(v uint32) predicate.UnsoldStatement {
 	})
 }
 
+// StatementID applies equality check predicate on the "statement_id" field. It's identical to StatementIDEQ.
+func StatementID(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatementID), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v uint32) predicate.UnsoldStatement {
 	return predicate.UnsoldStatement(func(s *sql.Selector) {
@@ -630,6 +637,84 @@ func BenefitDateIsNil() predicate.UnsoldStatement {
 func BenefitDateNotNil() predicate.UnsoldStatement {
 	return predicate.UnsoldStatement(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldBenefitDate)))
+	})
+}
+
+// StatementIDEQ applies the EQ predicate on the "statement_id" field.
+func StatementIDEQ(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDNEQ applies the NEQ predicate on the "statement_id" field.
+func StatementIDNEQ(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDIn applies the In predicate on the "statement_id" field.
+func StatementIDIn(vs ...uuid.UUID) predicate.UnsoldStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldStatementID), v...))
+	})
+}
+
+// StatementIDNotIn applies the NotIn predicate on the "statement_id" field.
+func StatementIDNotIn(vs ...uuid.UUID) predicate.UnsoldStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldStatementID), v...))
+	})
+}
+
+// StatementIDGT applies the GT predicate on the "statement_id" field.
+func StatementIDGT(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDGTE applies the GTE predicate on the "statement_id" field.
+func StatementIDGTE(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDLT applies the LT predicate on the "statement_id" field.
+func StatementIDLT(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDLTE applies the LTE predicate on the "statement_id" field.
+func StatementIDLTE(v uuid.UUID) predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDIsNil applies the IsNil predicate on the "statement_id" field.
+func StatementIDIsNil() predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStatementID)))
+	})
+}
+
+// StatementIDNotNil applies the NotNil predicate on the "statement_id" field.
+func StatementIDNotNil() predicate.UnsoldStatement {
+	return predicate.UnsoldStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStatementID)))
 	})
 }
 
