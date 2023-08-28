@@ -162,21 +162,6 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, 
 
 //nolint
 func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
-	for _, req := range h.Reqs {
-		h.Conds = &goodstatementcrud.Conds{
-			GoodID:      &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
-			CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-			BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: *req.BenefitDate},
-		}
-		exist, err := h.ExistGoodStatementConds(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if exist {
-			return nil, fmt.Errorf("good statement exist! GoodID(%v), CoinTypeID(%v),BenefitDate(%v)", *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
-		}
-	}
-
 	handler := &createHandler{
 		Handler: h,
 	}
