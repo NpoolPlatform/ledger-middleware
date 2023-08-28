@@ -108,18 +108,16 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 	}
 	incoming := decimal.NewFromInt(0)
 	outcoming := decimal.NewFromInt(0)
-	spendable := decimal.NewFromInt(0)
 	locked := decimal.NewFromInt(0)
 	switch *req.IOType {
 	case basetypes.IOType_Incoming:
 		incoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
-		spendable = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
 	case basetypes.IOType_Outcoming:
 		outcoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
-		locked = decimal.RequireFromString(req.Amount.String())
 	default:
 		return fmt.Errorf("invalid io type %v", *req.IOType)
 	}
+	spendable := incoming.Sub(outcoming)
 
 	stm1, err := ledgercrud.UpdateSetWithValidate(
 		info,
