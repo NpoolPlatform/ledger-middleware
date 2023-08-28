@@ -49,7 +49,7 @@ func (h *createHandler) validate() error {
 		}
 		switch *req.IOType {
 		case basetypes.IOType_Incoming:
-			switch *h.IOSubType {
+			switch *req.IOSubType {
 			case basetypes.IOSubType_Payment:
 			case basetypes.IOSubType_MiningBenefit:
 			case basetypes.IOSubType_Commission:

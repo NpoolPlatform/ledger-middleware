@@ -7,8 +7,8 @@ import (
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
+	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/shopspring/decimal"
@@ -16,52 +16,38 @@ import (
 
 type deleteHandler struct {
 	*Handler
-	withdraw *ent.Withdraw
-}
-
-func (h *deleteHandler) tryGetWithdraw(ctx context.Context, tx *ent.Tx) error {
-	info, err := tx.
-		Withdraw.
-		Query().
-		Where(
-			entwithdraw.ID(*h.ID),
-			entwithdraw.DeletedAt(0),
-		).
-		First(ctx)
-	if err != nil {
-		return err
-	}
-	h.withdraw = info
-	return nil
+	withdraw *npool.Withdraw
 }
 
 func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error {
-	if h.withdraw.State != types.WithdrawState_Transferring.String() {
+	if h.withdraw.StateStr != types.WithdrawState_Reviewing.String() {
 		return nil
 	}
-	info, err := tx.
-		Ledger.
-		Query().
-		Where(
-			entledger.AppID(h.withdraw.AppID),
-			entledger.UserID(h.withdraw.UserID),
-			entledger.CoinTypeID(h.withdraw.CoinTypeID),
-			entledger.DeletedAt(0),
-		).
-		Only(ctx)
+	handler, err := ledger1.NewHandler(
+		ctx,
+		ledger1.WithAppID(&h.withdraw.AppID, true),
+		ledger1.WithUserID(&h.withdraw.UserID, true),
+		ledger1.WithCoinTypeID(&h.withdraw.CoinTypeID, true),
+	)
 	if err != nil {
 		return err
 	}
 
-	locked := decimal.NewFromInt(0).Sub(h.withdraw.Amount)
+	info, err := handler.TryGetLedger(ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	spendable := decimal.RequireFromString(h.withdraw.Amount)
+	locked := decimal.NewFromInt(0).Sub(spendable)
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		info,
 		&ledgercrud.Req{
-			AppID:      &h.withdraw.AppID,
-			UserID:     &h.withdraw.UserID,
-			CoinTypeID: &h.withdraw.CoinTypeID,
+			AppID:      handler.AppID,
+			UserID:     handler.UserID,
+			CoinTypeID: handler.CoinTypeID,
 			Locked:     &locked,
-			Spendable:  &h.withdraw.Amount,
+			Spendable:  &spendable,
 		},
 	)
 	if err != nil {
@@ -100,11 +86,9 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	handler := &deleteHandler{
 		Handler: h,
 	}
+	handler.withdraw = info
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.tryGetWithdraw(ctx, tx); err != nil {
-			return err
-		}
 		if err := handler.tryDeleteWithdraw(ctx, tx); err != nil {
 			return err
 		}
@@ -116,6 +100,5 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return info, nil
 }

@@ -182,3 +182,19 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 
 	return handler.infos[0], nil
 }
+
+func (h *Handler) TryGetLedger(ctx context.Context, tx *ent.Tx) (*ent.Ledger, error) {
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(*h.AppID),
+			entledger.UserID(*h.UserID),
+			entledger.CoinTypeID(*h.UserID),
+		).
+		Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
+}
