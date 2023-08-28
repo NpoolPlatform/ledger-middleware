@@ -122,6 +122,27 @@ func Amount(v decimal.Decimal) predicate.GoodStatement {
 	})
 }
 
+// ToPlatform applies equality check predicate on the "to_platform" field. It's identical to ToPlatformEQ.
+func ToPlatform(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToUser applies equality check predicate on the "to_user" field. It's identical to ToUserEQ.
+func ToUser(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldToUser), v))
+	})
+}
+
+// TechniqueServiceFeeAmount applies equality check predicate on the "technique_service_fee_amount" field. It's identical to TechniqueServiceFeeAmountEQ.
+func TechniqueServiceFeeAmount(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
 // BenefitDate applies equality check predicate on the "benefit_date" field. It's identical to BenefitDateEQ.
 func BenefitDate(v uint32) predicate.GoodStatement {
 	return predicate.GoodStatement(func(s *sql.Selector) {
@@ -552,6 +573,240 @@ func AmountIsNil() predicate.GoodStatement {
 func AmountNotNil() predicate.GoodStatement {
 	return predicate.GoodStatement(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldAmount)))
+	})
+}
+
+// ToPlatformEQ applies the EQ predicate on the "to_platform" field.
+func ToPlatformEQ(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToPlatformNEQ applies the NEQ predicate on the "to_platform" field.
+func ToPlatformNEQ(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToPlatformIn applies the In predicate on the "to_platform" field.
+func ToPlatformIn(vs ...decimal.Decimal) predicate.GoodStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldToPlatform), v...))
+	})
+}
+
+// ToPlatformNotIn applies the NotIn predicate on the "to_platform" field.
+func ToPlatformNotIn(vs ...decimal.Decimal) predicate.GoodStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldToPlatform), v...))
+	})
+}
+
+// ToPlatformGT applies the GT predicate on the "to_platform" field.
+func ToPlatformGT(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToPlatformGTE applies the GTE predicate on the "to_platform" field.
+func ToPlatformGTE(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToPlatformLT applies the LT predicate on the "to_platform" field.
+func ToPlatformLT(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToPlatformLTE applies the LTE predicate on the "to_platform" field.
+func ToPlatformLTE(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldToPlatform), v))
+	})
+}
+
+// ToPlatformIsNil applies the IsNil predicate on the "to_platform" field.
+func ToPlatformIsNil() predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldToPlatform)))
+	})
+}
+
+// ToPlatformNotNil applies the NotNil predicate on the "to_platform" field.
+func ToPlatformNotNil() predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldToPlatform)))
+	})
+}
+
+// ToUserEQ applies the EQ predicate on the "to_user" field.
+func ToUserEQ(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldToUser), v))
+	})
+}
+
+// ToUserNEQ applies the NEQ predicate on the "to_user" field.
+func ToUserNEQ(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldToUser), v))
+	})
+}
+
+// ToUserIn applies the In predicate on the "to_user" field.
+func ToUserIn(vs ...decimal.Decimal) predicate.GoodStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldToUser), v...))
+	})
+}
+
+// ToUserNotIn applies the NotIn predicate on the "to_user" field.
+func ToUserNotIn(vs ...decimal.Decimal) predicate.GoodStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldToUser), v...))
+	})
+}
+
+// ToUserGT applies the GT predicate on the "to_user" field.
+func ToUserGT(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldToUser), v))
+	})
+}
+
+// ToUserGTE applies the GTE predicate on the "to_user" field.
+func ToUserGTE(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldToUser), v))
+	})
+}
+
+// ToUserLT applies the LT predicate on the "to_user" field.
+func ToUserLT(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldToUser), v))
+	})
+}
+
+// ToUserLTE applies the LTE predicate on the "to_user" field.
+func ToUserLTE(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldToUser), v))
+	})
+}
+
+// ToUserIsNil applies the IsNil predicate on the "to_user" field.
+func ToUserIsNil() predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldToUser)))
+	})
+}
+
+// ToUserNotNil applies the NotNil predicate on the "to_user" field.
+func ToUserNotNil() predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldToUser)))
+	})
+}
+
+// TechniqueServiceFeeAmountEQ applies the EQ predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountEQ(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
+// TechniqueServiceFeeAmountNEQ applies the NEQ predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountNEQ(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
+// TechniqueServiceFeeAmountIn applies the In predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountIn(vs ...decimal.Decimal) predicate.GoodStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldTechniqueServiceFeeAmount), v...))
+	})
+}
+
+// TechniqueServiceFeeAmountNotIn applies the NotIn predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountNotIn(vs ...decimal.Decimal) predicate.GoodStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldTechniqueServiceFeeAmount), v...))
+	})
+}
+
+// TechniqueServiceFeeAmountGT applies the GT predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountGT(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
+// TechniqueServiceFeeAmountGTE applies the GTE predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountGTE(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
+// TechniqueServiceFeeAmountLT applies the LT predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountLT(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
+// TechniqueServiceFeeAmountLTE applies the LTE predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountLTE(v decimal.Decimal) predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldTechniqueServiceFeeAmount), v))
+	})
+}
+
+// TechniqueServiceFeeAmountIsNil applies the IsNil predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountIsNil() predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldTechniqueServiceFeeAmount)))
+	})
+}
+
+// TechniqueServiceFeeAmountNotNil applies the NotNil predicate on the "technique_service_fee_amount" field.
+func TechniqueServiceFeeAmountNotNil() predicate.GoodStatement {
+	return predicate.GoodStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldTechniqueServiceFeeAmount)))
 	})
 }
 

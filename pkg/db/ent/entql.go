@@ -52,13 +52,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "GoodStatement",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			goodstatement.FieldCreatedAt:   {Type: field.TypeUint32, Column: goodstatement.FieldCreatedAt},
-			goodstatement.FieldUpdatedAt:   {Type: field.TypeUint32, Column: goodstatement.FieldUpdatedAt},
-			goodstatement.FieldDeletedAt:   {Type: field.TypeUint32, Column: goodstatement.FieldDeletedAt},
-			goodstatement.FieldGoodID:      {Type: field.TypeUUID, Column: goodstatement.FieldGoodID},
-			goodstatement.FieldCoinTypeID:  {Type: field.TypeUUID, Column: goodstatement.FieldCoinTypeID},
-			goodstatement.FieldAmount:      {Type: field.TypeFloat64, Column: goodstatement.FieldAmount},
-			goodstatement.FieldBenefitDate: {Type: field.TypeUint32, Column: goodstatement.FieldBenefitDate},
+			goodstatement.FieldCreatedAt:                 {Type: field.TypeUint32, Column: goodstatement.FieldCreatedAt},
+			goodstatement.FieldUpdatedAt:                 {Type: field.TypeUint32, Column: goodstatement.FieldUpdatedAt},
+			goodstatement.FieldDeletedAt:                 {Type: field.TypeUint32, Column: goodstatement.FieldDeletedAt},
+			goodstatement.FieldGoodID:                    {Type: field.TypeUUID, Column: goodstatement.FieldGoodID},
+			goodstatement.FieldCoinTypeID:                {Type: field.TypeUUID, Column: goodstatement.FieldCoinTypeID},
+			goodstatement.FieldAmount:                    {Type: field.TypeFloat64, Column: goodstatement.FieldAmount},
+			goodstatement.FieldToPlatform:                {Type: field.TypeFloat64, Column: goodstatement.FieldToPlatform},
+			goodstatement.FieldToUser:                    {Type: field.TypeFloat64, Column: goodstatement.FieldToUser},
+			goodstatement.FieldTechniqueServiceFeeAmount: {Type: field.TypeFloat64, Column: goodstatement.FieldTechniqueServiceFeeAmount},
+			goodstatement.FieldBenefitDate:               {Type: field.TypeUint32, Column: goodstatement.FieldBenefitDate},
 		},
 	}
 	graph.Nodes[2] = &sqlgraph.Node{
@@ -330,6 +333,21 @@ func (f *GoodStatementFilter) WhereCoinTypeID(p entql.ValueP) {
 // WhereAmount applies the entql float64 predicate on the amount field.
 func (f *GoodStatementFilter) WhereAmount(p entql.Float64P) {
 	f.Where(p.Field(goodstatement.FieldAmount))
+}
+
+// WhereToPlatform applies the entql float64 predicate on the to_platform field.
+func (f *GoodStatementFilter) WhereToPlatform(p entql.Float64P) {
+	f.Where(p.Field(goodstatement.FieldToPlatform))
+}
+
+// WhereToUser applies the entql float64 predicate on the to_user field.
+func (f *GoodStatementFilter) WhereToUser(p entql.Float64P) {
+	f.Where(p.Field(goodstatement.FieldToUser))
+}
+
+// WhereTechniqueServiceFeeAmount applies the entql float64 predicate on the technique_service_fee_amount field.
+func (f *GoodStatementFilter) WhereTechniqueServiceFeeAmount(p entql.Float64P) {
+	f.Where(p.Field(goodstatement.FieldTechniqueServiceFeeAmount))
 }
 
 // WhereBenefitDate applies the entql uint32 predicate on the benefit_date field.

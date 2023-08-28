@@ -202,7 +202,7 @@ func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) {
 			return nil, fmt.Errorf("invalid coin type ids %v", conds.CoinTypeIDs.Val)
 		}
 		switch conds.CoinTypeIDs.Op {
-		case cruder.LIKE:
+		case cruder.IN:
 			q.Where(entledger.CoinTypeIDIn(ids...))
 		default:
 			return nil, fmt.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)

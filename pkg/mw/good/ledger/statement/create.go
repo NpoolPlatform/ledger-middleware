@@ -22,6 +22,24 @@ type createHandler struct {
 }
 
 func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	if req.GoodID == nil {
+		return fmt.Errorf("invalid good id")
+	}
+	if req.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if req.TotalAmount == nil {
+		return fmt.Errorf("invalid total amount")
+	}
+	if req.UnsoldAmount == nil {
+		return fmt.Errorf("invalid unsold amount")
+	}
+	if req.TechniqueServiceFeeAmount == nil {
+		return fmt.Errorf("invalid technique service fee amount")
+	}
+	if req.BenefitDate == nil {
+		return fmt.Errorf("invalid benefit date")
+	}
 	if req.ID == nil {
 		exist, err := tx.
 			GoodStatement.
@@ -42,7 +60,6 @@ func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx 
 	return nil
 }
 
-//nolint
 func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -52,14 +69,22 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 		_ = redis2.Unlock(key)
 	}()
 
+	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
+	toUser := req.TotalAmount.Sub(toPlatform)
+	if req.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
+		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount.String(), toPlatform.String(), toUser.String())
+	}
 	if _, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		&goodstatementcrud.Req{
-			ID:          req.ID,
-			GoodID:      req.GoodID,
-			CoinTypeID:  req.CoinTypeID,
-			BenefitDate: req.BenefitDate,
-			TotalAmount: req.TotalAmount,
+			ID:                        req.ID,
+			GoodID:                    req.GoodID,
+			CoinTypeID:                req.CoinTypeID,
+			BenefitDate:               req.BenefitDate,
+			TotalAmount:               req.TotalAmount,
+			ToPlatform:                &toPlatform,
+			ToUser:                    &toUser,
+			TechniqueServiceFeeAmount: req.TechniqueServiceFeeAmount,
 		},
 	).Save(ctx); err != nil {
 		return err
@@ -67,7 +92,6 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 	return nil
 }
 
-//nolint
 func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -160,23 +184,7 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, 
 	return nil
 }
 
-//nolint
 func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
-	for _, req := range h.Reqs {
-		h.Conds = &goodstatementcrud.Conds{
-			GoodID:      &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
-			CoinTypeID:  &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-			BenefitDate: &cruder.Cond{Op: cruder.EQ, Val: *req.BenefitDate},
-		}
-		exist, err := h.ExistGoodStatementConds(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if exist {
-			return nil, fmt.Errorf("good statement exist! GoodID(%v), CoinTypeID(%v),BenefitDate(%v)", *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
-		}
-	}
-
 	handler := &createHandler{
 		Handler: h,
 	}

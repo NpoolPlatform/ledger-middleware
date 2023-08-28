@@ -13,12 +13,13 @@ import (
 
 type Req struct {
 	ID                        *uuid.UUID
-	UnsoldStatementID         *uuid.UUID
 	GoodID                    *uuid.UUID
 	CoinTypeID                *uuid.UUID
 	TotalAmount               *decimal.Decimal
 	UnsoldAmount              *decimal.Decimal
 	TechniqueServiceFeeAmount *decimal.Decimal
+	ToPlatform                *decimal.Decimal
+	ToUser                    *decimal.Decimal
 	BenefitDate               *uint32
 	CreatedAt                 *uint32
 	DeletedAt                 *uint32
@@ -36,6 +37,15 @@ func CreateSet(c *ent.GoodStatementCreate, in *Req) *ent.GoodStatementCreate {
 	}
 	if in.TotalAmount != nil {
 		c.SetAmount(*in.TotalAmount)
+	}
+	if in.ToPlatform != nil {
+		c.SetToPlatform(*in.ToPlatform)
+	}
+	if in.ToUser != nil {
+		c.SetToUser(*in.ToUser)
+	}
+	if in.TechniqueServiceFeeAmount != nil {
+		c.SetTechniqueServiceFeeAmount(*in.TechniqueServiceFeeAmount)
 	}
 	if in.BenefitDate != nil {
 		c.SetBenefitDate(*in.BenefitDate)

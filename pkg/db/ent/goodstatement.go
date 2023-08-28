@@ -29,6 +29,12 @@ type GoodStatement struct {
 	CoinTypeID uuid.UUID `json:"coin_type_id,omitempty"`
 	// Amount holds the value of the "amount" field.
 	Amount decimal.Decimal `json:"amount,omitempty"`
+	// ToPlatform holds the value of the "to_platform" field.
+	ToPlatform decimal.Decimal `json:"to_platform,omitempty"`
+	// ToUser holds the value of the "to_user" field.
+	ToUser decimal.Decimal `json:"to_user,omitempty"`
+	// TechniqueServiceFeeAmount holds the value of the "technique_service_fee_amount" field.
+	TechniqueServiceFeeAmount decimal.Decimal `json:"technique_service_fee_amount,omitempty"`
 	// BenefitDate holds the value of the "benefit_date" field.
 	BenefitDate uint32 `json:"benefit_date,omitempty"`
 }
@@ -38,7 +44,7 @@ func (*GoodStatement) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case goodstatement.FieldAmount:
+		case goodstatement.FieldAmount, goodstatement.FieldToPlatform, goodstatement.FieldToUser, goodstatement.FieldTechniqueServiceFeeAmount:
 			values[i] = new(decimal.Decimal)
 		case goodstatement.FieldCreatedAt, goodstatement.FieldUpdatedAt, goodstatement.FieldDeletedAt, goodstatement.FieldBenefitDate:
 			values[i] = new(sql.NullInt64)
@@ -101,6 +107,24 @@ func (gs *GoodStatement) assignValues(columns []string, values []interface{}) er
 			} else if value != nil {
 				gs.Amount = *value
 			}
+		case goodstatement.FieldToPlatform:
+			if value, ok := values[i].(*decimal.Decimal); !ok {
+				return fmt.Errorf("unexpected type %T for field to_platform", values[i])
+			} else if value != nil {
+				gs.ToPlatform = *value
+			}
+		case goodstatement.FieldToUser:
+			if value, ok := values[i].(*decimal.Decimal); !ok {
+				return fmt.Errorf("unexpected type %T for field to_user", values[i])
+			} else if value != nil {
+				gs.ToUser = *value
+			}
+		case goodstatement.FieldTechniqueServiceFeeAmount:
+			if value, ok := values[i].(*decimal.Decimal); !ok {
+				return fmt.Errorf("unexpected type %T for field technique_service_fee_amount", values[i])
+			} else if value != nil {
+				gs.TechniqueServiceFeeAmount = *value
+			}
 		case goodstatement.FieldBenefitDate:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field benefit_date", values[i])
@@ -152,6 +176,15 @@ func (gs *GoodStatement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("amount=")
 	builder.WriteString(fmt.Sprintf("%v", gs.Amount))
+	builder.WriteString(", ")
+	builder.WriteString("to_platform=")
+	builder.WriteString(fmt.Sprintf("%v", gs.ToPlatform))
+	builder.WriteString(", ")
+	builder.WriteString("to_user=")
+	builder.WriteString(fmt.Sprintf("%v", gs.ToUser))
+	builder.WriteString(", ")
+	builder.WriteString("technique_service_fee_amount=")
+	builder.WriteString(fmt.Sprintf("%v", gs.TechniqueServiceFeeAmount))
 	builder.WriteString(", ")
 	builder.WriteString("benefit_date=")
 	builder.WriteString(fmt.Sprintf("%v", gs.BenefitDate))

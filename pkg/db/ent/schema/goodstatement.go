@@ -50,6 +50,27 @@ func (GoodStatement) Fields() []ent.Field {
 			}).
 			Optional(),
 		field.
+			Float("to_platform").
+			GoType(decimal.Decimal{}).
+			SchemaType(map[string]string{
+				dialect.MySQL: "decimal(37, 18)",
+			}).
+			Optional(),
+		field.
+			Float("to_user").
+			GoType(decimal.Decimal{}).
+			SchemaType(map[string]string{
+				dialect.MySQL: "decimal(37, 18)",
+			}).
+			Optional(),
+		field.
+			Float("technique_service_fee_amount").
+			GoType(decimal.Decimal{}).
+			SchemaType(map[string]string{
+				dialect.MySQL: "decimal(37, 18)",
+			}).
+			Optional(),
+		field.
 			Uint32("benefit_date").
 			Optional().
 			Default(0),

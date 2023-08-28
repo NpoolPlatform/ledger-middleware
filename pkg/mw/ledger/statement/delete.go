@@ -103,12 +103,9 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 	if err != nil {
 		return err
 	}
-	if info == nil {
-		return fmt.Errorf("ledger not found")
-	}
+
 	incoming := decimal.NewFromInt(0)
 	outcoming := decimal.NewFromInt(0)
-	locked := decimal.NewFromInt(0)
 	switch *req.IOType {
 	case basetypes.IOType_Incoming:
 		incoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
@@ -125,7 +122,6 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 			Incoming:  &incoming,
 			Outcoming: &outcoming,
 			Spendable: &spendable,
-			Locked:    &locked,
 		},
 	)
 	if err != nil {

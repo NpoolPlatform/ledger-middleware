@@ -25,6 +25,9 @@ func (h *queryHandler) selectGoodStatement(stm *ent.GoodStatementQuery) {
 		entgoodstatement.FieldGoodID,
 		entgoodstatement.FieldCoinTypeID,
 		entgoodstatement.FieldAmount,
+		entgoodstatement.FieldToPlatform,
+		entgoodstatement.FieldToUser,
+		entgoodstatement.FieldTechniqueServiceFeeAmount,
 		entgoodstatement.FieldBenefitDate,
 		entgoodstatement.FieldCreatedAt,
 		entgoodstatement.FieldUpdatedAt,
@@ -67,6 +70,23 @@ func (h *queryHandler) formalize() {
 			amount = _amount.String()
 		}
 		info.Amount = amount
+
+		toPlatform := decimal.NewFromInt(0).String()
+		if _toPlatform, err := decimal.NewFromString(info.ToPlatform); err == nil {
+			toPlatform = _toPlatform.String()
+		}
+		info.ToPlatform = toPlatform
+
+		toUser := decimal.NewFromInt(0).String()
+		if _toUser, err := decimal.NewFromString(info.ToUser); err == nil {
+			toUser = _toUser.String()
+		}
+		info.ToUser = toUser
+		serviceFeeAmount := decimal.NewFromInt(0).String()
+		if _serviceFeeAmount, err := decimal.NewFromString(info.TechniqueServiceFeeAmount); err == nil {
+			serviceFeeAmount = _serviceFeeAmount.String()
+		}
+		info.TechniqueServiceFeeAmount = serviceFeeAmount
 	}
 }
 

@@ -21,12 +21,6 @@ func (s *Server) DeleteGoodStatement(ctx context.Context, in *npool.DeleteGoodSt
 	handler, err := statement1.NewHandler(
 		ctx,
 		goodstatement1.WithID(req.ID, true),
-		goodstatement1.WithUnsoldStatementID(req.UnsoldStatementID, true),
-		goodstatement1.WithGoodID(req.GoodID, true),
-		goodstatement1.WithCoinTypeID(req.CoinTypeID, true),
-		goodstatement1.WithTotalAmount(req.TotalAmount, true),
-		goodstatement1.WithUnsoldAmount(req.UnsoldAmount, true),
-		goodstatement1.WithTechniqueServiceFeeAmount(req.TechniqueServiceFeeAmount, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

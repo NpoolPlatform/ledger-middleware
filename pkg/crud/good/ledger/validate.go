@@ -66,19 +66,24 @@ func UpdateSetWithValidate(entity *ent.GoodLedger, req *Req) (*ent.GoodLedgerUpd
 		toUser = toUser.Add(*req.ToUser)
 	}
 
-	if amount.Cmp(toPlatform.Add(toUser)) < 0 {
-		return nil, fmt.Errorf("amount %v < toplatform %v + touser %v", amount.String(), toPlatform.String(), toUser.String())
+	if amount.Add(entity.Amount).Cmp(
+		toPlatform.Add(entity.ToPlatform).
+			Add(toUser).
+			Add(entity.ToUser),
+	) != 0 {
+		return nil, fmt.Errorf("amount(%v + %v) != toPlatform(%v + %v) + toUser(%v + %v)",
+			amount, entity.Amount, toPlatform, entity.ToPlatform, toUser, entity.ToUser,
+		)
 	}
-	if amount.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("amount less 0 %v", amount.String())
+	if amount.Add(entity.Amount).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("amount less 0, %v + %v", amount.String(), entity.Amount)
 	}
-	if toPlatform.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("toplatform less 0 %v", toPlatform.String())
+	if toPlatform.Add(entity.ToPlatform).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("to platform less 0, %v + %v", toPlatform.String(), entity.ToPlatform)
 	}
-	if toUser.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("touser less 0 %v", toUser.String())
+	if toUser.Add(entity.ToUser).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("to user less %v + %v", toUser.String(), entity.ToUser)
 	}
-
 	stm := entity.Update()
 
 	if req.Amount != nil {

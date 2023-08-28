@@ -10,25 +10,26 @@ import (
 	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	unsold1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/unsold"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
-	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/unsold"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type rollbackHandler struct {
 	*Handler
-	statementsMap       map[string]*npool.GoodStatement
-	unsoldstatementsMap map[string]*ledgermwpb.UnsoldStatement
+	statementsMap map[string]*npool.GoodStatement
 }
 
 func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	stm, err := goodledgercrud.SetQueryConds(tx.GoodLedger.Query(), &goodledgercrud.Conds{
-		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-	})
+	statement, _ := h.statementsMap[req.ID.String()] //nolint
+	stm, err := goodledgercrud.SetQueryConds(
+		tx.GoodLedger.Query(),
+		&goodledgercrud.Conds{
+			GoodID:     &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.GoodID)},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.CoinTypeID)},
+		})
 	if err != nil {
 		return err
 	}
@@ -37,21 +38,16 @@ func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx co
 		return err
 	}
 
-	toPlatform := h.UnsoldAmount.Add(*h.TechniqueServiceFeeAmount)
-	toUser := h.TotalAmount.Sub(toPlatform)
-	if h.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
-		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", h.TotalAmount.String(), toPlatform.String(), toUser.String())
-	}
-	_amount := decimal.RequireFromString(fmt.Sprintf("-%v", req.TotalAmount.String()))
-	_toUser := decimal.RequireFromString(fmt.Sprintf("-%v", toUser.String()))
-	_toPlatform := decimal.RequireFromString(fmt.Sprintf("-%v", toPlatform.String()))
+	amount := decimal.RequireFromString(fmt.Sprintf("-%v", statement.Amount))
+	toUser := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToUser))
+	toPlatform := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToPlatform))
 
 	stm1, err := goodledgercrud.UpdateSetWithValidate(
 		info,
 		&goodledgercrud.Req{
-			Amount:     &_amount,
-			ToUser:     &_toUser,
-			ToPlatform: &_toPlatform,
+			Amount:     &amount,
+			ToUser:     &toUser,
+			ToPlatform: &toPlatform,
 		},
 	)
 	if err != nil {
@@ -60,17 +56,10 @@ func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx co
 	if _, err := stm1.Save(ctx); err != nil {
 		return err
 	}
-
 	return nil
 }
 
-//nolint
 func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	statement, _ := h.statementsMap[req.ID.String()]
-	if statement.Amount != req.TotalAmount.String() {
-		return fmt.Errorf("total amount not matched")
-	}
-
 	now := uint32(time.Now().Unix())
 	if _, err := goodstatementcrud.UpdateSet(
 		tx.GoodStatement.UpdateOneID(*req.ID),
@@ -84,51 +73,28 @@ func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx
 }
 
 func (h *rollbackHandler) tryDeleteUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	unsold, ok := h.unsoldstatementsMap[req.UnsoldStatementID.String()]
-	if !ok {
-		return nil
-	}
-	if unsold.Amount != req.UnsoldAmount.String() {
-		return fmt.Errorf("unsold amount not matched")
+	info, err := tx.
+		UnsoldStatement.
+		Query().
+		Where(
+			unsoldstatement.StatementID(*req.ID),
+			unsoldstatement.DeletedAt(0),
+		).Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil
+		}
+		return err
 	}
 
 	now := uint32(time.Now().Unix())
 	if _, err := unsoldcrud.UpdateSet(
-		tx.UnsoldStatement.UpdateOneID(*req.UnsoldStatementID),
+		tx.UnsoldStatement.UpdateOneID(info.ID),
 		&unsoldcrud.Req{
 			DeletedAt: &now,
 		},
 	).Save(ctx); err != nil {
 		return err
-	}
-	return nil
-}
-
-func (h *rollbackHandler) tryGetAllUnsoldGoodStatements(ctx context.Context) error {
-	ids := []uuid.UUID{}
-	for _, req := range h.Reqs {
-		if req.UnsoldStatementID == nil {
-			return fmt.Errorf("invalid unsold good statement id")
-		}
-		ids = append(ids, *req.UnsoldStatementID)
-	}
-
-	handler, err := unsold1.NewHandler(ctx)
-	if err != nil {
-		return err
-	}
-	handler.Conds = &unsoldcrud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
-	}
-
-	infos, _, err := handler.GetUnsoldStatements(ctx)
-	if err != nil {
-		return err
-	}
-
-	h.unsoldstatementsMap = map[string]*ledgermwpb.UnsoldStatement{}
-	for _, info := range infos {
-		h.unsoldstatementsMap[info.ID] = info
 	}
 	return nil
 }
@@ -145,6 +111,7 @@ func (h *rollbackHandler) tryGetAllGoodStatements(ctx context.Context) error {
 	h.Conds = &goodstatementcrud.Conds{
 		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
+	h.Limit = int32(len(ids))
 	infos, _, err := h.GetGoodStatements(ctx)
 	if err != nil {
 		return err
@@ -164,10 +131,6 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	if err := handler.tryGetAllGoodStatements(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.tryGetAllUnsoldGoodStatements(ctx); err != nil {
-		return nil, err
-	}
-
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {

@@ -1040,25 +1040,31 @@ func (m *GoodLedgerMutation) ResetEdge(name string) error {
 // GoodStatementMutation represents an operation that mutates the GoodStatement nodes in the graph.
 type GoodStatementMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	created_at      *uint32
-	addcreated_at   *int32
-	updated_at      *uint32
-	addupdated_at   *int32
-	deleted_at      *uint32
-	adddeleted_at   *int32
-	good_id         *uuid.UUID
-	coin_type_id    *uuid.UUID
-	amount          *decimal.Decimal
-	addamount       *decimal.Decimal
-	benefit_date    *uint32
-	addbenefit_date *int32
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*GoodStatement, error)
-	predicates      []predicate.GoodStatement
+	op                              Op
+	typ                             string
+	id                              *uuid.UUID
+	created_at                      *uint32
+	addcreated_at                   *int32
+	updated_at                      *uint32
+	addupdated_at                   *int32
+	deleted_at                      *uint32
+	adddeleted_at                   *int32
+	good_id                         *uuid.UUID
+	coin_type_id                    *uuid.UUID
+	amount                          *decimal.Decimal
+	addamount                       *decimal.Decimal
+	to_platform                     *decimal.Decimal
+	addto_platform                  *decimal.Decimal
+	to_user                         *decimal.Decimal
+	addto_user                      *decimal.Decimal
+	technique_service_fee_amount    *decimal.Decimal
+	addtechnique_service_fee_amount *decimal.Decimal
+	benefit_date                    *uint32
+	addbenefit_date                 *int32
+	clearedFields                   map[string]struct{}
+	done                            bool
+	oldValue                        func(context.Context) (*GoodStatement, error)
+	predicates                      []predicate.GoodStatement
 }
 
 var _ ent.Mutation = (*GoodStatementMutation)(nil)
@@ -1501,6 +1507,216 @@ func (m *GoodStatementMutation) ResetAmount() {
 	delete(m.clearedFields, goodstatement.FieldAmount)
 }
 
+// SetToPlatform sets the "to_platform" field.
+func (m *GoodStatementMutation) SetToPlatform(d decimal.Decimal) {
+	m.to_platform = &d
+	m.addto_platform = nil
+}
+
+// ToPlatform returns the value of the "to_platform" field in the mutation.
+func (m *GoodStatementMutation) ToPlatform() (r decimal.Decimal, exists bool) {
+	v := m.to_platform
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToPlatform returns the old "to_platform" field's value of the GoodStatement entity.
+// If the GoodStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GoodStatementMutation) OldToPlatform(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToPlatform is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToPlatform requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToPlatform: %w", err)
+	}
+	return oldValue.ToPlatform, nil
+}
+
+// AddToPlatform adds d to the "to_platform" field.
+func (m *GoodStatementMutation) AddToPlatform(d decimal.Decimal) {
+	if m.addto_platform != nil {
+		*m.addto_platform = m.addto_platform.Add(d)
+	} else {
+		m.addto_platform = &d
+	}
+}
+
+// AddedToPlatform returns the value that was added to the "to_platform" field in this mutation.
+func (m *GoodStatementMutation) AddedToPlatform() (r decimal.Decimal, exists bool) {
+	v := m.addto_platform
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearToPlatform clears the value of the "to_platform" field.
+func (m *GoodStatementMutation) ClearToPlatform() {
+	m.to_platform = nil
+	m.addto_platform = nil
+	m.clearedFields[goodstatement.FieldToPlatform] = struct{}{}
+}
+
+// ToPlatformCleared returns if the "to_platform" field was cleared in this mutation.
+func (m *GoodStatementMutation) ToPlatformCleared() bool {
+	_, ok := m.clearedFields[goodstatement.FieldToPlatform]
+	return ok
+}
+
+// ResetToPlatform resets all changes to the "to_platform" field.
+func (m *GoodStatementMutation) ResetToPlatform() {
+	m.to_platform = nil
+	m.addto_platform = nil
+	delete(m.clearedFields, goodstatement.FieldToPlatform)
+}
+
+// SetToUser sets the "to_user" field.
+func (m *GoodStatementMutation) SetToUser(d decimal.Decimal) {
+	m.to_user = &d
+	m.addto_user = nil
+}
+
+// ToUser returns the value of the "to_user" field in the mutation.
+func (m *GoodStatementMutation) ToUser() (r decimal.Decimal, exists bool) {
+	v := m.to_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldToUser returns the old "to_user" field's value of the GoodStatement entity.
+// If the GoodStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GoodStatementMutation) OldToUser(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldToUser is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldToUser requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldToUser: %w", err)
+	}
+	return oldValue.ToUser, nil
+}
+
+// AddToUser adds d to the "to_user" field.
+func (m *GoodStatementMutation) AddToUser(d decimal.Decimal) {
+	if m.addto_user != nil {
+		*m.addto_user = m.addto_user.Add(d)
+	} else {
+		m.addto_user = &d
+	}
+}
+
+// AddedToUser returns the value that was added to the "to_user" field in this mutation.
+func (m *GoodStatementMutation) AddedToUser() (r decimal.Decimal, exists bool) {
+	v := m.addto_user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearToUser clears the value of the "to_user" field.
+func (m *GoodStatementMutation) ClearToUser() {
+	m.to_user = nil
+	m.addto_user = nil
+	m.clearedFields[goodstatement.FieldToUser] = struct{}{}
+}
+
+// ToUserCleared returns if the "to_user" field was cleared in this mutation.
+func (m *GoodStatementMutation) ToUserCleared() bool {
+	_, ok := m.clearedFields[goodstatement.FieldToUser]
+	return ok
+}
+
+// ResetToUser resets all changes to the "to_user" field.
+func (m *GoodStatementMutation) ResetToUser() {
+	m.to_user = nil
+	m.addto_user = nil
+	delete(m.clearedFields, goodstatement.FieldToUser)
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (m *GoodStatementMutation) SetTechniqueServiceFeeAmount(d decimal.Decimal) {
+	m.technique_service_fee_amount = &d
+	m.addtechnique_service_fee_amount = nil
+}
+
+// TechniqueServiceFeeAmount returns the value of the "technique_service_fee_amount" field in the mutation.
+func (m *GoodStatementMutation) TechniqueServiceFeeAmount() (r decimal.Decimal, exists bool) {
+	v := m.technique_service_fee_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTechniqueServiceFeeAmount returns the old "technique_service_fee_amount" field's value of the GoodStatement entity.
+// If the GoodStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GoodStatementMutation) OldTechniqueServiceFeeAmount(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTechniqueServiceFeeAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTechniqueServiceFeeAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTechniqueServiceFeeAmount: %w", err)
+	}
+	return oldValue.TechniqueServiceFeeAmount, nil
+}
+
+// AddTechniqueServiceFeeAmount adds d to the "technique_service_fee_amount" field.
+func (m *GoodStatementMutation) AddTechniqueServiceFeeAmount(d decimal.Decimal) {
+	if m.addtechnique_service_fee_amount != nil {
+		*m.addtechnique_service_fee_amount = m.addtechnique_service_fee_amount.Add(d)
+	} else {
+		m.addtechnique_service_fee_amount = &d
+	}
+}
+
+// AddedTechniqueServiceFeeAmount returns the value that was added to the "technique_service_fee_amount" field in this mutation.
+func (m *GoodStatementMutation) AddedTechniqueServiceFeeAmount() (r decimal.Decimal, exists bool) {
+	v := m.addtechnique_service_fee_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTechniqueServiceFeeAmount clears the value of the "technique_service_fee_amount" field.
+func (m *GoodStatementMutation) ClearTechniqueServiceFeeAmount() {
+	m.technique_service_fee_amount = nil
+	m.addtechnique_service_fee_amount = nil
+	m.clearedFields[goodstatement.FieldTechniqueServiceFeeAmount] = struct{}{}
+}
+
+// TechniqueServiceFeeAmountCleared returns if the "technique_service_fee_amount" field was cleared in this mutation.
+func (m *GoodStatementMutation) TechniqueServiceFeeAmountCleared() bool {
+	_, ok := m.clearedFields[goodstatement.FieldTechniqueServiceFeeAmount]
+	return ok
+}
+
+// ResetTechniqueServiceFeeAmount resets all changes to the "technique_service_fee_amount" field.
+func (m *GoodStatementMutation) ResetTechniqueServiceFeeAmount() {
+	m.technique_service_fee_amount = nil
+	m.addtechnique_service_fee_amount = nil
+	delete(m.clearedFields, goodstatement.FieldTechniqueServiceFeeAmount)
+}
+
 // SetBenefitDate sets the "benefit_date" field.
 func (m *GoodStatementMutation) SetBenefitDate(u uint32) {
 	m.benefit_date = &u
@@ -1590,7 +1806,7 @@ func (m *GoodStatementMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GoodStatementMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 10)
 	if m.created_at != nil {
 		fields = append(fields, goodstatement.FieldCreatedAt)
 	}
@@ -1608,6 +1824,15 @@ func (m *GoodStatementMutation) Fields() []string {
 	}
 	if m.amount != nil {
 		fields = append(fields, goodstatement.FieldAmount)
+	}
+	if m.to_platform != nil {
+		fields = append(fields, goodstatement.FieldToPlatform)
+	}
+	if m.to_user != nil {
+		fields = append(fields, goodstatement.FieldToUser)
+	}
+	if m.technique_service_fee_amount != nil {
+		fields = append(fields, goodstatement.FieldTechniqueServiceFeeAmount)
 	}
 	if m.benefit_date != nil {
 		fields = append(fields, goodstatement.FieldBenefitDate)
@@ -1632,6 +1857,12 @@ func (m *GoodStatementMutation) Field(name string) (ent.Value, bool) {
 		return m.CoinTypeID()
 	case goodstatement.FieldAmount:
 		return m.Amount()
+	case goodstatement.FieldToPlatform:
+		return m.ToPlatform()
+	case goodstatement.FieldToUser:
+		return m.ToUser()
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		return m.TechniqueServiceFeeAmount()
 	case goodstatement.FieldBenefitDate:
 		return m.BenefitDate()
 	}
@@ -1655,6 +1886,12 @@ func (m *GoodStatementMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldCoinTypeID(ctx)
 	case goodstatement.FieldAmount:
 		return m.OldAmount(ctx)
+	case goodstatement.FieldToPlatform:
+		return m.OldToPlatform(ctx)
+	case goodstatement.FieldToUser:
+		return m.OldToUser(ctx)
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		return m.OldTechniqueServiceFeeAmount(ctx)
 	case goodstatement.FieldBenefitDate:
 		return m.OldBenefitDate(ctx)
 	}
@@ -1708,6 +1945,27 @@ func (m *GoodStatementMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAmount(v)
 		return nil
+	case goodstatement.FieldToPlatform:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToPlatform(v)
+		return nil
+	case goodstatement.FieldToUser:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetToUser(v)
+		return nil
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTechniqueServiceFeeAmount(v)
+		return nil
 	case goodstatement.FieldBenefitDate:
 		v, ok := value.(uint32)
 		if !ok {
@@ -1735,6 +1993,15 @@ func (m *GoodStatementMutation) AddedFields() []string {
 	if m.addamount != nil {
 		fields = append(fields, goodstatement.FieldAmount)
 	}
+	if m.addto_platform != nil {
+		fields = append(fields, goodstatement.FieldToPlatform)
+	}
+	if m.addto_user != nil {
+		fields = append(fields, goodstatement.FieldToUser)
+	}
+	if m.addtechnique_service_fee_amount != nil {
+		fields = append(fields, goodstatement.FieldTechniqueServiceFeeAmount)
+	}
 	if m.addbenefit_date != nil {
 		fields = append(fields, goodstatement.FieldBenefitDate)
 	}
@@ -1754,6 +2021,12 @@ func (m *GoodStatementMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedDeletedAt()
 	case goodstatement.FieldAmount:
 		return m.AddedAmount()
+	case goodstatement.FieldToPlatform:
+		return m.AddedToPlatform()
+	case goodstatement.FieldToUser:
+		return m.AddedToUser()
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		return m.AddedTechniqueServiceFeeAmount()
 	case goodstatement.FieldBenefitDate:
 		return m.AddedBenefitDate()
 	}
@@ -1793,6 +2066,27 @@ func (m *GoodStatementMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddAmount(v)
 		return nil
+	case goodstatement.FieldToPlatform:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddToPlatform(v)
+		return nil
+	case goodstatement.FieldToUser:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddToUser(v)
+		return nil
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTechniqueServiceFeeAmount(v)
+		return nil
 	case goodstatement.FieldBenefitDate:
 		v, ok := value.(int32)
 		if !ok {
@@ -1816,6 +2110,15 @@ func (m *GoodStatementMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(goodstatement.FieldAmount) {
 		fields = append(fields, goodstatement.FieldAmount)
+	}
+	if m.FieldCleared(goodstatement.FieldToPlatform) {
+		fields = append(fields, goodstatement.FieldToPlatform)
+	}
+	if m.FieldCleared(goodstatement.FieldToUser) {
+		fields = append(fields, goodstatement.FieldToUser)
+	}
+	if m.FieldCleared(goodstatement.FieldTechniqueServiceFeeAmount) {
+		fields = append(fields, goodstatement.FieldTechniqueServiceFeeAmount)
 	}
 	if m.FieldCleared(goodstatement.FieldBenefitDate) {
 		fields = append(fields, goodstatement.FieldBenefitDate)
@@ -1842,6 +2145,15 @@ func (m *GoodStatementMutation) ClearField(name string) error {
 		return nil
 	case goodstatement.FieldAmount:
 		m.ClearAmount()
+		return nil
+	case goodstatement.FieldToPlatform:
+		m.ClearToPlatform()
+		return nil
+	case goodstatement.FieldToUser:
+		m.ClearToUser()
+		return nil
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		m.ClearTechniqueServiceFeeAmount()
 		return nil
 	case goodstatement.FieldBenefitDate:
 		m.ClearBenefitDate()
@@ -1871,6 +2183,15 @@ func (m *GoodStatementMutation) ResetField(name string) error {
 		return nil
 	case goodstatement.FieldAmount:
 		m.ResetAmount()
+		return nil
+	case goodstatement.FieldToPlatform:
+		m.ResetToPlatform()
+		return nil
+	case goodstatement.FieldToUser:
+		m.ResetToUser()
+		return nil
+	case goodstatement.FieldTechniqueServiceFeeAmount:
+		m.ResetTechniqueServiceFeeAmount()
 		return nil
 	case goodstatement.FieldBenefitDate:
 		m.ResetBenefitDate()

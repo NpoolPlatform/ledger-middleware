@@ -24,6 +24,12 @@ const (
 	FieldCoinTypeID = "coin_type_id"
 	// FieldAmount holds the string denoting the amount field in the database.
 	FieldAmount = "amount"
+	// FieldToPlatform holds the string denoting the to_platform field in the database.
+	FieldToPlatform = "to_platform"
+	// FieldToUser holds the string denoting the to_user field in the database.
+	FieldToUser = "to_user"
+	// FieldTechniqueServiceFeeAmount holds the string denoting the technique_service_fee_amount field in the database.
+	FieldTechniqueServiceFeeAmount = "technique_service_fee_amount"
 	// FieldBenefitDate holds the string denoting the benefit_date field in the database.
 	FieldBenefitDate = "benefit_date"
 	// Table holds the table name of the goodstatement in the database.
@@ -39,6 +45,9 @@ var Columns = []string{
 	FieldGoodID,
 	FieldCoinTypeID,
 	FieldAmount,
+	FieldToPlatform,
+	FieldToUser,
+	FieldTechniqueServiceFeeAmount,
 	FieldBenefitDate,
 }
 

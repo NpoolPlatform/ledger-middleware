@@ -100,7 +100,7 @@ func init() {
 	// goodstatement.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
 	goodstatement.DefaultCoinTypeID = goodstatementDescCoinTypeID.Default.(func() uuid.UUID)
 	// goodstatementDescBenefitDate is the schema descriptor for benefit_date field.
-	goodstatementDescBenefitDate := goodstatementFields[4].Descriptor()
+	goodstatementDescBenefitDate := goodstatementFields[7].Descriptor()
 	// goodstatement.DefaultBenefitDate holds the default value on creation for the benefit_date field.
 	goodstatement.DefaultBenefitDate = goodstatementDescBenefitDate.Default.(uint32)
 	// goodstatementDescID is the schema descriptor for id field.

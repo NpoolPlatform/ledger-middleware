@@ -108,6 +108,48 @@ func (gsc *GoodStatementCreate) SetNillableAmount(d *decimal.Decimal) *GoodState
 	return gsc
 }
 
+// SetToPlatform sets the "to_platform" field.
+func (gsc *GoodStatementCreate) SetToPlatform(d decimal.Decimal) *GoodStatementCreate {
+	gsc.mutation.SetToPlatform(d)
+	return gsc
+}
+
+// SetNillableToPlatform sets the "to_platform" field if the given value is not nil.
+func (gsc *GoodStatementCreate) SetNillableToPlatform(d *decimal.Decimal) *GoodStatementCreate {
+	if d != nil {
+		gsc.SetToPlatform(*d)
+	}
+	return gsc
+}
+
+// SetToUser sets the "to_user" field.
+func (gsc *GoodStatementCreate) SetToUser(d decimal.Decimal) *GoodStatementCreate {
+	gsc.mutation.SetToUser(d)
+	return gsc
+}
+
+// SetNillableToUser sets the "to_user" field if the given value is not nil.
+func (gsc *GoodStatementCreate) SetNillableToUser(d *decimal.Decimal) *GoodStatementCreate {
+	if d != nil {
+		gsc.SetToUser(*d)
+	}
+	return gsc
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (gsc *GoodStatementCreate) SetTechniqueServiceFeeAmount(d decimal.Decimal) *GoodStatementCreate {
+	gsc.mutation.SetTechniqueServiceFeeAmount(d)
+	return gsc
+}
+
+// SetNillableTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field if the given value is not nil.
+func (gsc *GoodStatementCreate) SetNillableTechniqueServiceFeeAmount(d *decimal.Decimal) *GoodStatementCreate {
+	if d != nil {
+		gsc.SetTechniqueServiceFeeAmount(*d)
+	}
+	return gsc
+}
+
 // SetBenefitDate sets the "benefit_date" field.
 func (gsc *GoodStatementCreate) SetBenefitDate(u uint32) *GoodStatementCreate {
 	gsc.mutation.SetBenefitDate(u)
@@ -360,6 +402,30 @@ func (gsc *GoodStatementCreate) createSpec() (*GoodStatement, *sqlgraph.CreateSp
 		})
 		_node.Amount = value
 	}
+	if value, ok := gsc.mutation.ToPlatform(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToPlatform,
+		})
+		_node.ToPlatform = value
+	}
+	if value, ok := gsc.mutation.ToUser(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToUser,
+		})
+		_node.ToUser = value
+	}
+	if value, ok := gsc.mutation.TechniqueServiceFeeAmount(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
+		})
+		_node.TechniqueServiceFeeAmount = value
+	}
 	if value, ok := gsc.mutation.BenefitDate(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint32,
@@ -533,6 +599,78 @@ func (u *GoodStatementUpsert) AddAmount(v decimal.Decimal) *GoodStatementUpsert 
 // ClearAmount clears the value of the "amount" field.
 func (u *GoodStatementUpsert) ClearAmount() *GoodStatementUpsert {
 	u.SetNull(goodstatement.FieldAmount)
+	return u
+}
+
+// SetToPlatform sets the "to_platform" field.
+func (u *GoodStatementUpsert) SetToPlatform(v decimal.Decimal) *GoodStatementUpsert {
+	u.Set(goodstatement.FieldToPlatform, v)
+	return u
+}
+
+// UpdateToPlatform sets the "to_platform" field to the value that was provided on create.
+func (u *GoodStatementUpsert) UpdateToPlatform() *GoodStatementUpsert {
+	u.SetExcluded(goodstatement.FieldToPlatform)
+	return u
+}
+
+// AddToPlatform adds v to the "to_platform" field.
+func (u *GoodStatementUpsert) AddToPlatform(v decimal.Decimal) *GoodStatementUpsert {
+	u.Add(goodstatement.FieldToPlatform, v)
+	return u
+}
+
+// ClearToPlatform clears the value of the "to_platform" field.
+func (u *GoodStatementUpsert) ClearToPlatform() *GoodStatementUpsert {
+	u.SetNull(goodstatement.FieldToPlatform)
+	return u
+}
+
+// SetToUser sets the "to_user" field.
+func (u *GoodStatementUpsert) SetToUser(v decimal.Decimal) *GoodStatementUpsert {
+	u.Set(goodstatement.FieldToUser, v)
+	return u
+}
+
+// UpdateToUser sets the "to_user" field to the value that was provided on create.
+func (u *GoodStatementUpsert) UpdateToUser() *GoodStatementUpsert {
+	u.SetExcluded(goodstatement.FieldToUser)
+	return u
+}
+
+// AddToUser adds v to the "to_user" field.
+func (u *GoodStatementUpsert) AddToUser(v decimal.Decimal) *GoodStatementUpsert {
+	u.Add(goodstatement.FieldToUser, v)
+	return u
+}
+
+// ClearToUser clears the value of the "to_user" field.
+func (u *GoodStatementUpsert) ClearToUser() *GoodStatementUpsert {
+	u.SetNull(goodstatement.FieldToUser)
+	return u
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsert) SetTechniqueServiceFeeAmount(v decimal.Decimal) *GoodStatementUpsert {
+	u.Set(goodstatement.FieldTechniqueServiceFeeAmount, v)
+	return u
+}
+
+// UpdateTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field to the value that was provided on create.
+func (u *GoodStatementUpsert) UpdateTechniqueServiceFeeAmount() *GoodStatementUpsert {
+	u.SetExcluded(goodstatement.FieldTechniqueServiceFeeAmount)
+	return u
+}
+
+// AddTechniqueServiceFeeAmount adds v to the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsert) AddTechniqueServiceFeeAmount(v decimal.Decimal) *GoodStatementUpsert {
+	u.Add(goodstatement.FieldTechniqueServiceFeeAmount, v)
+	return u
+}
+
+// ClearTechniqueServiceFeeAmount clears the value of the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsert) ClearTechniqueServiceFeeAmount() *GoodStatementUpsert {
+	u.SetNull(goodstatement.FieldTechniqueServiceFeeAmount)
 	return u
 }
 
@@ -740,6 +878,90 @@ func (u *GoodStatementUpsertOne) UpdateAmount() *GoodStatementUpsertOne {
 func (u *GoodStatementUpsertOne) ClearAmount() *GoodStatementUpsertOne {
 	return u.Update(func(s *GoodStatementUpsert) {
 		s.ClearAmount()
+	})
+}
+
+// SetToPlatform sets the "to_platform" field.
+func (u *GoodStatementUpsertOne) SetToPlatform(v decimal.Decimal) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetToPlatform(v)
+	})
+}
+
+// AddToPlatform adds v to the "to_platform" field.
+func (u *GoodStatementUpsertOne) AddToPlatform(v decimal.Decimal) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.AddToPlatform(v)
+	})
+}
+
+// UpdateToPlatform sets the "to_platform" field to the value that was provided on create.
+func (u *GoodStatementUpsertOne) UpdateToPlatform() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateToPlatform()
+	})
+}
+
+// ClearToPlatform clears the value of the "to_platform" field.
+func (u *GoodStatementUpsertOne) ClearToPlatform() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.ClearToPlatform()
+	})
+}
+
+// SetToUser sets the "to_user" field.
+func (u *GoodStatementUpsertOne) SetToUser(v decimal.Decimal) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetToUser(v)
+	})
+}
+
+// AddToUser adds v to the "to_user" field.
+func (u *GoodStatementUpsertOne) AddToUser(v decimal.Decimal) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.AddToUser(v)
+	})
+}
+
+// UpdateToUser sets the "to_user" field to the value that was provided on create.
+func (u *GoodStatementUpsertOne) UpdateToUser() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateToUser()
+	})
+}
+
+// ClearToUser clears the value of the "to_user" field.
+func (u *GoodStatementUpsertOne) ClearToUser() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.ClearToUser()
+	})
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsertOne) SetTechniqueServiceFeeAmount(v decimal.Decimal) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetTechniqueServiceFeeAmount(v)
+	})
+}
+
+// AddTechniqueServiceFeeAmount adds v to the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsertOne) AddTechniqueServiceFeeAmount(v decimal.Decimal) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.AddTechniqueServiceFeeAmount(v)
+	})
+}
+
+// UpdateTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field to the value that was provided on create.
+func (u *GoodStatementUpsertOne) UpdateTechniqueServiceFeeAmount() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateTechniqueServiceFeeAmount()
+	})
+}
+
+// ClearTechniqueServiceFeeAmount clears the value of the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsertOne) ClearTechniqueServiceFeeAmount() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.ClearTechniqueServiceFeeAmount()
 	})
 }
 
@@ -1117,6 +1339,90 @@ func (u *GoodStatementUpsertBulk) UpdateAmount() *GoodStatementUpsertBulk {
 func (u *GoodStatementUpsertBulk) ClearAmount() *GoodStatementUpsertBulk {
 	return u.Update(func(s *GoodStatementUpsert) {
 		s.ClearAmount()
+	})
+}
+
+// SetToPlatform sets the "to_platform" field.
+func (u *GoodStatementUpsertBulk) SetToPlatform(v decimal.Decimal) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetToPlatform(v)
+	})
+}
+
+// AddToPlatform adds v to the "to_platform" field.
+func (u *GoodStatementUpsertBulk) AddToPlatform(v decimal.Decimal) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.AddToPlatform(v)
+	})
+}
+
+// UpdateToPlatform sets the "to_platform" field to the value that was provided on create.
+func (u *GoodStatementUpsertBulk) UpdateToPlatform() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateToPlatform()
+	})
+}
+
+// ClearToPlatform clears the value of the "to_platform" field.
+func (u *GoodStatementUpsertBulk) ClearToPlatform() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.ClearToPlatform()
+	})
+}
+
+// SetToUser sets the "to_user" field.
+func (u *GoodStatementUpsertBulk) SetToUser(v decimal.Decimal) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetToUser(v)
+	})
+}
+
+// AddToUser adds v to the "to_user" field.
+func (u *GoodStatementUpsertBulk) AddToUser(v decimal.Decimal) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.AddToUser(v)
+	})
+}
+
+// UpdateToUser sets the "to_user" field to the value that was provided on create.
+func (u *GoodStatementUpsertBulk) UpdateToUser() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateToUser()
+	})
+}
+
+// ClearToUser clears the value of the "to_user" field.
+func (u *GoodStatementUpsertBulk) ClearToUser() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.ClearToUser()
+	})
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsertBulk) SetTechniqueServiceFeeAmount(v decimal.Decimal) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetTechniqueServiceFeeAmount(v)
+	})
+}
+
+// AddTechniqueServiceFeeAmount adds v to the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsertBulk) AddTechniqueServiceFeeAmount(v decimal.Decimal) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.AddTechniqueServiceFeeAmount(v)
+	})
+}
+
+// UpdateTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field to the value that was provided on create.
+func (u *GoodStatementUpsertBulk) UpdateTechniqueServiceFeeAmount() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateTechniqueServiceFeeAmount()
+	})
+}
+
+// ClearTechniqueServiceFeeAmount clears the value of the "technique_service_fee_amount" field.
+func (u *GoodStatementUpsertBulk) ClearTechniqueServiceFeeAmount() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.ClearTechniqueServiceFeeAmount()
 	})
 }
 
