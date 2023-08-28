@@ -19,7 +19,6 @@ func (s *Server) CreateGoodStatement(ctx context.Context, in *npool.CreateGoodSt
 	handler, err := goodstatement1.NewHandler(
 		ctx,
 		goodstatement1.WithID(req.ID, false),
-		goodstatement1.WithUnsoldStatementID(req.UnsoldStatementID, false),
 		goodstatement1.WithGoodID(req.GoodID, true),
 		goodstatement1.WithCoinTypeID(req.CoinTypeID, true),
 		goodstatement1.WithTotalAmount(req.TotalAmount, true),

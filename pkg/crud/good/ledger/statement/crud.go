@@ -13,7 +13,6 @@ import (
 
 type Req struct {
 	ID                        *uuid.UUID
-	UnsoldStatementID         *uuid.UUID
 	GoodID                    *uuid.UUID
 	CoinTypeID                *uuid.UUID
 	TotalAmount               *decimal.Decimal

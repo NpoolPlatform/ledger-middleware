@@ -47,23 +47,6 @@ func WithID(id *string, must bool) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUnsoldStatementID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid unsold statement id")
-			}
-			return nil
-		}
-		_id, err := uuid.Parse(*id)
-		if err != nil {
-			return err
-		}
-		h.UnsoldStatementID = &_id
-		return nil
-	}
-}
-
 func WithGoodID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
@@ -180,37 +163,12 @@ func WithReqs(reqs []*npool.GoodStatementReq) func(context.Context, *Handler) er
 		_reqs := []*crud.Req{}
 		for _, req := range reqs {
 			_req := &crud.Req{}
-			if req.GoodID == nil {
-				return fmt.Errorf("invalid good id")
-			}
-			if req.CoinTypeID == nil {
-				return fmt.Errorf("invalid coin type id")
-			}
-			if req.TotalAmount == nil {
-				return fmt.Errorf("invalid total amount")
-			}
-			if req.UnsoldAmount == nil {
-				return fmt.Errorf("invalid unsold amount")
-			}
-			if req.TechniqueServiceFeeAmount == nil {
-				return fmt.Errorf("invalid technique service fee amount")
-			}
-			if req.BenefitDate == nil {
-				return fmt.Errorf("invalid benefit date")
-			}
 			if req.ID != nil {
 				_id, err := uuid.Parse(*req.ID)
 				if err != nil {
 					return err
 				}
 				_req.ID = &_id
-			}
-			if req.UnsoldStatementID != nil {
-				_id, err := uuid.Parse(*req.UnsoldStatementID)
-				if err != nil {
-					return err
-				}
-				_req.UnsoldStatementID = &_id
 			}
 			if req.GoodID != nil {
 				_id, err := uuid.Parse(*req.GoodID)
@@ -256,8 +214,10 @@ func WithReqs(reqs []*npool.GoodStatementReq) func(context.Context, *Handler) er
 				}
 				_req.TechniqueServiceFeeAmount = &amount
 			}
-
 			if req.BenefitDate != nil {
+                if *req.BenefitDate == 0 {
+                    return fmt.Errorf("invalid benefit date 0")
+                }
 				_req.BenefitDate = req.BenefitDate
 			}
 
