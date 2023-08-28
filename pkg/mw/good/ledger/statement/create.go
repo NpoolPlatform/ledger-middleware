@@ -10,6 +10,7 @@ import (
 	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	entgoodstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
@@ -18,6 +19,27 @@ import (
 
 type createHandler struct {
 	*Handler
+}
+
+func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	if req.ID == nil {
+		exist, err := tx.
+			GoodStatement.
+			Query().
+			Where(
+				entgoodstatement.GoodID(*req.GoodID),
+				entgoodstatement.CoinTypeID(*req.CoinTypeID),
+				entgoodstatement.BenefitDate(*req.BenefitDate),
+			).
+			Exist(ctx)
+		if err != nil {
+			return err
+		}
+		if exist {
+			return fmt.Errorf("good statement already exist")
+		}
+	}
+	return nil
 }
 
 //nolint
@@ -58,11 +80,11 @@ func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx
 	if _, err := unsoldcrud.CreateSet(
 		tx.UnsoldStatement.Create(),
 		&unsoldcrud.Req{
-			ID:          req.UnsoldStatementID,
 			GoodID:      req.GoodID,
 			CoinTypeID:  req.CoinTypeID,
 			Amount:      req.UnsoldAmount,
 			BenefitDate: req.BenefitDate,
+			StatementID: req.ID,
 		},
 	).Save(ctx); err != nil {
 		return err
@@ -71,10 +93,12 @@ func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx
 }
 
 func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	stm, err := goodledgercrud.SetQueryConds(tx.GoodLedger.Query(), &goodledgercrud.Conds{
-		GoodID:     &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
-		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-	})
+	stm, err := goodledgercrud.SetQueryConds(
+		tx.GoodLedger.Query(),
+		&goodledgercrud.Conds{
+			GoodID:     &cruder.Cond{Op: cruder.EQ, Val: *req.GoodID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+		})
 	if err != nil {
 		return err
 	}
@@ -133,7 +157,6 @@ func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, 
 	if _, err := stm1.Save(ctx); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -162,13 +185,12 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
+				if err := handler.checkGoodStatementExist(req, ctx, tx); err != nil {
+					return err
+				}
 				id := uuid.New()
 				if req.ID == nil {
 					req.ID = &id
-				}
-				unsoldID := uuid.New()
-				if req.UnsoldStatementID == nil {
-					req.UnsoldStatementID = &unsoldID
 				}
 				if err := handler.tryCreateGoodStatement(req, ctx, tx); err != nil {
 					return err

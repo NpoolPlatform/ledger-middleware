@@ -17,6 +17,7 @@ type Req struct {
 	CoinTypeID  *uuid.UUID
 	Amount      *decimal.Decimal
 	BenefitDate *uint32
+	StatementID *uuid.UUID
 	CreatedAt   *uint32
 	DeletedAt   *uint32
 }
@@ -36,6 +37,9 @@ func CreateSet(c *ent.UnsoldStatementCreate, in *Req) *ent.UnsoldStatementCreate
 	}
 	if in.BenefitDate != nil {
 		c.SetBenefitDate(*in.BenefitDate)
+	}
+	if in.StatementID != nil {
+		c.SetStatementID(*in.StatementID)
 	}
 
 	return c
