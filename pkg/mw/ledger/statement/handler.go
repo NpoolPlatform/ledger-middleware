@@ -354,10 +354,10 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				_req.CreatedAt = req.CreatedAt
 			}
 			if req.IOType != nil {
-				return fmt.Errorf("invalid io type")
+				_req.IOType = req.IOType
 			}
 			if req.IOSubType != nil {
-				return fmt.Errorf("invalid io sub type")
+				_req.IOSubType = req.IOSubType
 			}
 			_reqs = append(_reqs, _req)
 		}
