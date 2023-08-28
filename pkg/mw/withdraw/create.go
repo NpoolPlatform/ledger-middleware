@@ -80,7 +80,6 @@ func (h *Handler) CreateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 			return err
 		}
 		return nil
-
 	})
 	if err != nil {
 		return nil, err
