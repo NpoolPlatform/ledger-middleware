@@ -43,7 +43,6 @@ func setup(t *testing.T) func(*testing.T) {
 	reqs := []*goodstatementmwpb.GoodStatementReq{
 		{
 			ID:                        &id,
-			UnsoldStatementID:         &unsoldStatementID,
 			GoodID:                    &goodID,
 			CoinTypeID:                &coinTypeID,
 			TotalAmount:               &totalAmount,

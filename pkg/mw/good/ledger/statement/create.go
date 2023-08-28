@@ -70,6 +70,11 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 		_ = redis2.Unlock(key)
 	}()
 
+	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
+	toUser := req.TotalAmount.Sub(toPlatform)
+	if req.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
+		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount.String(), toPlatform.String(), toUser.String())
+	}
 	if _, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		&goodstatementcrud.Req{
@@ -78,6 +83,9 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 			CoinTypeID:  req.CoinTypeID,
 			BenefitDate: req.BenefitDate,
 			TotalAmount: req.TotalAmount,
+			ToPlatform:  &toPlatform,
+			ToUser:      &toUser,
+			TechniqueServiceFeeAmount: req.TechniqueServiceFeeAmount,
 		},
 	).Save(ctx); err != nil {
 		return err
