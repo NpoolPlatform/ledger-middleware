@@ -23,31 +23,55 @@ type createHandler struct {
 	ids []uuid.UUID
 }
 
-func (h *Handler) validateType() error {
-	switch *h.IOType {
-	case basetypes.IOType_Incoming:
-		switch *h.IOSubType {
-		case basetypes.IOSubType_Payment:
-		case basetypes.IOSubType_MiningBenefit:
-		case basetypes.IOSubType_Commission:
-		case basetypes.IOSubType_TechniqueFeeCommission:
-		case basetypes.IOSubType_Deposit:
-		case basetypes.IOSubType_Transfer:
-		case basetypes.IOSubType_OrderRevoke:
-		default:
-			return fmt.Errorf("io subtype not match io type")
+//nolint
+func (h *createHandler) validate() error {
+	for _, req := range h.Reqs {
+		if req.AppID == nil {
+			return fmt.Errorf("invalid app id")
 		}
-	case basetypes.IOType_Outcoming:
-		switch *h.IOSubType {
-		case basetypes.IOSubType_Payment:
-		case basetypes.IOSubType_Withdrawal:
-		case basetypes.IOSubType_Transfer:
-		case basetypes.IOSubType_CommissionRevoke:
-		default:
-			return fmt.Errorf("io subtype not match io type")
+		if req.UserID == nil {
+			return fmt.Errorf("invalid user id")
 		}
-	default:
-		return fmt.Errorf("invalid io type %v", *h.IOType)
+		if req.CoinTypeID == nil {
+			return fmt.Errorf("invalid coin type id")
+		}
+		if req.Amount == nil {
+			return fmt.Errorf("invalid amount")
+		}
+		if req.IOExtra == nil {
+			return fmt.Errorf("invalid io extra")
+		}
+		if req.IOType == nil {
+			return fmt.Errorf("invalid io type")
+		}
+		if req.IOSubType == nil {
+			return fmt.Errorf("invalid io sub type")
+		}
+		switch *req.IOType {
+		case basetypes.IOType_Incoming:
+			switch *h.IOSubType {
+			case basetypes.IOSubType_Payment:
+			case basetypes.IOSubType_MiningBenefit:
+			case basetypes.IOSubType_Commission:
+			case basetypes.IOSubType_TechniqueFeeCommission:
+			case basetypes.IOSubType_Deposit:
+			case basetypes.IOSubType_Transfer:
+			case basetypes.IOSubType_OrderRevoke:
+			default:
+				return fmt.Errorf("io subtype not match io type")
+			}
+		case basetypes.IOType_Outcoming:
+			switch *req.IOSubType {
+			case basetypes.IOSubType_Payment:
+			case basetypes.IOSubType_Withdrawal:
+			case basetypes.IOSubType_Transfer:
+			case basetypes.IOSubType_CommissionRevoke:
+			default:
+				return fmt.Errorf("io subtype not match io type")
+			}
+		default:
+			return fmt.Errorf("invalid io type %v", *req.IOType)
+		}
 	}
 	return nil
 }
@@ -124,29 +148,7 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 	return nil
 }
 
-//nolint
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	if req.AppID == nil {
-		return fmt.Errorf("invalid app id")
-	}
-	if req.UserID == nil {
-		return fmt.Errorf("invalid user id")
-	}
-	if req.CoinTypeID == nil {
-		return fmt.Errorf("invalid coin type id")
-	}
-	if req.Amount == nil {
-		return fmt.Errorf("invalid amount")
-	}
-	if req.IOExtra == nil {
-		return fmt.Errorf("invalid io extra")
-	}
-	if req.IOType == nil {
-		return fmt.Errorf("invalid io type")
-	}
-	if req.IOSubType == nil {
-		return fmt.Errorf("invalid io sub type")
-	}
 	if req.ID == nil {
 		stm, err := crud.SetQueryConds(
 			tx.Statement.Query(),
@@ -280,13 +282,14 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Conte
 	return nil
 }
 
-//nolint
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
 	handler := &createHandler{
 		Handler: h,
 	}
 	handler.ids = []uuid.UUID{}
-
+	if err := handler.validate(); err != nil {
+		return nil, err
+	}
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
@@ -325,9 +328,6 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
-	if err := h.validateType(); err != nil {
-		return nil, err
-	}
 	h.Reqs = []*crud.Req{&h.Req}
 	infos, err := h.CreateStatements(ctx)
 	if err != nil {
