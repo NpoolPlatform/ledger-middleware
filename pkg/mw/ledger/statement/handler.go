@@ -303,27 +303,6 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 		_reqs := []*crud.Req{}
 		for _, req := range reqs {
 			_req := &crud.Req{}
-			if req.AppID == nil {
-				return fmt.Errorf("invalid app id")
-			}
-			if req.UserID == nil {
-				return fmt.Errorf("invalid user id")
-			}
-			if req.CoinTypeID == nil {
-				return fmt.Errorf("invalid coin type id")
-			}
-			if req.Amount == nil {
-				return fmt.Errorf("invalid amount")
-			}
-			if req.IOExtra == nil {
-				return fmt.Errorf("invalid io extra")
-			}
-			if req.IOType == nil {
-				return fmt.Errorf("invalid io type")
-			}
-			if req.IOSubType == nil {
-				return fmt.Errorf("invalid io sub type")
-			}
 			if req.ID != nil {
 				_id, err := uuid.Parse(*req.ID)
 				if err != nil {
@@ -374,36 +353,12 @@ func WithReqs(reqs []*npool.StatementReq) func(context.Context, *Handler) error 
 				}
 				_req.CreatedAt = req.CreatedAt
 			}
-			if req.IOType == nil || req.IOSubType == nil {
-				return fmt.Errorf("invalid io type or io subtype")
+			if req.IOType != nil {
+				return fmt.Errorf("invalid io type")
 			}
-			switch *req.IOType {
-			case basetypes.IOType_Incoming:
-				switch *req.IOSubType {
-				case basetypes.IOSubType_Payment:
-				case basetypes.IOSubType_MiningBenefit:
-				case basetypes.IOSubType_Commission:
-				case basetypes.IOSubType_TechniqueFeeCommission:
-				case basetypes.IOSubType_Deposit:
-				case basetypes.IOSubType_Transfer:
-				case basetypes.IOSubType_OrderRevoke:
-				default:
-					return fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *req.IOSubType, *req.IOType)
-				}
-			case basetypes.IOType_Outcoming:
-				switch *req.IOSubType {
-				case basetypes.IOSubType_Payment:
-				case basetypes.IOSubType_Withdrawal:
-				case basetypes.IOSubType_Transfer:
-				case basetypes.IOSubType_CommissionRevoke:
-				default:
-					return fmt.Errorf("io subtype not match io type, io subtype: %v, io type: %v", *req.IOSubType, *req.IOType)
-				}
-			default:
-				return fmt.Errorf("invalid io type %v", *req.IOType)
+			if req.IOSubType != nil {
+				return fmt.Errorf("invalid io sub type")
 			}
-			_req.IOType = req.IOType
-			_req.IOSubType = req.IOSubType
 			_reqs = append(_reqs, _req)
 		}
 		h.Reqs = _reqs

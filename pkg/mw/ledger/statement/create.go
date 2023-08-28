@@ -126,6 +126,27 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 
 //nolint
 func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	if req.AppID == nil {
+		return fmt.Errorf("invalid app id")
+	}
+	if req.UserID == nil {
+		return fmt.Errorf("invalid user id")
+	}
+	if req.CoinTypeID == nil {
+		return fmt.Errorf("invalid coin type id")
+	}
+	if req.Amount == nil {
+		return fmt.Errorf("invalid amount")
+	}
+	if req.IOExtra == nil {
+		return fmt.Errorf("invalid io extra")
+	}
+	if req.IOType == nil {
+		return fmt.Errorf("invalid io type")
+	}
+	if req.IOSubType == nil {
+		return fmt.Errorf("invalid io sub type")
+	}
 	if req.ID == nil {
 		stm, err := crud.SetQueryConds(
 			tx.Statement.Query(),
@@ -261,37 +282,13 @@ func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Conte
 
 //nolint
 func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, error) {
-	reqs := []*crud.Req{}
-	for _, req := range h.Reqs {
-		if req.ID != nil {
-			reqs = append(reqs, req)
-			continue
-		}
-		h.Conds = &crud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
-			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
-			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
-		}
-		exist, err := h.ExistStatementConds(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if exist {
-			return nil, fmt.Errorf("statement already exist, appid(%v),userid(%v),ioextra(%v)", *req.AppID, *req.UserID, *req.IOExtra)
-		}
-		reqs = append(reqs, req)
-	}
-
 	handler := &createHandler{
 		Handler: h,
 	}
 	handler.ids = []uuid.UUID{}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		for _, req := range reqs {
+		for _, req := range h.Reqs {
 			_fn := func() error {
 				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
 					return err
