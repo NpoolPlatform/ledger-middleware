@@ -151,6 +151,87 @@ func (gsu *GoodStatementUpdate) ClearAmount() *GoodStatementUpdate {
 	return gsu
 }
 
+// SetToPlatform sets the "to_platform" field.
+func (gsu *GoodStatementUpdate) SetToPlatform(d decimal.Decimal) *GoodStatementUpdate {
+	gsu.mutation.ResetToPlatform()
+	gsu.mutation.SetToPlatform(d)
+	return gsu
+}
+
+// SetNillableToPlatform sets the "to_platform" field if the given value is not nil.
+func (gsu *GoodStatementUpdate) SetNillableToPlatform(d *decimal.Decimal) *GoodStatementUpdate {
+	if d != nil {
+		gsu.SetToPlatform(*d)
+	}
+	return gsu
+}
+
+// AddToPlatform adds d to the "to_platform" field.
+func (gsu *GoodStatementUpdate) AddToPlatform(d decimal.Decimal) *GoodStatementUpdate {
+	gsu.mutation.AddToPlatform(d)
+	return gsu
+}
+
+// ClearToPlatform clears the value of the "to_platform" field.
+func (gsu *GoodStatementUpdate) ClearToPlatform() *GoodStatementUpdate {
+	gsu.mutation.ClearToPlatform()
+	return gsu
+}
+
+// SetToUser sets the "to_user" field.
+func (gsu *GoodStatementUpdate) SetToUser(d decimal.Decimal) *GoodStatementUpdate {
+	gsu.mutation.ResetToUser()
+	gsu.mutation.SetToUser(d)
+	return gsu
+}
+
+// SetNillableToUser sets the "to_user" field if the given value is not nil.
+func (gsu *GoodStatementUpdate) SetNillableToUser(d *decimal.Decimal) *GoodStatementUpdate {
+	if d != nil {
+		gsu.SetToUser(*d)
+	}
+	return gsu
+}
+
+// AddToUser adds d to the "to_user" field.
+func (gsu *GoodStatementUpdate) AddToUser(d decimal.Decimal) *GoodStatementUpdate {
+	gsu.mutation.AddToUser(d)
+	return gsu
+}
+
+// ClearToUser clears the value of the "to_user" field.
+func (gsu *GoodStatementUpdate) ClearToUser() *GoodStatementUpdate {
+	gsu.mutation.ClearToUser()
+	return gsu
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (gsu *GoodStatementUpdate) SetTechniqueServiceFeeAmount(d decimal.Decimal) *GoodStatementUpdate {
+	gsu.mutation.ResetTechniqueServiceFeeAmount()
+	gsu.mutation.SetTechniqueServiceFeeAmount(d)
+	return gsu
+}
+
+// SetNillableTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field if the given value is not nil.
+func (gsu *GoodStatementUpdate) SetNillableTechniqueServiceFeeAmount(d *decimal.Decimal) *GoodStatementUpdate {
+	if d != nil {
+		gsu.SetTechniqueServiceFeeAmount(*d)
+	}
+	return gsu
+}
+
+// AddTechniqueServiceFeeAmount adds d to the "technique_service_fee_amount" field.
+func (gsu *GoodStatementUpdate) AddTechniqueServiceFeeAmount(d decimal.Decimal) *GoodStatementUpdate {
+	gsu.mutation.AddTechniqueServiceFeeAmount(d)
+	return gsu
+}
+
+// ClearTechniqueServiceFeeAmount clears the value of the "technique_service_fee_amount" field.
+func (gsu *GoodStatementUpdate) ClearTechniqueServiceFeeAmount() *GoodStatementUpdate {
+	gsu.mutation.ClearTechniqueServiceFeeAmount()
+	return gsu
+}
+
 // SetBenefitDate sets the "benefit_date" field.
 func (gsu *GoodStatementUpdate) SetBenefitDate(u uint32) *GoodStatementUpdate {
 	gsu.mutation.ResetBenefitDate()
@@ -358,6 +439,66 @@ func (gsu *GoodStatementUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			Column: goodstatement.FieldAmount,
 		})
 	}
+	if value, ok := gsu.mutation.ToPlatform(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToPlatform,
+		})
+	}
+	if value, ok := gsu.mutation.AddedToPlatform(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToPlatform,
+		})
+	}
+	if gsu.mutation.ToPlatformCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: goodstatement.FieldToPlatform,
+		})
+	}
+	if value, ok := gsu.mutation.ToUser(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToUser,
+		})
+	}
+	if value, ok := gsu.mutation.AddedToUser(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToUser,
+		})
+	}
+	if gsu.mutation.ToUserCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: goodstatement.FieldToUser,
+		})
+	}
+	if value, ok := gsu.mutation.TechniqueServiceFeeAmount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
+		})
+	}
+	if value, ok := gsu.mutation.AddedTechniqueServiceFeeAmount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
+		})
+	}
+	if gsu.mutation.TechniqueServiceFeeAmountCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
+		})
+	}
 	if value, ok := gsu.mutation.BenefitDate(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint32,
@@ -516,6 +657,87 @@ func (gsuo *GoodStatementUpdateOne) AddAmount(d decimal.Decimal) *GoodStatementU
 // ClearAmount clears the value of the "amount" field.
 func (gsuo *GoodStatementUpdateOne) ClearAmount() *GoodStatementUpdateOne {
 	gsuo.mutation.ClearAmount()
+	return gsuo
+}
+
+// SetToPlatform sets the "to_platform" field.
+func (gsuo *GoodStatementUpdateOne) SetToPlatform(d decimal.Decimal) *GoodStatementUpdateOne {
+	gsuo.mutation.ResetToPlatform()
+	gsuo.mutation.SetToPlatform(d)
+	return gsuo
+}
+
+// SetNillableToPlatform sets the "to_platform" field if the given value is not nil.
+func (gsuo *GoodStatementUpdateOne) SetNillableToPlatform(d *decimal.Decimal) *GoodStatementUpdateOne {
+	if d != nil {
+		gsuo.SetToPlatform(*d)
+	}
+	return gsuo
+}
+
+// AddToPlatform adds d to the "to_platform" field.
+func (gsuo *GoodStatementUpdateOne) AddToPlatform(d decimal.Decimal) *GoodStatementUpdateOne {
+	gsuo.mutation.AddToPlatform(d)
+	return gsuo
+}
+
+// ClearToPlatform clears the value of the "to_platform" field.
+func (gsuo *GoodStatementUpdateOne) ClearToPlatform() *GoodStatementUpdateOne {
+	gsuo.mutation.ClearToPlatform()
+	return gsuo
+}
+
+// SetToUser sets the "to_user" field.
+func (gsuo *GoodStatementUpdateOne) SetToUser(d decimal.Decimal) *GoodStatementUpdateOne {
+	gsuo.mutation.ResetToUser()
+	gsuo.mutation.SetToUser(d)
+	return gsuo
+}
+
+// SetNillableToUser sets the "to_user" field if the given value is not nil.
+func (gsuo *GoodStatementUpdateOne) SetNillableToUser(d *decimal.Decimal) *GoodStatementUpdateOne {
+	if d != nil {
+		gsuo.SetToUser(*d)
+	}
+	return gsuo
+}
+
+// AddToUser adds d to the "to_user" field.
+func (gsuo *GoodStatementUpdateOne) AddToUser(d decimal.Decimal) *GoodStatementUpdateOne {
+	gsuo.mutation.AddToUser(d)
+	return gsuo
+}
+
+// ClearToUser clears the value of the "to_user" field.
+func (gsuo *GoodStatementUpdateOne) ClearToUser() *GoodStatementUpdateOne {
+	gsuo.mutation.ClearToUser()
+	return gsuo
+}
+
+// SetTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field.
+func (gsuo *GoodStatementUpdateOne) SetTechniqueServiceFeeAmount(d decimal.Decimal) *GoodStatementUpdateOne {
+	gsuo.mutation.ResetTechniqueServiceFeeAmount()
+	gsuo.mutation.SetTechniqueServiceFeeAmount(d)
+	return gsuo
+}
+
+// SetNillableTechniqueServiceFeeAmount sets the "technique_service_fee_amount" field if the given value is not nil.
+func (gsuo *GoodStatementUpdateOne) SetNillableTechniqueServiceFeeAmount(d *decimal.Decimal) *GoodStatementUpdateOne {
+	if d != nil {
+		gsuo.SetTechniqueServiceFeeAmount(*d)
+	}
+	return gsuo
+}
+
+// AddTechniqueServiceFeeAmount adds d to the "technique_service_fee_amount" field.
+func (gsuo *GoodStatementUpdateOne) AddTechniqueServiceFeeAmount(d decimal.Decimal) *GoodStatementUpdateOne {
+	gsuo.mutation.AddTechniqueServiceFeeAmount(d)
+	return gsuo
+}
+
+// ClearTechniqueServiceFeeAmount clears the value of the "technique_service_fee_amount" field.
+func (gsuo *GoodStatementUpdateOne) ClearTechniqueServiceFeeAmount() *GoodStatementUpdateOne {
+	gsuo.mutation.ClearTechniqueServiceFeeAmount()
 	return gsuo
 }
 
@@ -754,6 +976,66 @@ func (gsuo *GoodStatementUpdateOne) sqlSave(ctx context.Context) (_node *GoodSta
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: goodstatement.FieldAmount,
+		})
+	}
+	if value, ok := gsuo.mutation.ToPlatform(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToPlatform,
+		})
+	}
+	if value, ok := gsuo.mutation.AddedToPlatform(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToPlatform,
+		})
+	}
+	if gsuo.mutation.ToPlatformCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: goodstatement.FieldToPlatform,
+		})
+	}
+	if value, ok := gsuo.mutation.ToUser(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToUser,
+		})
+	}
+	if value, ok := gsuo.mutation.AddedToUser(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldToUser,
+		})
+	}
+	if gsuo.mutation.ToUserCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: goodstatement.FieldToUser,
+		})
+	}
+	if value, ok := gsuo.mutation.TechniqueServiceFeeAmount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
+		})
+	}
+	if value, ok := gsuo.mutation.AddedTechniqueServiceFeeAmount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
+		})
+	}
+	if gsuo.mutation.TechniqueServiceFeeAmountCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: goodstatement.FieldTechniqueServiceFeeAmount,
 		})
 	}
 	if value, ok := gsuo.mutation.BenefitDate(); ok {
