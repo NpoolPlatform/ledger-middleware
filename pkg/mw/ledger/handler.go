@@ -242,6 +242,20 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: id,
 			}
 		}
+		if len(conds.GetCoinTypeIDs().GetValue()) > 0 {
+			ids := []uuid.UUID{}
+			for _, val := range conds.GetCoinTypeIDs().GetValue() {
+				id, err := uuid.Parse(val)
+				if err != nil {
+					return err
+				}
+				ids = append(ids, id)
+			}
+			h.Conds.CoinTypeIDs = &cruder.Cond{
+				Op:  conds.GetCoinTypeIDs().GetOp(),
+				Val: ids,
+			}
+		}
 		return nil
 	}
 }
