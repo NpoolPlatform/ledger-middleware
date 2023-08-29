@@ -3,8 +3,8 @@ package withdraw
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -33,17 +33,16 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	if h.State == nil {
 		return nil
 	}
-	if info.StateStr == types.WithdrawState_Reviewing.String() &&
-		(h.State.String() == types.WithdrawState_Successful.String() ||
-			h.State.String() == types.WithdrawState_TransactionFail.String()) {
-		return fmt.Errorf("can not update withdraw state from %v to %v", info.StateStr, h.State.String())
-	}
 	if info.StateStr == types.WithdrawState_Rejected.String() ||
 		info.StateStr == types.WithdrawState_TransactionFail.String() ||
 		info.StateStr == types.WithdrawState_Successful.String() {
 		return fmt.Errorf("current withdraw state(%v) can not be update", info.StateStr)
 	}
-	if info.StateStr == types.WithdrawState_Reviewing.String() {
+	if h.State.String() != types.WithdrawState_Transferring.String() &&
+		h.State.String() != types.WithdrawState_Rejected.String() {
+		return fmt.Errorf("can not update withdraw state from %v to %v", info.StateStr, h.State.String())
+	}
+	if info.StateStr == types.WithdrawState_Reviewing.String() || info.StateStr == types.WithdrawState_Transferring.String() {
 		if h.State.String() == types.WithdrawState_Rejected.String() {
 			h.updateLedger = true
 		}
@@ -131,14 +130,15 @@ func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) erro
 	if h.FeeAmount == nil {
 		return fmt.Errorf("invalid fee amount")
 	}
+
 	platformTransactionID := uuid.UUID{}
-	if !strings.Contains(h.withdraw.PlatformTransactionID, "00000000") {
+	if h.withdraw.PlatformTransactionID != uuid1.InvalidUUIDStr {
 		platformTransactionID = uuid.MustParse(h.withdraw.PlatformTransactionID)
 	}
 	if h.PlatformTransactionID != nil {
 		platformTransactionID = *h.PlatformTransactionID
 	}
-	if strings.Contains(platformTransactionID.String(), "00000000") {
+	if platformTransactionID.String() == uuid1.InvalidUUIDStr {
 		return fmt.Errorf("invalid platform transaction id, %v", platformTransactionID.String())
 	}
 
