@@ -8,7 +8,7 @@ import (
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/google/uuid"
@@ -17,14 +17,12 @@ import (
 
 type updateHandler struct {
 	*Handler
-	ledger   *ent.Ledger
-	withdraw *npool.Withdraw
+	ledger     *ent.Ledger
+	withdraw   *npool.Withdraw
+	needUpdate bool
 }
 
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
-	if h.State == nil {
-		return nil
-	}
 	info, err := h.GetWithdraw(ctx)
 	if err != nil {
 		return err
@@ -32,50 +30,53 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("withdraw not found")
 	}
-	if info.State == types.WithdrawState_TransactionFail {
-		return fmt.Errorf("current withdraw have already failed")
+	if h.State == nil {
+		return nil
 	}
-	if h.State.String() == info.StateStr {
-		return fmt.Errorf("current state not need to update")
+	if info.StateStr == types.WithdrawState_Reviewing.String() {
+		if h.State.String() == types.WithdrawState_Rejected.String() {
+			h.needUpdate = true
+		}
+	}
+	if info.StateStr == types.WithdrawState_Transferring.String() {
+		if h.State.String() == types.WithdrawState_TransactionFail.String() {
+			h.needUpdate = true
+		}
+		if h.State.String() == types.WithdrawState_Successful.String() {
+			h.needUpdate = true
+		}
 	}
 	h.withdraw = info
 	return nil
 }
 
-func (h *updateHandler) tryGetLedger(ctx context.Context) error {
-	if h.State == nil {
+func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
+	if !h.needUpdate {
 		return nil
 	}
-	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-		stm, err := ledgercrud.SetQueryConds(
-			cli.Ledger.Query(),
-			&ledgercrud.Conds{
-				AppID:      &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(h.withdraw.AppID)},
-				UserID:     &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(h.withdraw.UserID)},
-				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(h.withdraw.CoinTypeID)},
-			})
-		if err != nil {
-			return err
-		}
-		info, err := stm.Only(ctx)
-		if err != nil {
-			return err
-		}
-		h.ledger = info
-		return nil
-	})
-}
 
-func (h *updateHandler) updateLedger(ctx context.Context) error {
-	if h.State == nil {
-		return nil
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(uuid.MustParse(h.withdraw.AppID)),
+			entledger.UserID(uuid.MustParse(h.withdraw.UserID)),
+			entledger.CoinTypeID(uuid.MustParse(h.withdraw.CoinTypeID)),
+			entledger.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
 	}
+
 	spendable := decimal.NewFromInt(0)
 	outcoming := decimal.NewFromInt(0)
 	switch *h.State {
 	case types.WithdrawState_Successful:
 		outcoming = decimal.RequireFromString(h.withdraw.Amount)
 	case types.WithdrawState_TransactionFail:
+		fallthrough
+	case types.WithdrawState_Rejected:
 		spendable = decimal.RequireFromString(h.withdraw.Amount)
 	default:
 		return nil
@@ -83,7 +84,7 @@ func (h *updateHandler) updateLedger(ctx context.Context) error {
 
 	locked := decimal.RequireFromString(fmt.Sprintf("-%v", h.withdraw.Amount))
 	stm, err := ledgercrud.UpdateSetWithValidate(
-		h.ledger,
+		info,
 		&ledgercrud.Req{
 			Spendable: &spendable,
 			Outcoming: &outcoming,
@@ -116,15 +117,12 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	if err := handler.checkWithdrawState(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.tryGetLedger(ctx); err != nil {
-		return nil, err
-	}
 
 	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 		if err := handler.updateWithdraw(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.updateLedger(ctx); err != nil {
+		if err := handler.updateLedger(ctx, tx); err != nil {
 			return err
 		}
 		return nil
