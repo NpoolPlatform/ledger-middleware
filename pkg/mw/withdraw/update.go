@@ -17,7 +17,6 @@ import (
 
 type updateHandler struct {
 	*Handler
-	ledger     *ent.Ledger
 	withdraw   *npool.Withdraw
 	needUpdate bool
 }
@@ -39,10 +38,8 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		}
 	}
 	if info.StateStr == types.WithdrawState_Transferring.String() {
-		if h.State.String() == types.WithdrawState_TransactionFail.String() {
-			h.needUpdate = true
-		}
-		if h.State.String() == types.WithdrawState_Successful.String() {
+		if h.State.String() == types.WithdrawState_TransactionFail.String() ||
+			h.State.String() == types.WithdrawState_Successful.String() {
 			h.needUpdate = true
 		}
 	}
@@ -75,7 +72,7 @@ func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
 	case types.WithdrawState_Successful:
 		outcoming = decimal.RequireFromString(h.withdraw.Amount)
 	case types.WithdrawState_TransactionFail:
-		fallthrough
+		fallthrough //nolint
 	case types.WithdrawState_Rejected:
 		spendable = decimal.RequireFromString(h.withdraw.Amount)
 	default:
@@ -110,6 +107,48 @@ func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
+func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
+	if !h.needUpdate {
+		return nil
+	}
+	if h.State.String() != types.WithdrawState_Successful.String() {
+		return nil
+	}
+	if h.ChainTransactionID == nil {
+		return fmt.Errorf("invalid chain transaction id")
+	}
+	if h.FeeAmount == nil {
+		return fmt.Errorf("invalid fee amount")
+	}
+	platformTransactionID := uuid.UUID{}
+	if len(h.withdraw.PlatformTransactionID) > 0 {
+		platformTransactionID = uuid.MustParse(h.withdraw.PlatformTransactionID)
+	}
+	if h.PlatformTransactionID != nil {
+		platformTransactionID = *h.PlatformTransactionID
+	}
+	if platformTransactionID.String() == "" {
+		return fmt.Errorf("invalid platform transaction id")
+	}
+
+	ioExtra := fmt.Sprintf(`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
+		h.withdraw.ID, platformTransactionID.String(), *h.ChainTransactionID, h.FeeAmount.String(), h.withdraw.AccountID,
+	)
+	amount := decimal.RequireFromString(h.withdraw.Amount)
+	if _, err := tx.Statement.Create().
+		SetAppID(uuid.MustParse(h.withdraw.AppID)).
+		SetUserID(uuid.MustParse(h.withdraw.UserID)).
+		SetCoinTypeID(uuid.MustParse(h.withdraw.CoinTypeID)).
+		SetIoType(types.IOType_Outcoming.String()).
+		SetIoSubType(types.IOSubType_Withdrawal.String()).
+		SetIoExtra(ioExtra).
+		SetAmount(amount).
+		Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	handler := &updateHandler{
 		Handler: h,
@@ -123,6 +162,9 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 			return err
 		}
 		if err := handler.updateLedger(ctx, tx); err != nil {
+			return err
+		}
+		if err := handler.tryCreateStatement(ctx, tx); err != nil {
 			return err
 		}
 		return nil

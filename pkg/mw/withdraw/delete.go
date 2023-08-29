@@ -3,6 +3,7 @@ package withdraw
 import (
 	"context"
 	"time"
+	"fmt"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -82,6 +83,9 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	if info == nil {
 		return nil, nil
 	}
+    if info.State == types.WithdrawState_Transferring {
+        return nil, fmt.Errorf("withdraw in transferring state can not be delete")
+    }
 
 	handler := &deleteHandler{
 		Handler: h,

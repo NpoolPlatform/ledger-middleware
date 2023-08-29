@@ -15,10 +15,11 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs   []*crud.Req
-	Conds  *crud.Conds
-	Offset int32
-	Limit  int32
+	Reqs      []*crud.Req
+	Conds     *crud.Conds
+	Offset    int32
+	Limit     int32
+	FeeAmount *decimal.Decimal
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -141,11 +142,15 @@ func WithChainTransactionID(id *string, must bool) func(context.Context, *Handle
 			}
 			return nil
 		}
+        if *id == "" {
+            return fmt.Errorf("chain transaction id")
+        }
 		h.ChainTransactionID = id
 		return nil
 	}
 }
 
+//nolint
 func WithAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -197,6 +202,27 @@ func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, 
 			return fmt.Errorf("invalid state %v", *state)
 		}
 		h.State = state
+		return nil
+	}
+}
+
+//nolint
+func WithFeeAmount(feeAmount *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if feeAmount == nil {
+			if must {
+				return fmt.Errorf("invalid fee amount")
+			}
+			return nil
+		}
+		_feeAmount, err := decimal.NewFromString(*feeAmount)
+		if err != nil {
+			return err
+		}
+		if _feeAmount.Cmp(decimal.NewFromInt(0)) <= 0 {
+			return fmt.Errorf("fee amount is less than equal 0 %v", *feeAmount)
+		}
+		h.FeeAmount = &_feeAmount
 		return nil
 	}
 }
