@@ -30,6 +30,7 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("withdraw not found")
 	}
+	h.withdraw = info
 	if h.State == nil {
 		return nil
 	}
@@ -38,22 +39,23 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		info.StateStr == types.WithdrawState_Successful.String() {
 		return fmt.Errorf("current withdraw state(%v) can not be update", info.StateStr)
 	}
-	if h.State.String() != types.WithdrawState_Transferring.String() &&
-		h.State.String() != types.WithdrawState_Rejected.String() {
-		return fmt.Errorf("can not update withdraw state from %v to %v", info.StateStr, h.State.String())
-	}
 	if info.StateStr == types.WithdrawState_Reviewing.String() || info.StateStr == types.WithdrawState_Transferring.String() {
 		if h.State.String() == types.WithdrawState_Rejected.String() {
 			h.updateLedger = true
+			return nil
 		}
 	}
 	if info.StateStr == types.WithdrawState_Transferring.String() {
 		if h.State.String() == types.WithdrawState_TransactionFail.String() ||
 			h.State.String() == types.WithdrawState_Successful.String() {
 			h.updateLedger = true
+			return nil
 		}
 	}
-	h.withdraw = info
+	if h.State.String() != types.WithdrawState_Transferring.String() &&
+		h.State.String() != types.WithdrawState_Rejected.String() {
+		return fmt.Errorf("can not update withdraw state from %v to %v", info.StateStr, h.State.String())
+	}
 	return nil
 }
 
