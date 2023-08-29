@@ -2,18 +2,20 @@ package withdraw
 
 import (
 	"context"
-	"time"
 	"fmt"
+	"time"
 
+	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
-	"github.com/shopspring/decimal"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type deleteHandler struct {
@@ -26,10 +28,10 @@ func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error 
 		return nil
 	}
 
-    appID := uuid.MustParse(h.withdraw.AppID)
-    userID := uuid.MustParse(h.withdraw.UserID)
-    coinTypeID := uuid.MustParse(h.withdraw.CoinTypeID)
-    info, err := tx.
+	appID := uuid.MustParse(h.withdraw.AppID)
+	userID := uuid.MustParse(h.withdraw.UserID)
+	coinTypeID := uuid.MustParse(h.withdraw.CoinTypeID)
+	info, err := tx.
 		Ledger.
 		Query().
 		Where(
@@ -86,9 +88,9 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	if info == nil {
 		return nil, nil
 	}
-    if info.State == types.WithdrawState_Transferring {
-        return nil, fmt.Errorf("withdraw in transferring state can not be delete")
-    }
+	if info.State == types.WithdrawState_Transferring {
+		return nil, fmt.Errorf("withdraw in transferring state can not be delete")
+	}
 
 	handler := &deleteHandler{
 		Handler: h,
@@ -96,6 +98,16 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	handler.withdraw = info
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+		key := fmt.Sprintf("%v:%v",
+			commonpb.Prefix_PrefixDeleteWithdraw,
+			*h.ID,
+		)
+		if err := redis2.TryLock(key, 0); err != nil {
+			return err
+		}
+		defer func() {
+			_ = redis2.Unlock(key)
+		}()
 		if err := handler.tryDeleteWithdraw(ctx, tx); err != nil {
 			return err
 		}

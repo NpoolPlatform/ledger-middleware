@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	goodledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger"
 	goodstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/statement"
 	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
@@ -12,6 +13,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -60,6 +62,16 @@ func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx co
 }
 
 func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v",
+		commonpb.Prefix_PrefixDeleteGoodStatement,
+		*req.ID,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 	now := uint32(time.Now().Unix())
 	if _, err := goodstatementcrud.UpdateSet(
 		tx.GoodStatement.UpdateOneID(*req.ID),

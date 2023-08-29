@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	profitcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/profit"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
@@ -12,6 +13,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -135,6 +137,16 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *deleteHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v",
+		commonpb.Prefix_PrefixDeleteStatement,
+		*req.ID,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 	_, ok := h.statementsMap[req.ID.String()]
 	if !ok {
 		return nil

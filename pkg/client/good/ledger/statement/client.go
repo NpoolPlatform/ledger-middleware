@@ -32,12 +32,12 @@ func CreateGoodStatement(ctx context.Context, req *npool.GoodStatementReq) (*npo
 			Info: req,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get detail: %v", err)
+			return nil, fmt.Errorf("fail create goodstatement: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail get detail: %v", err)
+		return nil, fmt.Errorf("fail create goodstatement: %v", err)
 	}
 	return info.(*npool.GoodStatement), nil
 }
@@ -48,12 +48,12 @@ func GetGoodStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.GoodS
 			Conds: conds,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get detail: %v", err)
+			return nil, fmt.Errorf("fail get goodstatement only: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail get detail: %v", err)
+		return nil, fmt.Errorf("fail get goodstatement only: %v", err)
 	}
 	return info.(*npool.GoodStatement), nil
 }
