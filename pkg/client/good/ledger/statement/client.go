@@ -26,6 +26,22 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 	return fn(_ctx, cli)
 }
 
+func CreateGoodStatement(ctx context.Context, req *npool.GoodStatementReq) (*npool.GoodStatement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.CreateGoodStatement(ctx, &npool.CreateGoodStatementRequest{
+			Info: req,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail get detail: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail get detail: %v", err)
+	}
+	return info.(*npool.GoodStatement), nil
+}
+
 func GetGoodStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.GoodStatement, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetGoodStatementOnly(ctx, &npool.GetGoodStatementOnlyRequest{
