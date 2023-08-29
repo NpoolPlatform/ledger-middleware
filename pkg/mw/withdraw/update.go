@@ -132,15 +132,14 @@ func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) erro
 		return fmt.Errorf("invalid fee amount")
 	}
 	platformTransactionID := uuid.UUID{}
-    fmt.Println("ID: ", platformTransactionID.String())
 	if !strings.Contains(h.withdraw.PlatformTransactionID, "00000000") {
 		platformTransactionID = uuid.MustParse(h.withdraw.PlatformTransactionID)
 	}
 	if h.PlatformTransactionID != nil {
 		platformTransactionID = *h.PlatformTransactionID
 	}
-	if platformTransactionID.String() == "" {
-		return fmt.Errorf("invalid platform transaction id")
+	if strings.Contains(platformTransactionID.String(), "00000000") {
+		return fmt.Errorf("invalid platform transaction id, %v", platformTransactionID.String())
 	}
 
 	ioExtra := fmt.Sprintf(`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
