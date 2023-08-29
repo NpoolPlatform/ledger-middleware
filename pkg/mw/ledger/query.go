@@ -191,6 +191,7 @@ func (h *Handler) TryGetLedgerOnly(ctx context.Context, tx *ent.Tx) (*ent.Ledger
 			entledger.AppID(*h.AppID),
 			entledger.UserID(*h.UserID),
 			entledger.CoinTypeID(*h.UserID),
+			entledger.DeletedAt(0),
 		).
 		Only(ctx)
 	if err != nil {

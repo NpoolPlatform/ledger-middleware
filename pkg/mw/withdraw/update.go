@@ -3,6 +3,7 @@ package withdraw
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
@@ -18,37 +19,47 @@ import (
 type updateHandler struct {
 	*Handler
 	withdraw   *npool.Withdraw
-	needUpdate bool
+	updateLedger bool
 }
 
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
-	info, err := h.GetWithdraw(ctx)
-	if err != nil {
-		return err
-	}
-	if info == nil {
-		return fmt.Errorf("withdraw not found")
-	}
-	if h.State == nil {
-		return nil
-	}
-	if info.StateStr == types.WithdrawState_Reviewing.String() {
-		if h.State.String() == types.WithdrawState_Rejected.String() {
-			h.needUpdate = true
-		}
-	}
-	if info.StateStr == types.WithdrawState_Transferring.String() {
-		if h.State.String() == types.WithdrawState_TransactionFail.String() ||
-			h.State.String() == types.WithdrawState_Successful.String() {
-			h.needUpdate = true
-		}
-	}
-	h.withdraw = info
-	return nil
+    info, err := h.GetWithdraw(ctx)
+    if err != nil {
+        return err
+    }
+    if info == nil {
+        return fmt.Errorf("withdraw not found")
+    }
+    if h.State == nil {
+        return nil
+    }
+    if info.StateStr == types.WithdrawState_Reviewing.String() &&
+    (h.State.String() == types.WithdrawState_Successful.String() ||
+    h.State.String() == types.WithdrawState_TransactionFail.String()) {
+        return fmt.Errorf("can not update withdraw state from %v to %v", info.StateStr, h.State.String())
+    }
+    if info.StateStr == types.WithdrawState_Rejected.String() ||
+    info.StateStr == types.WithdrawState_TransactionFail.String() ||
+    info.StateStr == types.WithdrawState_Successful.String() {
+        return fmt.Errorf("current withdraw state(%v) can not be update", info.StateStr)
+    }
+    if info.StateStr == types.WithdrawState_Reviewing.String() {
+        if h.State.String() == types.WithdrawState_Rejected.String() {
+            h.updateLedger = true
+        }
+    }
+    if info.StateStr == types.WithdrawState_Transferring.String() {
+        if h.State.String() == types.WithdrawState_TransactionFail.String() ||
+        h.State.String() == types.WithdrawState_Successful.String() {
+            h.updateLedger = true
+        }
+    }
+    h.withdraw = info
+    return nil
 }
 
-func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
-	if !h.needUpdate {
+func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
+	if !h.updateLedger {
 		return nil
 	}
 
@@ -108,7 +119,7 @@ func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
-	if !h.needUpdate {
+	if !h.updateLedger {
 		return nil
 	}
 	if h.State.String() != types.WithdrawState_Successful.String() {
@@ -121,7 +132,8 @@ func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) erro
 		return fmt.Errorf("invalid fee amount")
 	}
 	platformTransactionID := uuid.UUID{}
-	if len(h.withdraw.PlatformTransactionID) > 0 {
+    fmt.Println("ID: ", platformTransactionID.String())
+	if !strings.Contains(h.withdraw.PlatformTransactionID, "00000000") {
 		platformTransactionID = uuid.MustParse(h.withdraw.PlatformTransactionID)
 	}
 	if h.PlatformTransactionID != nil {
@@ -152,6 +164,7 @@ func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) erro
 func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	handler := &updateHandler{
 		Handler: h,
+        updateLedger: false,
 	}
 	if err := handler.checkWithdrawState(ctx); err != nil {
 		return nil, err
@@ -161,7 +174,7 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		if err := handler.updateWithdraw(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.updateLedger(ctx, tx); err != nil {
+		if err := handler.tryUpdateLedger(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.tryCreateStatement(ctx, tx); err != nil {

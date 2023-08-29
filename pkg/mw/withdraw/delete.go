@@ -8,11 +8,12 @@ import (
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
-	ledger1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/ledger"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/shopspring/decimal"
+	"github.com/google/uuid"
 )
 
 type deleteHandler struct {
@@ -24,29 +25,31 @@ func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error 
 	if h.withdraw.StateStr != types.WithdrawState_Reviewing.String() {
 		return nil
 	}
-	handler, err := ledger1.NewHandler(
-		ctx,
-		ledger1.WithAppID(&h.withdraw.AppID, true),
-		ledger1.WithUserID(&h.withdraw.UserID, true),
-		ledger1.WithCoinTypeID(&h.withdraw.CoinTypeID, true),
-	)
+
+    appID := uuid.MustParse(h.withdraw.AppID)
+    userID := uuid.MustParse(h.withdraw.UserID)
+    coinTypeID := uuid.MustParse(h.withdraw.CoinTypeID)
+    info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(appID),
+			entledger.UserID(userID),
+			entledger.CoinTypeID(coinTypeID),
+			entledger.DeletedAt(0),
+		).
+		Only(ctx)
 	if err != nil {
 		return err
 	}
-
-	info, err := handler.TryGetLedgerOnly(ctx, tx)
-	if err != nil {
-		return err
-	}
-
 	spendable := decimal.RequireFromString(h.withdraw.Amount)
 	locked := decimal.NewFromInt(0).Sub(spendable)
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		info,
 		&ledgercrud.Req{
-			AppID:      handler.AppID,
-			UserID:     handler.UserID,
-			CoinTypeID: handler.CoinTypeID,
+			AppID:      &appID,
+			UserID:     &userID,
+			CoinTypeID: &coinTypeID,
 			Locked:     &locked,
 			Spendable:  &spendable,
 		},
