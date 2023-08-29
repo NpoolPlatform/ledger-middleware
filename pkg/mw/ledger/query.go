@@ -183,7 +183,7 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 	return handler.infos[0], nil
 }
 
-func (h *Handler) TryGetLedger(ctx context.Context, tx *ent.Tx) (*ent.Ledger, error) {
+func (h *Handler) TryGetLedgerOnly(ctx context.Context, tx *ent.Tx) (*ent.Ledger, error) {
 	info, err := tx.
 		Ledger.
 		Query().

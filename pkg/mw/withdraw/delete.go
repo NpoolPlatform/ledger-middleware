@@ -33,7 +33,7 @@ func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error 
 		return err
 	}
 
-	info, err := handler.TryGetLedger(ctx, tx)
+	info, err := handler.TryGetLedgerOnly(ctx, tx)
 	if err != nil {
 		return err
 	}
