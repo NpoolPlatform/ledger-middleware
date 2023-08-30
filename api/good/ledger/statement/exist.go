@@ -1,15 +1,16 @@
-package statement 
+package statement
 
 import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	statement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
+//nolint
 func (s *Server) ExistGoodStatementConds(
 	ctx context.Context,
 	in *npool.ExistGoodStatementCondsRequest,

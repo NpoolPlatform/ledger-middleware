@@ -59,7 +59,7 @@ func CreateGoodStatements(ctx context.Context, in []*npool.GoodStatementReq) ([]
 	return infos.([]*npool.GoodStatement), nil
 }
 
-
+//nolint
 func DeleteGoodStatement(ctx context.Context, req *npool.GoodStatementReq) (*npool.GoodStatement, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.DeleteGoodStatement(ctx, &npool.DeleteGoodStatementRequest{
@@ -92,7 +92,6 @@ func DeleteGoodStatements(ctx context.Context, in []*npool.GoodStatementReq) ([]
 	return infos.([]*npool.GoodStatement), nil
 }
 
-//nolint
 func GetGoodStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.GoodStatement, error) {
 	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetGoodStatements(ctx, &npool.GetGoodStatementsRequest{
