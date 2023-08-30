@@ -68,9 +68,7 @@ func UpdateSetWithValidate(info *ent.Profit, req *Req) (*ent.ProfitUpdateOne, er
 		return nil, fmt.Errorf("incoming (%v) + info.incoming (%v) < 0",
 			incoming, info.Incoming)
 	}
-	if req.Incoming != nil {
-		incoming = incoming.Add(info.Incoming)
-	}
+	incoming = incoming.Add(info.Incoming)
 	return UpdateSet(info.Update(), &Req{
 		Incoming: &incoming,
 	}), nil

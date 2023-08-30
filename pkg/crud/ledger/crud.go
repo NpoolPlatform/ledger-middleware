@@ -121,18 +121,11 @@ func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, er
 	if spendable.Add(info.Spendable).Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, fmt.Errorf("spendable (%v) + spendable(%v) < 0", spendable, info.Spendable)
 	}
-	if req.Incoming != nil {
-		incoming = incoming.Add(info.Incoming)
-	}
-	if req.Outcoming != nil {
-		outcoming = outcoming.Add(info.Outcoming)
-	}
-	if req.Locked != nil {
-		locked = locked.Add(info.Locked)
-	}
-	if req.Spendable != nil {
-		spendable = spendable.Add(info.Spendable)
-	}
+
+	incoming = incoming.Add(info.Incoming)
+	outcoming = outcoming.Add(info.Outcoming)
+	locked = locked.Add(info.Locked)
+	spendable = spendable.Add(info.Spendable)
 
 	return UpdateSet(info.Update(), &Req{
 		Incoming:  &incoming,

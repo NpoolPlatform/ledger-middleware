@@ -95,15 +95,10 @@ func UpdateSetWithValidate(info *ent.GoodLedger, req *Req) (*ent.GoodLedgerUpdat
 	if toUser.Add(info.ToUser).Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, fmt.Errorf("to user less %v + %v", toUser.String(), info.ToUser)
 	}
-	if req.Amount != nil {
-		amount = amount.Add(info.Amount)
-	}
-	if req.ToPlatform != nil {
-		toPlatform = toPlatform.Add(info.ToPlatform)
-	}
-	if req.ToUser != nil {
-		toUser = toUser.Add(info.ToUser)
-	}
+
+	amount = amount.Add(info.Amount)
+	toPlatform = toPlatform.Add(info.ToPlatform)
+	toUser = toUser.Add(info.ToUser)
 	return UpdateSet(info.Update(), &Req{
 		Amount:     &amount,
 		ToPlatform: &toPlatform,

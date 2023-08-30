@@ -162,7 +162,7 @@ func (h *createHandler) createOrUpdateLedger(req *crud.Req, ctx context.Context,
 	if err != nil {
 		return err
 	}
-	info, err := stm.Only(ctx)
+	info, err := stm.ForUpdate().Only(ctx)
 	if err != nil {
 		if !ent.IsNotFound(err) {
 			return err
