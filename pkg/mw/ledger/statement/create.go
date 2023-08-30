@@ -23,7 +23,7 @@ type createHandler struct {
 	ids []uuid.UUID
 }
 
-func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createOrUpdateProfit(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context,
 	return nil
 }
 
-func (h *createHandler) createStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createStatement(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v:%v",
 		commonpb.Prefix_PrefixCreateLedgerStatement,
 		*req.AppID,
@@ -138,7 +138,7 @@ func (h *createHandler) createStatement(req *crud.Req, ctx context.Context, tx *
 	return nil
 }
 
-func (h *createHandler) createOrUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v",
 		commonpb.Prefix_PrefixCreateLedger,
 		*req.AppID,
@@ -228,13 +228,13 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				if err := handler.createStatement(req, ctx, tx); err != nil {
+				if err := handler.createStatement(ctx, tx, req); err != nil {
 					return err
 				}
-				if err := handler.createOrUpdateProfit(req, ctx, tx); err != nil {
+				if err := handler.createOrUpdateProfit(ctx, tx, req); err != nil {
 					return err
 				}
-				if err := handler.createOrUpdateLedger(req, ctx, tx); err != nil {
+				if err := handler.createOrUpdateLedger(ctx, tx, req); err != nil {
 					return err
 				}
 				return nil

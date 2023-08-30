@@ -21,7 +21,7 @@ type createHandler struct {
 	*Handler
 }
 
-func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) checkGoodStatementExist(ctx context.Context, tx *ent.Tx, req *goodstatementcrud.Req) error {
 	if req.ID == nil {
 		exist, err := tx.
 			GoodStatement.
@@ -42,7 +42,7 @@ func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx 
 	return nil
 }
 
-func (h *createHandler) createGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createGoodStatement(ctx context.Context, tx *ent.Tx, req *goodstatementcrud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -74,7 +74,7 @@ func (h *createHandler) createGoodStatement(req *goodstatementcrud.Req, ctx cont
 	return nil
 }
 
-func (h *createHandler) createUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createUnsoldStatement(ctx context.Context, tx *ent.Tx, req *goodstatementcrud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -98,7 +98,7 @@ func (h *createHandler) createUnsoldStatement(req *goodstatementcrud.Req, ctx co
 	return nil
 }
 
-func (h *createHandler) createOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createOrUpdateGoodLedger(ctx context.Context, tx *ent.Tx, req *goodstatementcrud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedger, *req.GoodID, *req.CoinTypeID)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -174,13 +174,13 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if req.ID == nil {
 					req.ID = &id
 				}
-				if err := handler.createGoodStatement(req, ctx, tx); err != nil {
+				if err := handler.createGoodStatement(ctx, tx, req); err != nil {
 					return err
 				}
-				if err := handler.createUnsoldStatement(req, ctx, tx); err != nil {
+				if err := handler.createUnsoldStatement(ctx, tx, req); err != nil {
 					return err
 				}
-				if err := handler.createOrUpdateGoodLedger(req, ctx, tx); err != nil {
+				if err := handler.createOrUpdateGoodLedger(ctx, tx, req); err != nil {
 					return err
 				}
 				ids = append(ids, *req.ID)
