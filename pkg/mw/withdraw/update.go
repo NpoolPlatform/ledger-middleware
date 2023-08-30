@@ -118,7 +118,7 @@ func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
-func (h *updateHandler) tryCreateStatement(ctx context.Context, tx *ent.Tx) error {
+func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 	if !h.updateLedger {
 		return nil
 	}
@@ -177,7 +177,7 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		if err := handler.tryUpdateLedger(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.tryCreateStatement(ctx, tx); err != nil {
+		if err := handler.createStatement(ctx, tx); err != nil {
 			return err
 		}
 		return nil

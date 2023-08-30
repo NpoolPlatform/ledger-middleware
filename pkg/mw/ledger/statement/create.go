@@ -76,7 +76,7 @@ func (h *createHandler) validate() error {
 	return nil
 }
 
-func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
 	}
@@ -148,7 +148,7 @@ func (h *createHandler) tryCreateOrUpdateProfit(req *crud.Req, ctx context.Conte
 	return nil
 }
 
-func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if req.ID == nil {
 		stm, err := crud.SetQueryConds(
 			tx.Statement.Query(),
@@ -200,7 +200,7 @@ func (h *createHandler) tryCreateStatement(req *crud.Req, ctx context.Context, t
 	return nil
 }
 
-func (h *createHandler) tryCreateOrUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createOrUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := ledgercrud.SetQueryConds(
 		tx.Ledger.Query(),
 		&ledgercrud.Conds{
@@ -293,13 +293,13 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				if err := handler.tryCreateStatement(req, ctx, tx); err != nil {
+				if err := handler.createStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryCreateOrUpdateProfit(req, ctx, tx); err != nil {
+				if err := handler.createOrUpdateProfit(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryCreateOrUpdateLedger(req, ctx, tx); err != nil {
+				if err := handler.createOrUpdateLedger(req, ctx, tx); err != nil {
 					return err
 				}
 				return nil

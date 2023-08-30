@@ -60,7 +60,7 @@ func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx 
 	return nil
 }
 
-func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -92,7 +92,7 @@ func (h *createHandler) tryCreateGoodStatement(req *goodstatementcrud.Req, ctx c
 	return nil
 }
 
-func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createUnsoldStatment(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -116,7 +116,7 @@ func (h *createHandler) tryCreateUnsoldStatement(req *goodstatementcrud.Req, ctx
 	return nil
 }
 
-func (h *createHandler) tryCreateOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := goodledgercrud.SetQueryConds(
 		tx.GoodLedger.Query(),
 		&goodledgercrud.Conds{
@@ -200,13 +200,13 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if req.ID == nil {
 					req.ID = &id
 				}
-				if err := handler.tryCreateGoodStatement(req, ctx, tx); err != nil {
+				if err := handler.createGoodStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryCreateUnsoldStatement(req, ctx, tx); err != nil {
+				if err := handler.createUnsoldStatment(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryCreateOrUpdateGoodLedger(req, ctx, tx); err != nil {
+				if err := handler.createOrUpdateGoodLedger(req, ctx, tx); err != nil {
 					return err
 				}
 				ids = append(ids, *req.ID)
