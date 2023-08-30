@@ -141,6 +141,7 @@ func (h *createHandler) createOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx
 		).Save(ctx); err != nil {
 			return err
 		}
+		return nil
 	}
 
 	stm1, err := goodledgercrud.UpdateSetWithValidate(
