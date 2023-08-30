@@ -158,10 +158,30 @@ func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) er
 }
 
 //nolint
-func WithReqs(reqs []*npool.GoodStatementReq) func(context.Context, *Handler) error {
+func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		_reqs := []*crud.Req{}
 		for _, req := range reqs {
+			if must {
+				if req.GoodID == nil {
+					return fmt.Errorf("invalid good id")
+				}
+				if req.CoinTypeID == nil {
+					return fmt.Errorf("invalid coin type id")
+				}
+				if req.TotalAmount == nil {
+					return fmt.Errorf("invalid total amount")
+				}
+				if req.UnsoldAmount == nil {
+					return fmt.Errorf("invalid unsold amount")
+				}
+				if req.TechniqueServiceFeeAmount == nil {
+					return fmt.Errorf("invalid technique service fee amount")
+				}
+				if req.BenefitDate == nil {
+					return fmt.Errorf("invalid benefit date")
+				}
+			}
 			_req := &crud.Req{}
 			if req.ID != nil {
 				_id, err := uuid.Parse(*req.ID)
@@ -215,9 +235,9 @@ func WithReqs(reqs []*npool.GoodStatementReq) func(context.Context, *Handler) er
 				_req.TechniqueServiceFeeAmount = &amount
 			}
 			if req.BenefitDate != nil {
-                if *req.BenefitDate == 0 {
-                    return fmt.Errorf("invalid benefit date 0")
-                }
+				if *req.BenefitDate == 0 {
+					return fmt.Errorf("invalid benefit date 0")
+				}
 				_req.BenefitDate = req.BenefitDate
 			}
 

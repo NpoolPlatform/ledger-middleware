@@ -51,7 +51,7 @@ func setup(t *testing.T) func(*testing.T) {
 	}
 	handler, err := goodstatement1.NewHandler(
 		context.Background(),
-		goodstatement1.WithReqs(reqs),
+		goodstatement1.WithReqs(reqs, true),
 	)
 	assert.Nil(t, err)
 

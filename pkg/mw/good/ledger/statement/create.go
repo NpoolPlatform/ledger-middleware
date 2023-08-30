@@ -22,24 +22,6 @@ type createHandler struct {
 }
 
 func (h *createHandler) checkGoodStatementExist(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	if req.GoodID == nil {
-		return fmt.Errorf("invalid good id")
-	}
-	if req.CoinTypeID == nil {
-		return fmt.Errorf("invalid coin type id")
-	}
-	if req.TotalAmount == nil {
-		return fmt.Errorf("invalid total amount")
-	}
-	if req.UnsoldAmount == nil {
-		return fmt.Errorf("invalid unsold amount")
-	}
-	if req.TechniqueServiceFeeAmount == nil {
-		return fmt.Errorf("invalid technique service fee amount")
-	}
-	if req.BenefitDate == nil {
-		return fmt.Errorf("invalid benefit date")
-	}
 	if req.ID == nil {
 		exist, err := tx.
 			GoodStatement.

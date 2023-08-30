@@ -64,7 +64,7 @@ func (s *Server) CreateGoodStatements(ctx context.Context, in *npool.CreateGoodS
 ) {
 	handler, err := goodstatement1.NewHandler(
 		ctx,
-		goodstatement1.WithReqs(in.GetInfos()),
+		goodstatement1.WithReqs(in.GetInfos(), true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

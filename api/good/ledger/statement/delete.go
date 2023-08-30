@@ -58,7 +58,7 @@ func (s *Server) DeleteGoodStatement(ctx context.Context, in *npool.DeleteGoodSt
 func (s *Server) DeleteGoodStatements(ctx context.Context, in *npool.DeleteGoodStatementsRequest) (*npool.DeleteGoodStatementsResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
-		goodstatement1.WithReqs(in.GetInfos()),
+		goodstatement1.WithReqs(in.GetInfos(), false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
