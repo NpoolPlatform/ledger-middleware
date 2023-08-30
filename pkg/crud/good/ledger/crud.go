@@ -32,28 +32,14 @@ func CreateSet(c *ent.GoodLedgerCreate, in *Req) *ent.GoodLedgerCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-
-	amount := decimal.NewFromInt(0)
 	if in.Amount != nil {
-		amount = amount.Add(*in.Amount)
-	}
-	toPlatform := decimal.NewFromInt(0)
-	if in.ToPlatform != nil {
-		toPlatform = toPlatform.Add(*in.ToPlatform)
-	}
-	toUser := decimal.NewFromInt(0)
-	if in.ToUser != nil {
-		toUser = toUser.Add(*in.ToUser)
-	}
-
-	if in.Amount != nil {
-		c.SetAmount(amount)
+		c.SetAmount(*in.Amount)
 	}
 	if in.ToPlatform != nil {
-		c.SetToPlatform(toPlatform)
+		c.SetToPlatform(*in.ToPlatform)
 	}
 	if in.ToUser != nil {
-		c.SetToUser(toUser)
+		c.SetToUser(*in.ToUser)
 	}
 	return c
 }
@@ -74,8 +60,55 @@ func UpdateSet(u *ent.GoodLedgerUpdateOne, req *Req) *ent.GoodLedgerUpdateOne {
 		toUser = toUser.Add(*req.ToUser)
 		u.SetToUser(toUser)
 	}
-
 	return u
+}
+
+func UpdateSetWithValidate(info *ent.GoodLedger, req *Req) (*ent.GoodLedgerUpdateOne, error) {
+	amount := decimal.NewFromInt(0)
+	if req.Amount != nil {
+		amount = amount.Add(*req.Amount)
+	}
+	toPlatform := decimal.NewFromInt(0)
+	if req.ToPlatform != nil {
+		toPlatform = toPlatform.Add(*req.ToPlatform)
+	}
+	toUser := decimal.NewFromInt(0)
+	if req.ToUser != nil {
+		toUser = toUser.Add(*req.ToUser)
+	}
+
+	if amount.Add(info.Amount).Cmp(
+		toPlatform.Add(info.ToPlatform).
+			Add(toUser).
+			Add(info.ToUser),
+	) != 0 {
+		return nil, fmt.Errorf("amount(%v + %v) != toPlatform(%v + %v) + toUser(%v + %v)",
+			amount, info.Amount, toPlatform, info.ToPlatform, toUser, info.ToUser,
+		)
+	}
+	if amount.Add(info.Amount).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("amount less 0, %v + %v", amount.String(), info.Amount)
+	}
+	if toPlatform.Add(info.ToPlatform).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("to platform less 0, %v + %v", toPlatform.String(), info.ToPlatform)
+	}
+	if toUser.Add(info.ToUser).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("to user less %v + %v", toUser.String(), info.ToUser)
+	}
+	if req.Amount != nil {
+		amount = amount.Add(info.Amount)
+	}
+	if req.ToPlatform != nil {
+		toPlatform = toPlatform.Add(info.ToPlatform)
+	}
+	if req.ToUser != nil {
+		toUser = toUser.Add(info.ToUser)
+	}
+	return UpdateSet(info.Update(), &Req{
+		Amount:     &amount,
+		ToPlatform: &toPlatform,
+		ToUser:     &toUser,
+	}), nil
 }
 
 type Conds struct {

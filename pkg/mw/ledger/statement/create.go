@@ -55,31 +55,21 @@ func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context,
 
 	// create
 	if info == nil {
-		stm, err := profitcrud.CreateSetWithValidate(
+		if _, err := profitcrud.CreateSet(
 			tx.Profit.Create(),
 			&profitcrud.Req{
 				AppID:      req.AppID,
 				UserID:     req.UserID,
 				CoinTypeID: req.CoinTypeID,
 				Incoming:   req.Amount,
-			})
-		if err != nil {
-			return err
-		}
-		if _, err := stm.Save(ctx); err != nil {
+			}).Save(ctx); err != nil {
 			return err
 		}
 		return nil
 	}
 
-	// update
-	old, err := tx.Profit.Get(ctx, info.ID)
-	if err != nil {
-		return err
-	}
-
 	stm1, err := profitcrud.UpdateSetWithValidate(
-		old,
+		info,
 		&profitcrud.Req{
 			AppID:      req.AppID,
 			UserID:     req.UserID,
@@ -149,6 +139,19 @@ func (h *createHandler) createStatement(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *createHandler) createOrUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v:%v:%v",
+		commonpb.Prefix_PrefixCreateLedger,
+		*req.AppID,
+		*req.UserID,
+		*req.CoinTypeID,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	stm, err := ledgercrud.SetQueryConds(
 		tx.Ledger.Query(),
 		&ledgercrud.Conds{
@@ -181,19 +184,6 @@ func (h *createHandler) createOrUpdateLedger(req *crud.Req, ctx context.Context,
 	locked := decimal.NewFromInt(0)
 
 	if info == nil {
-		key := fmt.Sprintf("%v:%v:%v:%v",
-			commonpb.Prefix_PrefixCreateLedger,
-			*req.AppID,
-			*req.UserID,
-			*req.CoinTypeID,
-		)
-		if err := redis2.TryLock(key, 0); err != nil {
-			return err
-		}
-		defer func() {
-			_ = redis2.Unlock(key)
-		}()
-
 		if _, err := ledgercrud.CreateSet(
 			tx.Ledger.Create(),
 			&ledgercrud.Req{

@@ -84,7 +84,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 	handler, err := statement1.NewHandler(
 		context.Background(),
-		statement1.WithReqs(reqs1),
+		statement1.WithReqs(reqs1, true),
 	)
 	assert.Nil(t, err)
 
@@ -112,7 +112,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 	handler2, err := statement1.NewHandler(
 		context.Background(),
-		statement1.WithReqs(reqs2),
+		statement1.WithReqs(reqs2, true),
 	)
 	assert.Nil(t, err)
 

@@ -41,7 +41,6 @@ func CreateSet(c *ent.UnsoldStatementCreate, in *Req) *ent.UnsoldStatementCreate
 	if in.StatementID != nil {
 		c.SetStatementID(*in.StatementID)
 	}
-
 	return c
 }
 

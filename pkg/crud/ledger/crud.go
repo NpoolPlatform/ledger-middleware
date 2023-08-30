@@ -79,6 +79,69 @@ func UpdateSet(u *ent.LedgerUpdateOne, req *Req) *ent.LedgerUpdateOne {
 	return u
 }
 
+func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, error) {
+	incoming := decimal.NewFromInt(0)
+	if req.Incoming != nil {
+		incoming = incoming.Add(*req.Incoming)
+	}
+	locked := decimal.NewFromInt(0)
+	if req.Locked != nil {
+		locked = locked.Add(*req.Locked)
+	}
+	outcoming := decimal.NewFromInt(0)
+	if req.Outcoming != nil {
+		outcoming = outcoming.Add(*req.Outcoming)
+	}
+	spendable := decimal.NewFromInt(0)
+	if req.Spendable != nil {
+		spendable = spendable.Add(*req.Spendable)
+	}
+
+	if incoming.Add(info.Incoming).
+		Cmp(
+			locked.Add(info.Locked).
+				Add(outcoming).
+				Add(info.Outcoming).
+				Add(spendable).
+				Add(info.Spendable),
+		) != 0 {
+		return nil, fmt.Errorf("outcoming (%v + %v) + locked (%v + %v) + spendable (%v + %v) != incoming (%v + %v)",
+			outcoming, info.Outcoming, locked, info.Locked, spendable, info.Spendable, incoming, info.Incoming)
+	}
+
+	if locked.Add(info.Locked).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("locked (%v) + locked (%v) < 0", locked, info.Locked)
+	}
+	if incoming.Add(info.Incoming).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("incoming (%v) + incoming (%v) < 0", locked, info.Incoming)
+	}
+	if outcoming.Add(info.Outcoming).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("outcoming (%v) + outcoming (%v) < 0", locked, info.Outcoming)
+	}
+	if spendable.Add(info.Spendable).Cmp(decimal.NewFromInt(0)) < 0 {
+		return nil, fmt.Errorf("spendable (%v) + spendable(%v) < 0", spendable, info.Spendable)
+	}
+	if req.Incoming != nil {
+		incoming = incoming.Add(info.Incoming)
+	}
+	if req.Outcoming != nil {
+		outcoming = outcoming.Add(info.Outcoming)
+	}
+	if req.Locked != nil {
+		locked = locked.Add(info.Locked)
+	}
+	if req.Spendable != nil {
+		spendable = spendable.Add(info.Spendable)
+	}
+
+	return UpdateSet(info.Update(), &Req{
+		Incoming:  &incoming,
+		Outcoming: &outcoming,
+		Spendable: &spendable,
+		Locked:    &locked,
+	}), nil
+}
+
 type Conds struct {
 	ID          *cruder.Cond
 	AppID       *cruder.Cond

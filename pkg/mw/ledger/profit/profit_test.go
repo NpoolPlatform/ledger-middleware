@@ -39,10 +39,10 @@ func createProfit(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
 		WithID(&ret.ID, true),
-		WithAppID(&ret.AppID),
-		WithUserID(&ret.UserID),
-		WithCoinTypeID(&ret.CoinTypeID),
-		WithIncoming(&ret.Incoming),
+		WithAppID(&ret.AppID, true),
+		WithUserID(&ret.UserID, true),
+		WithCoinTypeID(&ret.CoinTypeID, true),
+		WithIncoming(&ret.Incoming, true),
 	)
 	assert.Nil(t, err)
 

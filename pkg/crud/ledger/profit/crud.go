@@ -56,6 +56,26 @@ func UpdateSet(u *ent.ProfitUpdateOne, req *Req) *ent.ProfitUpdateOne {
 	return u
 }
 
+func UpdateSetWithValidate(info *ent.Profit, req *Req) (*ent.ProfitUpdateOne, error) {
+	incoming := decimal.NewFromInt(0)
+	if req.Incoming != nil {
+		incoming = incoming.Add(*req.Incoming)
+	}
+	if incoming.Add(info.Incoming).
+		Cmp(
+			decimal.NewFromInt(0),
+		) < 0 {
+		return nil, fmt.Errorf("incoming (%v) + info.incoming (%v) < 0",
+			incoming, info.Incoming)
+	}
+	if req.Incoming != nil {
+		incoming = incoming.Add(info.Incoming)
+	}
+	return UpdateSet(info.Update(), &Req{
+		Incoming: &incoming,
+	}), nil
+}
+
 type Conds struct {
 	ID         *cruder.Cond
 	AppID      *cruder.Cond
