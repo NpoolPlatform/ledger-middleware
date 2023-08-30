@@ -60,7 +60,7 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 func (s *Server) CreateStatements(ctx context.Context, in *npool.CreateStatementsRequest) (*npool.CreateStatementsResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithReqs(in.GetInfos()),
+		statement1.WithReqs(in.GetInfos(), true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

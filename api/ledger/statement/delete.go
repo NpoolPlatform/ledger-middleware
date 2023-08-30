@@ -52,7 +52,7 @@ func (s *Server) DeleteStatement(ctx context.Context, in *npool.DeleteStatementR
 func (s *Server) DeleteStatements(ctx context.Context, in *npool.DeleteStatementsRequest) (*npool.DeleteStatementsResponse, error) {
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithReqs(in.GetInfos()),
+		statement1.WithReqs(in.GetInfos(), false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

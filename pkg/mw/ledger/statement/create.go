@@ -23,63 +23,18 @@ type createHandler struct {
 	ids []uuid.UUID
 }
 
-//nolint
-func (h *createHandler) validate() error {
-	for _, req := range h.Reqs {
-		if req.AppID == nil {
-			return fmt.Errorf("invalid app id")
-		}
-		if req.UserID == nil {
-			return fmt.Errorf("invalid user id")
-		}
-		if req.CoinTypeID == nil {
-			return fmt.Errorf("invalid coin type id")
-		}
-		if req.Amount == nil {
-			return fmt.Errorf("invalid amount")
-		}
-		if req.IOExtra == nil {
-			return fmt.Errorf("invalid io extra")
-		}
-		if req.IOType == nil {
-			return fmt.Errorf("invalid io type")
-		}
-		if req.IOSubType == nil {
-			return fmt.Errorf("invalid io sub type")
-		}
-		switch *req.IOType {
-		case basetypes.IOType_Incoming:
-			switch *req.IOSubType {
-			case basetypes.IOSubType_Payment:
-			case basetypes.IOSubType_MiningBenefit:
-			case basetypes.IOSubType_Commission:
-			case basetypes.IOSubType_TechniqueFeeCommission:
-			case basetypes.IOSubType_Deposit:
-			case basetypes.IOSubType_Transfer:
-			case basetypes.IOSubType_OrderRevoke:
-			default:
-				return fmt.Errorf("io subtype not match io type")
-			}
-		case basetypes.IOType_Outcoming:
-			switch *req.IOSubType {
-			case basetypes.IOSubType_Payment:
-			case basetypes.IOSubType_Withdrawal:
-			case basetypes.IOSubType_Transfer:
-			case basetypes.IOSubType_CommissionRevoke:
-			default:
-				return fmt.Errorf("io subtype not match io type")
-			}
-		default:
-			return fmt.Errorf("invalid io type %v", *req.IOType)
-		}
-	}
-	return nil
-}
-
 func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
 	}
+	key := fmt.Sprintf("%v:%v:%v:%v", commonpb.Prefix_PrefixCreateLedgerProfit, *req.AppID, *req.UserID, *req.CoinTypeID)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	stm, err := profitcrud.SetQueryConds(
 		tx.Profit.Query(),
 		&profitcrud.Conds{
@@ -100,13 +55,6 @@ func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context,
 
 	// create
 	if info == nil {
-		key := fmt.Sprintf("%v:%v:%v:%v", commonpb.Prefix_PrefixCreateLedgerProfit, *req.AppID, *req.UserID, *req.CoinTypeID)
-		if err := redis2.TryLock(key, 0); err != nil {
-			return err
-		}
-		defer func() {
-			_ = redis2.Unlock(key)
-		}()
 		stm, err := profitcrud.CreateSetWithValidate(
 			tx.Profit.Create(),
 			&profitcrud.Req{
@@ -149,6 +97,19 @@ func (h *createHandler) createOrUpdateProfit(req *crud.Req, ctx context.Context,
 }
 
 func (h *createHandler) createStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v:%v:%v:%v",
+		commonpb.Prefix_PrefixCreateLedgerStatement,
+		*req.AppID,
+		*req.UserID,
+		*req.CoinTypeID,
+		*req.IOExtra,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 	if req.ID == nil {
 		stm, err := crud.SetQueryConds(
 			tx.Statement.Query(),
@@ -172,19 +133,6 @@ func (h *createHandler) createStatement(req *crud.Req, ctx context.Context, tx *
 			return fmt.Errorf("statement already exist")
 		}
 	}
-	key := fmt.Sprintf("%v:%v:%v:%v",
-		commonpb.Prefix_PrefixCreateLedgerStatement,
-		*req.AppID,
-		*req.UserID,
-		*req.CoinTypeID,
-	)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-
 	id := uuid.New()
 	if req.ID == nil {
 		req.ID = &id
@@ -287,9 +235,6 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 		Handler: h,
 	}
 	handler.ids = []uuid.UUID{}
-	if err := handler.validate(); err != nil {
-		return nil, err
-	}
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {

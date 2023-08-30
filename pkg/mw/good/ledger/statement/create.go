@@ -92,7 +92,7 @@ func (h *createHandler) createGoodStatement(req *goodstatementcrud.Req, ctx cont
 	return nil
 }
 
-func (h *createHandler) createUnsoldStatment(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *createHandler) createUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerUnsoldStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
@@ -117,6 +117,13 @@ func (h *createHandler) createUnsoldStatment(req *goodstatementcrud.Req, ctx con
 }
 
 func (h *createHandler) createOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedger, *req.GoodID, *req.CoinTypeID)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 	stm, err := goodledgercrud.SetQueryConds(
 		tx.GoodLedger.Query(),
 		&goodledgercrud.Conds{
@@ -140,15 +147,7 @@ func (h *createHandler) createOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx
 	}
 
 	if info == nil {
-		key := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedger, *req.GoodID, *req.CoinTypeID)
-		if err := redis2.TryLock(key, 0); err != nil {
-			return err
-		}
-		defer func() {
-			_ = redis2.Unlock(key)
-		}()
-
-		stm, err := goodledgercrud.CreateSetWithValidate(
+		if _, err := goodledgercrud.CreateSet(
 			tx.GoodLedger.Create(),
 			&goodledgercrud.Req{
 				GoodID:     req.GoodID,
@@ -157,14 +156,9 @@ func (h *createHandler) createOrUpdateGoodLedger(req *goodstatementcrud.Req, ctx
 				ToPlatform: &toPlatform,
 				ToUser:     &toUser,
 			},
-		)
-		if err != nil {
+		).Save(ctx); err != nil {
 			return err
 		}
-		if _, err := stm.Save(ctx); err != nil {
-			return err
-		}
-		return nil
 	}
 
 	stm1, err := goodledgercrud.UpdateSetWithValidate(
@@ -193,9 +187,6 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				if err := handler.checkGoodStatementExist(req, ctx, tx); err != nil {
-					return err
-				}
 				id := uuid.New()
 				if req.ID == nil {
 					req.ID = &id
@@ -203,7 +194,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if err := handler.createGoodStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.createUnsoldStatment(req, ctx, tx); err != nil {
+				if err := handler.createUnsoldStatement(req, ctx, tx); err != nil {
 					return err
 				}
 				if err := handler.createOrUpdateGoodLedger(req, ctx, tx); err != nil {
