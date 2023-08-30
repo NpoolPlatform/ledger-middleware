@@ -5,26 +5,25 @@ import (
 	"fmt"
 	"time"
 
-	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	goodledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger"
 	goodstatementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/statement"
 	unsoldcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	entgoodstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
-type rollbackHandler struct {
+type deleteHandler struct {
 	*Handler
 	statementsMap map[string]*npool.GoodStatement
 }
 
-func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *deleteHandler) updateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	statement, _ := h.statementsMap[req.ID.String()] //nolint
 	stm, err := goodledgercrud.SetQueryConds(
 		tx.GoodLedger.Query(),
@@ -61,20 +60,22 @@ func (h *rollbackHandler) tryUpdateGoodLedger(req *goodstatementcrud.Req, ctx co
 	return nil
 }
 
-func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	key := fmt.Sprintf("%v:%v",
-		commonpb.Prefix_PrefixDeleteGoodStatement,
-		*req.ID,
-	)
-	if err := redis2.TryLock(key, 0); err != nil {
+func (h *deleteHandler) deleteGoodStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+	info, err := tx.
+		GoodStatement.
+		Query().
+		Where(
+			entgoodstatement.ID(*req.ID),
+			entgoodstatement.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
 	now := uint32(time.Now().Unix())
 	if _, err := goodstatementcrud.UpdateSet(
-		tx.GoodStatement.UpdateOneID(*req.ID),
+		info.Update(),
 		&goodstatementcrud.Req{
 			DeletedAt: &now,
 		},
@@ -84,24 +85,22 @@ func (h *rollbackHandler) tryDeleteGoodStatement(req *goodstatementcrud.Req, ctx
 	return nil
 }
 
-func (h *rollbackHandler) tryDeleteUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *deleteHandler) deleteUnsoldStatement(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
 	info, err := tx.
 		UnsoldStatement.
 		Query().
 		Where(
 			unsoldstatement.StatementID(*req.ID),
 			unsoldstatement.DeletedAt(0),
-		).Only(ctx)
+		).
+		ForUpdate().
+		Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil
-		}
 		return err
 	}
-
 	now := uint32(time.Now().Unix())
 	if _, err := unsoldcrud.UpdateSet(
-		tx.UnsoldStatement.UpdateOneID(info.ID),
+		info.Update(),
 		&unsoldcrud.Req{
 			DeletedAt: &now,
 		},
@@ -111,7 +110,7 @@ func (h *rollbackHandler) tryDeleteUnsoldStatement(req *goodstatementcrud.Req, c
 	return nil
 }
 
-func (h *rollbackHandler) tryGetAllGoodStatements(ctx context.Context) error {
+func (h *deleteHandler) tryGetAllGoodStatements(ctx context.Context) error {
 	ids := []uuid.UUID{}
 	for _, req := range h.Reqs {
 		if req.ID == nil {
@@ -137,7 +136,7 @@ func (h *rollbackHandler) tryGetAllGoodStatements(ctx context.Context) error {
 }
 
 func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
-	handler := &rollbackHandler{
+	handler := &deleteHandler{
 		Handler: h,
 	}
 	if err := handler.tryGetAllGoodStatements(ctx); err != nil {
@@ -150,13 +149,13 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if !ok {
 					return fmt.Errorf("good statement not found %v", req.ID.String())
 				}
-				if err := handler.tryDeleteGoodStatement(req, ctx, tx); err != nil {
+				if err := handler.deleteGoodStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryDeleteUnsoldStatement(req, ctx, tx); err != nil {
+				if err := handler.deleteUnsoldStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryUpdateGoodLedger(req, ctx, tx); err != nil {
+				if err := handler.updateGoodLedger(req, ctx, tx); err != nil {
 					return err
 				}
 				return nil

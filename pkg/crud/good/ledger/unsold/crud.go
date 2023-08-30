@@ -46,9 +46,6 @@ func CreateSet(c *ent.UnsoldStatementCreate, in *Req) *ent.UnsoldStatementCreate
 }
 
 func UpdateSet(u *ent.UnsoldStatementUpdateOne, req *Req) *ent.UnsoldStatementUpdateOne {
-	if req.Amount != nil {
-		u.SetAmount(*req.Amount)
-	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
