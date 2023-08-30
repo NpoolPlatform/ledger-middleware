@@ -73,4 +73,3 @@ func (s *Server) GetWithdraw(ctx context.Context, in *npool.GetWithdrawRequest) 
 		Info: info,
 	}, nil
 }
-
