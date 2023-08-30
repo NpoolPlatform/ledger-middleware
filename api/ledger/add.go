@@ -16,6 +16,13 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 	error,
 ) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"AddBalance",
+			"In", in,
+		)
+		return &npool.AddBalanceResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
 	handler, err := lock1.NewHandler(
 		ctx,
 		lock1.WithAppID(req.AppID, false),

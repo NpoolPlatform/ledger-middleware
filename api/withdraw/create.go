@@ -12,6 +12,13 @@ import (
 
 func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawRequest) (*npool.CreateWithdrawResponse, error) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"CreateWithdraw",
+			"In", in,
+		)
+		return &npool.CreateWithdrawResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
 	handler, err := withdraw1.NewHandler(
 		ctx,
 		withdraw1.WithID(req.ID, false),

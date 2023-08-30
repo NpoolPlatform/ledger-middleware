@@ -12,6 +12,13 @@ import (
 
 func (s *Server) DeleteProfit(ctx context.Context, in *npool.DeleteProfitRequest) (*npool.DeleteProfitResponse, error) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"DeleteProfit",
+			"In", in,
+		)
+		return &npool.DeleteProfitResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
 	handler, err := profit1.NewHandler(
 		ctx,
 		profit1.WithID(req.ID, true),

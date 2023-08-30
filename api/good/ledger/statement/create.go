@@ -16,6 +16,14 @@ func (s *Server) CreateGoodStatement(ctx context.Context, in *npool.CreateGoodSt
 	error,
 ) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"CreateGoodStatement",
+			"In", in,
+		)
+		return &npool.CreateGoodStatementResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
+
 	handler, err := goodstatement1.NewHandler(
 		ctx,
 		goodstatement1.WithID(req.ID, false),

@@ -16,6 +16,13 @@ func (s *Server) SubBalance(ctx context.Context, in *npool.SubBalanceRequest) (
 	error,
 ) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"SubBalance",
+			"In", in,
+		)
+		return &npool.SubBalanceResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
 	handler, err := lock1.NewHandler(
 		ctx,
 		lock1.WithAppID(req.AppID, true),

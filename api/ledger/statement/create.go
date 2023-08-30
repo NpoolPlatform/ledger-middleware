@@ -13,6 +13,13 @@ import (
 
 func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementRequest) (*npool.CreateStatementResponse, error) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"CreateStatement",
+			"In", in,
+		)
+		return &npool.CreateStatementResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithID(req.ID, false),

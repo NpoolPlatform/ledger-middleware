@@ -13,6 +13,13 @@ import (
 
 func (s *Server) DeleteStatement(ctx context.Context, in *npool.DeleteStatementRequest) (*npool.DeleteStatementResponse, error) {
 	req := in.GetInfo()
+	if req == nil {
+		logger.Sugar().Errorw(
+			"DeleteStatement",
+			"In", in,
+		)
+		return &npool.DeleteStatementResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+	}
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithID(req.ID, true),
