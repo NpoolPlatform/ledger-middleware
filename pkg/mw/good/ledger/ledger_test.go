@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
+	unsoldstatement "github.com/NpoolPlatform/ledger-middleware/pkg/crud/good/ledger/unsold"
 	goodstatement1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/statement"
+	unsold1 "github.com/NpoolPlatform/ledger-middleware/pkg/mw/good/ledger/unsold"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	goodledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger"
 	goodstatementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/good/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -69,22 +69,16 @@ func setup(t *testing.T) func(*testing.T) {
 	}
 }
 
-func getGoodLedger(t *testing.T) {
-	conds := &goodledgermwpb.Conds{
-		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: goodID},
-		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: coinTypeID},
-	}
-	handler, err := NewHandler(
-		context.Background(),
-		WithConds(conds),
-	)
+func getUnsoldStatements(t *testing.T) {
+	handler, err := unsold1.NewHandler(context.Background())
 	assert.Nil(t, err)
-
-	info, err := handler.GetGoodLedgerOnly(context.Background())
+	handler.Conds = &unsoldstatement.Conds{
+		StatementID: &cruder.Cond{Op: cruder.EQ, Val: id},
+	}
+	info, err := handler.GetUnsoldStatementOnly(context.Background())
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
-		assert.Equal(t, "102", info.ToPlatform)
-		assert.Equal(t, "298", info.ToUser)
+		assert.Equal(t, "100", info.Amount)
 	}
 }
 
@@ -92,9 +86,7 @@ func TestGoodLedger(t *testing.T) {
 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
 		return
 	}
-
 	teardown := setup(t)
 	defer teardown(t)
-
-	t.Run("getGoodLedger", getGoodLedger)
+	t.Run("getUnsoldStatements", getUnsoldStatements)
 }
