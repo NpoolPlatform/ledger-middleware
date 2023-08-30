@@ -97,6 +97,7 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 			entledger.CoinTypeID(*h.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err
@@ -157,6 +158,7 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 			entledger.CoinTypeID(h.statement.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err

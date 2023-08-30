@@ -27,6 +27,7 @@ func (h *createHandler) lockBalance(ctx context.Context, tx *ent.Tx) error {
 			entledger.CoinTypeID(*h.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err

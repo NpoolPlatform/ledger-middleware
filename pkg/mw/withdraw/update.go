@@ -71,6 +71,7 @@ func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
 			entledger.CoinTypeID(uuid.MustParse(h.withdraw.CoinTypeID)),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err

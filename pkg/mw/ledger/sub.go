@@ -83,6 +83,7 @@ func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 			entledger.CoinTypeID(*h.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err
@@ -144,6 +145,7 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 			entledger.CoinTypeID(*h.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err
