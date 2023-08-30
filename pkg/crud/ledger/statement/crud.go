@@ -189,10 +189,12 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			return nil, fmt.Errorf("invalid start  %v", conds.StartAt)
 		}
 		switch conds.StartAt.Op {
-		case cruder.GT:
+		case cruder.EQ:
 			q.Where(entstatement.CreatedAtGTE(startAt))
+		case cruder.GT:
+			q.Where(entstatement.CreatedAtGT(startAt))
 		case cruder.LT:
-			q.Where(entstatement.CreatedAtLTE(startAt))
+			q.Where(entstatement.CreatedAtLT(startAt))
 		default:
 			return nil, fmt.Errorf("invalid start at op field %v", conds.StartAt.Op)
 		}
@@ -203,6 +205,8 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			return nil, fmt.Errorf("invalid end at  %v", conds.EndAt)
 		}
 		switch conds.EndAt.Op {
+		case cruder.EQ:
+			q.Where(entstatement.CreatedAtLTE(endAT))
 		case cruder.GT:
 			q.Where(entstatement.CreatedAtGTE(endAT))
 		case cruder.LT:
