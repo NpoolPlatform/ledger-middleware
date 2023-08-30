@@ -179,17 +179,17 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 }
 
 func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	h.Reqs = append(h.Reqs, &h.Req)
-
-	infos, err := h.DeleteGoodStatements(ctx)
+	info, err := h.GetGoodStatement(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(infos) == 0 {
+	if info == nil {
 		return nil, nil
 	}
-	if len(infos) > 1 {
-		return nil, fmt.Errorf("too many records")
+	h.Reqs = append(h.Reqs, &h.Req)
+
+	if _, err := h.DeleteGoodStatements(ctx); err != nil {
+		return nil, err
 	}
-	return infos[0], nil
+	return info, nil
 }
