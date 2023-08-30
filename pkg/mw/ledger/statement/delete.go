@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	profitcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/profit"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -50,11 +49,10 @@ func (h *deleteHandler) tryGetAllStatements(ctx context.Context) error {
 	return nil
 }
 
-func (h *deleteHandler) tryUpdateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
 	}
-
 	stm, err := profitcrud.SetQueryConds(
 		tx.Profit.Query(),
 		&profitcrud.Conds{
@@ -90,7 +88,7 @@ func (h *deleteHandler) tryUpdateProfit(req *crud.Req, ctx context.Context, tx *
 	return nil
 }
 
-func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+func (h *deleteHandler) updateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	stm, err := ledgercrud.SetQueryConds(
 		tx.Ledger.Query(),
 		&ledgercrud.Conds{
@@ -136,24 +134,22 @@ func (h *deleteHandler) tryUpdateLedger(req *crud.Req, ctx context.Context, tx *
 	return nil
 }
 
-func (h *deleteHandler) tryDeleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	key := fmt.Sprintf("%v:%v",
-		commonpb.Prefix_PrefixDeleteStatement,
-		*req.ID,
-	)
-	if err := redis2.TryLock(key, 0); err != nil {
+func (h *deleteHandler) deleteStatement(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	info, err := tx.
+		Statement.
+		Query().
+		Where(
+			entstatement.ID(*req.ID),
+			entstatement.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
 		return err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-	_, ok := h.statementsMap[req.ID.String()]
-	if !ok {
-		return nil
 	}
 	now := uint32(time.Now().Unix())
 	if _, err := crud.UpdateSet(
-		tx.Statement.UpdateOneID(*req.ID),
+		info.Update(),
 		&crud.Req{
 			DeletedAt: &now,
 		},
@@ -178,13 +174,13 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 				if !ok {
 					return fmt.Errorf("statement not found %v", req.ID.String())
 				}
-				if err := handler.tryDeleteStatement(req, ctx, tx); err != nil {
+				if err := handler.deleteStatement(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryUpdateProfit(req, ctx, tx); err != nil {
+				if err := handler.updateProfit(req, ctx, tx); err != nil {
 					return err
 				}
-				if err := handler.tryUpdateLedger(req, ctx, tx); err != nil {
+				if err := handler.updateLedger(req, ctx, tx); err != nil {
 					return err
 				}
 				return nil

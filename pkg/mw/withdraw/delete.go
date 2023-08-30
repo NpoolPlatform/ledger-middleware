@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	withdrawcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -23,7 +22,7 @@ type deleteHandler struct {
 	withdraw *npool.Withdraw
 }
 
-func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error {
+func (h *deleteHandler) unlockBalance(ctx context.Context, tx *ent.Tx) error {
 	if h.withdraw.StateStr != types.WithdrawState_Reviewing.String() {
 		return nil
 	}
@@ -40,6 +39,7 @@ func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error 
 			entledger.CoinTypeID(coinTypeID),
 			entledger.DeletedAt(0),
 		).
+		ForUpdate().
 		Only(ctx)
 	if err != nil {
 		return err
@@ -65,16 +65,27 @@ func (h *deleteHandler) tryUnlockBalance(ctx context.Context, tx *ent.Tx) error 
 	return nil
 }
 
-func (h *deleteHandler) tryDeleteWithdraw(ctx context.Context, tx *ent.Tx) error {
-	now := uint32(time.Now().Unix())
-	if _, err := tx.
+func (h *deleteHandler) deleteWithdraw(ctx context.Context, tx *ent.Tx) error {
+	info, err := tx.
 		Withdraw.
-		Update().
+		Query().
 		Where(
 			entwithdraw.ID(*h.ID),
+			entwithdraw.DeletedAt(0),
 		).
-		SetDeletedAt(now).
-		Save(ctx); err != nil {
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	now := uint32(time.Now().Unix())
+	if _, err := withdrawcrud.UpdateSet(
+		info.Update(),
+		&withdrawcrud.Req{
+			DeletedAt: &now,
+		},
+	).Save(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -98,20 +109,10 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	handler.withdraw = info
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		key := fmt.Sprintf("%v:%v",
-			commonpb.Prefix_PrefixDeleteWithdraw,
-			*h.ID,
-		)
-		if err := redis2.TryLock(key, 0); err != nil {
+		if err := handler.deleteWithdraw(ctx, tx); err != nil {
 			return err
 		}
-		defer func() {
-			_ = redis2.Unlock(key)
-		}()
-		if err := handler.tryDeleteWithdraw(ctx, tx); err != nil {
-			return err
-		}
-		if err := handler.tryUnlockBalance(ctx, tx); err != nil {
+		if err := handler.unlockBalance(ctx, tx); err != nil {
 			return err
 		}
 		return nil
