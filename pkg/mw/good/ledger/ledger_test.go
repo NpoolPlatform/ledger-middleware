@@ -73,7 +73,7 @@ func getUnsoldStatements(t *testing.T) {
 	handler, err := unsold1.NewHandler(context.Background())
 	assert.Nil(t, err)
 	handler.Conds = &unsoldstatement.Conds{
-		StatementID: &cruder.Cond{Op: cruder.EQ, Val: id},
+		StatementID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(id)},
 	}
 	info, err := handler.GetUnsoldStatementOnly(context.Background())
 	if assert.Nil(t, err) {
