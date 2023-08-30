@@ -124,12 +124,12 @@ func DeleteStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statem
 			Info: in,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail rollback statement: %v", err)
+			return nil, fmt.Errorf("fail delete statement: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail rollback statement: %v", err)
+		return nil, fmt.Errorf("fail delete statement: %v", err)
 	}
 	return info.(*npool.Statement), nil
 }
@@ -140,12 +140,12 @@ func DeleteStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.S
 			Infos: in,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail rollback statements: %v", err)
+			return nil, fmt.Errorf("fail delete statements: %v", err)
 		}
 		return resp.GetInfos(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail rollback statements: %v", err)
+		return nil, fmt.Errorf("fail delete statements: %v", err)
 	}
 	return infos.([]*npool.Statement), nil
 }

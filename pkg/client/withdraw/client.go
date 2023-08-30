@@ -77,19 +77,25 @@ func GetWithdraw(ctx context.Context, id string) (*npool.Withdraw, error) {
 }
 
 func GetWithdrawOnly(ctx context.Context, conds *npool.Conds) (*npool.Withdraw, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetWithdrawOnly(ctx, &npool.GetWithdrawOnlyRequest{
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetWithdraws(ctx, &npool.GetWithdrawsRequest{
 			Conds: conds,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get withdraw only: %v", err)
 		}
-		return resp.GetInfo(), nil
+		return resp.GetInfos(), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fail get withdraw only: %v", err)
 	}
-	return info.(*npool.Withdraw), nil
+	if len(infos.([]*npool.Withdraw)) == 0 {
+		return nil, nil
+	}
+	if len(infos.([]*npool.Withdraw)) > 1 {
+		return nil, fmt.Errorf("too many record")
+	}
+	return infos.([]*npool.Withdraw)[0], nil
 }
 
 func GetWithdraws(ctx context.Context, conds *npool.Conds, offset, limit int32) ([]*npool.Withdraw, uint32, error) {

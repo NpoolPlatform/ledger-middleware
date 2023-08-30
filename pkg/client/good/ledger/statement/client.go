@@ -43,21 +43,76 @@ func CreateGoodStatement(ctx context.Context, req *npool.GoodStatementReq) (*npo
 	return info.(*npool.GoodStatement), nil
 }
 
+func CreateGoodStatements(ctx context.Context, in []*npool.GoodStatementReq) ([]*npool.GoodStatement, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.CreateGoodStatements(ctx, &npool.CreateGoodStatementsRequest{
+			Infos: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail create good statements: %v", err)
+		}
+		return resp.GetInfos(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail create good statements: %v", err)
+	}
+	return infos.([]*npool.GoodStatement), nil
+}
+
+
+func DeleteGoodStatement(ctx context.Context, req *npool.GoodStatementReq) (*npool.GoodStatement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.DeleteGoodStatement(ctx, &npool.DeleteGoodStatementRequest{
+			Info: req,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail delete goodstatement: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail delete goodstatement: %v", err)
+	}
+	return info.(*npool.GoodStatement), nil
+}
+
+func DeleteGoodStatements(ctx context.Context, in []*npool.GoodStatementReq) ([]*npool.GoodStatement, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.DeleteGoodStatements(ctx, &npool.DeleteGoodStatementsRequest{
+			Infos: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail delete good statements: %v", err)
+		}
+		return resp.GetInfos(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail delete good statements: %v", err)
+	}
+	return infos.([]*npool.GoodStatement), nil
+}
+
 //nolint
 func GetGoodStatementOnly(ctx context.Context, conds *npool.Conds) (*npool.GoodStatement, error) {
-	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
-		resp, err := cli.GetGoodStatementOnly(ctx, &npool.GetGoodStatementOnlyRequest{
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.GetGoodStatements(ctx, &npool.GetGoodStatementsRequest{
 			Conds: conds,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get goodstatement only: %v", err)
 		}
-		return resp.GetInfo(), nil
+		return resp.GetInfos(), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fail get goodstatement only: %v", err)
 	}
-	return info.(*npool.GoodStatement), nil
+	if len(infos.([]*npool.GoodStatement)) == 0 {
+		return nil, nil
+	}
+	if len(infos.([]*npool.GoodStatement)) > 1 {
+		return nil, fmt.Errorf("too many record")
+	}
+	return infos.([]*npool.GoodStatement)[0], nil
 }
 
 func GetGoodStatements(ctx context.Context, conds *npool.Conds, offset, limit int32) ([]*npool.GoodStatement, uint32, error) {
@@ -78,4 +133,20 @@ func GetGoodStatements(ctx context.Context, conds *npool.Conds, offset, limit in
 		return nil, 0, fmt.Errorf("fail get goodstatements: %v", err)
 	}
 	return infos.([]*npool.GoodStatement), total, nil
+}
+
+func ExistGoodStatementConds(ctx context.Context, conds *npool.Conds) (bool, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.ExistGoodStatementConds(ctx, &npool.ExistGoodStatementCondsRequest{
+			Conds: conds,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail exist goodstatement: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return false, fmt.Errorf("fail exist goodstatement: %v", err)
+	}
+	return infos.(bool), nil
 }
