@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/google/uuid"
@@ -18,49 +19,64 @@ import (
 
 type updateHandler struct {
 	*Handler
-	withdraw     *npool.Withdraw
-	updateLedger bool
+	withdraw *ent.Withdraw
 }
 
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
-	info, err := h.GetWithdraw(ctx)
+	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		info, err := cli.
+			Withdraw.
+			Query().
+			Where(
+				entwithdraw.ID(*h.ID),
+				entwithdraw.DeletedAt(0),
+			).
+			Only(ctx)
+		if err != nil {
+			return err
+		}
+		h.withdraw = info
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-	if info == nil {
-		return fmt.Errorf("withdraw not found")
-	}
-	h.withdraw = info
+
 	if h.State == nil {
 		return nil
 	}
-	if info.StateStr == types.WithdrawState_Rejected.String() ||
-		info.StateStr == types.WithdrawState_TransactionFail.String() ||
-		info.StateStr == types.WithdrawState_Successful.String() {
-		return fmt.Errorf("current withdraw state(%v) can not be update", info.StateStr)
+	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
+	switch state {
+	case types.WithdrawState_Rejected:
+		fallthrough
+	case types.WithdrawState_TransactionFail:
+		fallthrough
+	case types.WithdrawState_Successful:
+		return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
 	}
-	if info.StateStr == types.WithdrawState_Reviewing.String() || info.StateStr == types.WithdrawState_Transferring.String() {
-		if h.State.String() == types.WithdrawState_Rejected.String() {
-			h.updateLedger = true
-			return nil
+
+	switch state {
+	case types.WithdrawState_Reviewing:
+		switch *h.State {
+		case types.WithdrawState_Rejected:
+		case types.WithdrawState_Transferring:
+		default:
+			return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
 		}
-	}
-	if info.StateStr == types.WithdrawState_Transferring.String() {
-		if h.State.String() == types.WithdrawState_TransactionFail.String() ||
-			h.State.String() == types.WithdrawState_Successful.String() {
-			h.updateLedger = true
-			return nil
+	case types.WithdrawState_Transferring:
+		switch *h.State {
+		case types.WithdrawState_TransactionFail:
+		case types.WithdrawState_Successful:
+		default:
+			return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
 		}
-	}
-	if h.State.String() != types.WithdrawState_Transferring.String() &&
-		h.State.String() != types.WithdrawState_Rejected.String() {
-		return fmt.Errorf("can not update withdraw state from %v to %v", info.StateStr, h.State.String())
+		return nil
 	}
 	return nil
 }
 
 func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
-	if !h.updateLedger {
+	if h.State == nil || *h.State == types.WithdrawState_Transferring {
 		return nil
 	}
 
@@ -68,9 +84,9 @@ func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
 		Ledger.
 		Query().
 		Where(
-			entledger.AppID(uuid.MustParse(h.withdraw.AppID)),
-			entledger.UserID(uuid.MustParse(h.withdraw.UserID)),
-			entledger.CoinTypeID(uuid.MustParse(h.withdraw.CoinTypeID)),
+			entledger.AppID(h.withdraw.AppID),
+			entledger.UserID(h.withdraw.UserID),
+			entledger.CoinTypeID(h.withdraw.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
 		ForUpdate().
@@ -83,16 +99,16 @@ func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
 	outcoming := decimal.NewFromInt(0)
 	switch *h.State {
 	case types.WithdrawState_Successful:
-		outcoming = decimal.RequireFromString(h.withdraw.Amount)
+		outcoming = h.withdraw.Amount
 	case types.WithdrawState_TransactionFail:
 		fallthrough //nolint
 	case types.WithdrawState_Rejected:
-		spendable = decimal.RequireFromString(h.withdraw.Amount)
+		spendable = h.withdraw.Amount
 	default:
 		return nil
 	}
 
-	locked := decimal.RequireFromString(fmt.Sprintf("-%v", h.withdraw.Amount))
+	locked := decimal.NewFromInt(0).Sub(h.withdraw.Amount)
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		info,
 		&ledgercrud.Req{
@@ -111,6 +127,9 @@ func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
+	if h.PlatformTransactionID != nil && h.withdraw.PlatformTransactionID.String() != uuid.Nil.String() {
+		return fmt.Errorf("current platform transaction id can not be updated")
+	}
 	if _, err := crud.UpdateSet(
 		tx.Withdraw.UpdateOneID(*h.ID),
 		&h.Req,
@@ -121,7 +140,7 @@ func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
-	if !h.updateLedger {
+	if h.State == nil {
 		return nil
 	}
 	if h.State.String() != types.WithdrawState_Successful.String() {
@@ -133,31 +152,28 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 	if h.FeeAmount == nil {
 		return fmt.Errorf("invalid fee amount")
 	}
-
-	platformTransactionID := uuid.UUID{}
-	if h.withdraw.PlatformTransactionID != uuid1.InvalidUUIDStr {
-		platformTransactionID = uuid.MustParse(h.withdraw.PlatformTransactionID)
-	}
-	if h.PlatformTransactionID != nil {
-		platformTransactionID = *h.PlatformTransactionID
-	}
-	if platformTransactionID.String() == uuid1.InvalidUUIDStr {
-		return fmt.Errorf("invalid platform transaction id, %v", platformTransactionID.String())
+	if h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
+		return fmt.Errorf("invalid platform transaction id %v", uuid.Nil.String())
 	}
 
 	ioExtra := fmt.Sprintf(`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
-		h.withdraw.ID, platformTransactionID.String(), *h.ChainTransactionID, h.FeeAmount.String(), h.withdraw.AccountID,
+		h.withdraw.ID, h.withdraw.PlatformTransactionID.String(), *h.ChainTransactionID, h.FeeAmount.String(), h.withdraw.AccountID,
 	)
-	amount := decimal.RequireFromString(h.withdraw.Amount)
-	if _, err := tx.Statement.Create().
-		SetAppID(uuid.MustParse(h.withdraw.AppID)).
-		SetUserID(uuid.MustParse(h.withdraw.UserID)).
-		SetCoinTypeID(uuid.MustParse(h.withdraw.CoinTypeID)).
-		SetIoType(types.IOType_Outcoming.String()).
-		SetIoSubType(types.IOSubType_Withdrawal.String()).
-		SetIoExtra(ioExtra).
-		SetAmount(amount).
-		Save(ctx); err != nil {
+
+	ioType := types.IOType_Outcoming
+	ioSubType := types.IOSubType_Withdrawal
+	if _, err := statementcrud.CreateSet(
+		tx.Statement.Create(),
+		&statementcrud.Req{
+			AppID:      &h.withdraw.AppID,
+			UserID:     &h.withdraw.UserID,
+			CoinTypeID: &h.withdraw.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  &ioSubType,
+			IOExtra:    &ioExtra,
+			Amount:     &h.withdraw.Amount,
+		},
+	).Save(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -165,13 +181,11 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 
 func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	handler := &updateHandler{
-		Handler:      h,
-		updateLedger: false,
+		Handler: h,
 	}
 	if err := handler.checkWithdrawState(ctx); err != nil {
 		return nil, err
 	}
-
 	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 		if err := handler.updateWithdraw(ctx, tx); err != nil {
 			return err
