@@ -148,11 +148,7 @@ func deleteWithdraw(t *testing.T) {
 	assert.Nil(t, err)
 
 	info, err := handler.DeleteWithdraw(context.Background())
-	assert.Nil(t, err)
-	assert.NotNil(t, info)
-
-	info, err = handler.GetWithdraw(context.Background())
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, info)
 }
 

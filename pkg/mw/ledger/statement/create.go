@@ -267,7 +267,7 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 	if len(infos) == 0 {
 		return nil, nil
 	}
-	if len(infos) > 0 {
+	if len(infos) > 1 {
 		return nil, fmt.Errorf("too many records")
 	}
 	return infos[0], nil

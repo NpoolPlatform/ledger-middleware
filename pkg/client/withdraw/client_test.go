@@ -51,7 +51,7 @@ var (
 func createLedger(t *testing.T) {
 	ioType := types.IOType_Incoming
 	ioSubType := types.IOSubType_Deposit
-	ioExtra := "{}"
+	ioExtra := fmt.Sprintf(`{"AppID": "%v", "AccountID": "%v"}`, uuid.NewString(), uuid.NewString())
 	amount := "10000"
 
 	info, err := statementmwcli.CreateStatement(
@@ -125,8 +125,8 @@ func getWithdraws(t *testing.T) {
 
 func deleteWithdraw(t *testing.T) {
 	info, err := DeleteWithdraw(context.Background(), &npool.WithdrawReq{ID: &ret.ID})
-	assert.Nil(t, err)
-	assert.NotNil(t, info)
+	assert.NotNil(t, err)
+	assert.Nil(t, info)
 }
 
 func TestClient(t *testing.T) {

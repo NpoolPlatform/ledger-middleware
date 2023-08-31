@@ -143,13 +143,13 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				if err := handler.deleteGoodStatement(req, ctx, tx); err != nil {
-					return err
-				}
 				if err := handler.deleteUnsoldStatement(req, ctx, tx); err != nil {
 					return err
 				}
 				if err := handler.updateGoodLedger(req, ctx, tx); err != nil {
+					return err
+				}
+				if err := handler.deleteGoodStatement(req, ctx, tx); err != nil {
 					return err
 				}
 				return nil

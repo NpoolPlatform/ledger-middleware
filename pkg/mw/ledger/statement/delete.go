@@ -23,9 +23,6 @@ type deleteHandler struct {
 }
 
 func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
-	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
-		return nil
-	}
 	statement, err := tx.
 		Statement.
 		Query().
@@ -36,6 +33,10 @@ func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent
 		Only(ctx)
 	if err != nil {
 		return err
+	}
+
+	if statement.IoSubType != basetypes.IOSubType_MiningBenefit.String() {
+		return nil
 	}
 
 	stm, err := profitcrud.SetQueryConds(
@@ -178,13 +179,13 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				if err := handler.deleteStatement(req, ctx, tx); err != nil {
-					return err
-				}
 				if err := handler.updateProfit(req, ctx, tx); err != nil {
 					return err
 				}
 				if err := handler.updateLedger(req, ctx, tx); err != nil {
+					return err
+				}
+				if err := handler.deleteStatement(req, ctx, tx); err != nil {
 					return err
 				}
 				return nil
