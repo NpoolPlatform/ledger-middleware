@@ -169,9 +169,9 @@ func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement
 		return nil, err
 	}
 	if info == nil {
-		return nil, nil
+		return nil, fmt.Errorf("statement not found")
 	}
-	h.Reqs = append(h.Reqs, &h.Req)
+	h.Reqs = []*goodstatementcrud.Req{&h.Req}
 
 	if _, err := h.DeleteGoodStatements(ctx); err != nil {
 		return nil, err
