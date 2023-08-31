@@ -121,7 +121,7 @@ func (h *createHandler) createOrUpdateGoodLedger(ctx context.Context, tx *ent.Tx
 	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
 	toUser := req.TotalAmount.Sub(toPlatform)
 	if req.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
-		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount.String(), toPlatform.String(), toUser.String())
+		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount, toPlatform, toUser)
 	}
 
 	if info == nil {

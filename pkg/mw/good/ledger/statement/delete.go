@@ -49,9 +49,9 @@ func (h *deleteHandler) updateGoodLedger(req *goodstatementcrud.Req, ctx context
 		return err
 	}
 
-	amount := decimal.RequireFromString(fmt.Sprintf("-%v", statement.Amount))
-	toUser := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToUser))
-	toPlatform := decimal.RequireFromString(fmt.Sprintf("-%v", statement.ToPlatform))
+	amount := decimal.NewFromInt(0).Sub(statement.Amount)
+	toUser := decimal.NewFromInt(0).Sub(statement.ToUser)
+	toPlatform := decimal.NewFromInt(0).Sub(statement.ToPlatform)
 
 	stm1, err := goodledgercrud.UpdateSetWithValidate(
 		info,
