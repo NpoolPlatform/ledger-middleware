@@ -21,27 +21,6 @@ type createHandler struct {
 	*Handler
 }
 
-func (h *createHandler) checkGoodStatementExist(ctx context.Context, tx *ent.Tx, req *goodstatementcrud.Req) error {
-	if req.ID == nil {
-		exist, err := tx.
-			GoodStatement.
-			Query().
-			Where(
-				entgoodstatement.GoodID(*req.GoodID),
-				entgoodstatement.CoinTypeID(*req.CoinTypeID),
-				entgoodstatement.BenefitDate(*req.BenefitDate),
-			).
-			Exist(ctx)
-		if err != nil {
-			return err
-		}
-		if exist {
-			return fmt.Errorf("good statement already exist")
-		}
-	}
-	return nil
-}
-
 func (h *createHandler) createGoodStatement(ctx context.Context, tx *ent.Tx, req *goodstatementcrud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateGoodLedgerStatement, *req.GoodID, *req.CoinTypeID, *req.BenefitDate)
 	if err := redis2.TryLock(key, 0); err != nil {
@@ -50,6 +29,23 @@ func (h *createHandler) createGoodStatement(ctx context.Context, tx *ent.Tx, req
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
+
+	exist, err := tx.
+		GoodStatement.
+		Query().
+		Where(
+			entgoodstatement.GoodID(*req.GoodID),
+			entgoodstatement.CoinTypeID(*req.CoinTypeID),
+			entgoodstatement.BenefitDate(*req.BenefitDate),
+			entgoodstatement.DeletedAt(0),
+		).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("good statement already exist")
+	}
 
 	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
 	toUser := req.TotalAmount.Sub(toPlatform)
@@ -211,8 +207,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 }
 
 func (h *Handler) CreateGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	h.Reqs = append(h.Reqs, &h.Req)
-
+	h.Reqs = []*goodstatementcrud.Req{&h.Req}
 	infos, err := h.CreateGoodStatements(ctx)
 	if err != nil {
 		return nil, err

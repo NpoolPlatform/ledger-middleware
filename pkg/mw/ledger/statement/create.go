@@ -20,7 +20,6 @@ import (
 
 type createHandler struct {
 	*Handler
-	ids []uuid.UUID
 }
 
 func (h *createHandler) createOrUpdateProfit(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
@@ -100,35 +99,27 @@ func (h *createHandler) createStatement(ctx context.Context, tx *ent.Tx, req *cr
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
-	if req.ID == nil {
-		stm, err := crud.SetQueryConds(
-			tx.Statement.Query(),
-			&crud.Conds{
-				AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-				UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-				CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-				IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
-				IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
-				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
-			},
-		)
-		if err != nil {
-			return err
-		}
-		exist, err := stm.Exist(ctx)
-		if err != nil {
-			return err
-		}
-		if exist {
-			return fmt.Errorf("statement already exist")
-		}
+	stm, err := crud.SetQueryConds(
+		tx.Statement.Query(),
+		&crud.Conds{
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
+			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
+			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
+		},
+	)
+	if err != nil {
+		return err
 	}
-	id := uuid.New()
-	if req.ID == nil {
-		req.ID = &id
+	exist, err := stm.Exist(ctx)
+	if err != nil {
+		return err
 	}
-	h.ids = append(h.ids, *req.ID)
-
+	if exist {
+		return fmt.Errorf("statement already exist")
+	}
 	if _, err := crud.CreateSet(
 		tx.Statement.Create(),
 		req,
@@ -224,10 +215,14 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	handler := &createHandler{
 		Handler: h,
 	}
-	handler.ids = []uuid.UUID{}
+	ids := []uuid.UUID{}
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
+				id := uuid.New()
+				if req.ID == nil {
+					req.ID = &id
+				}
 				if err := handler.createStatement(ctx, tx, req); err != nil {
 					return err
 				}
@@ -237,6 +232,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.createOrUpdateLedger(ctx, tx, req); err != nil {
 					return err
 				}
+				ids = append(ids, *req.ID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -250,10 +246,10 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	}
 
 	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: handler.ids},
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
 	h.Offset = 0
-	h.Limit = int32(len(handler.ids))
+	h.Limit = int32(len(ids))
 
 	infos, _, err := h.GetStatements(ctx)
 	if err != nil {
@@ -270,6 +266,9 @@ func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error)
 	}
 	if len(infos) == 0 {
 		return nil, nil
+	}
+	if len(infos) > 0 {
+		return nil, fmt.Errorf("too many records")
 	}
 	return infos[0], nil
 }
