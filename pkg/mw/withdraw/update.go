@@ -48,9 +48,9 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
 	switch state {
 	case types.WithdrawState_Rejected:
-		fallthrough
+		fallthrough //nolint
 	case types.WithdrawState_TransactionFail:
-		fallthrough
+		fallthrough //nolint
 	case types.WithdrawState_Successful:
 		return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
 	}

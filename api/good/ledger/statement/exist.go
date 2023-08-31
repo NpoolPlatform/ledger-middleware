@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//nolint
 func (s *Server) ExistGoodStatementConds(
 	ctx context.Context,
 	in *npool.ExistGoodStatementCondsRequest,
