@@ -285,7 +285,7 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			}
 		}
 		if conds.BenefitDate != nil {
-			h.Conds.CoinTypeID = &cruder.Cond{
+			h.Conds.BenefitDate = &cruder.Cond{
 				Op:  conds.GetBenefitDate().GetOp(),
 				Val: conds.GetBenefitDate().GetValue(),
 			}
