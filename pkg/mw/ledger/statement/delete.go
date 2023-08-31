@@ -202,16 +202,18 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error) {
-	h.Reqs = []*crud.Req{&h.Req}
-	infos, err := h.DeleteStatements(ctx)
+	info, err := h.GetStatement(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(infos) == 0 {
-		return nil, nil
+	if info == nil {
+		return nil, fmt.Errorf("statement not found")
 	}
-	if len(infos) > 1 {
-		return nil, fmt.Errorf("to many statements")
+
+	h.Reqs = []*crud.Req{&h.Req}
+	if _, err := h.DeleteStatements(ctx); err != nil {
+		return nil, err
 	}
-	return infos[0], nil
+
+	return info, nil
 }
