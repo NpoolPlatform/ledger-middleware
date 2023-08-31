@@ -13,30 +13,33 @@ import (
 	entwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type deleteHandler struct {
 	*Handler
-	withdraw *npool.Withdraw
 }
 
 func (h *deleteHandler) unlockBalance(ctx context.Context, tx *ent.Tx) error {
-	if h.withdraw.StateStr != types.WithdrawState_Reviewing.String() {
-		return nil
+	info, err := tx.
+		Withdraw.
+		Query().
+		Where(
+			entwithdraw.ID(*h.ID),
+			entwithdraw.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
 	}
 
-	appID := uuid.MustParse(h.withdraw.AppID)
-	userID := uuid.MustParse(h.withdraw.UserID)
-	coinTypeID := uuid.MustParse(h.withdraw.CoinTypeID)
-	info, err := tx.
+	ledgerInfo, err := tx.
 		Ledger.
 		Query().
 		Where(
-			entledger.AppID(appID),
-			entledger.UserID(userID),
-			entledger.CoinTypeID(coinTypeID),
+			entledger.AppID(info.AppID),
+			entledger.UserID(info.UserID),
+			entledger.CoinTypeID(info.CoinTypeID),
 			entledger.DeletedAt(0),
 		).
 		ForUpdate().
@@ -44,16 +47,16 @@ func (h *deleteHandler) unlockBalance(ctx context.Context, tx *ent.Tx) error {
 	if err != nil {
 		return err
 	}
-	spendable := decimal.RequireFromString(h.withdraw.Amount)
-	locked := decimal.NewFromInt(0).Sub(spendable)
+
+	locked := decimal.NewFromInt(0).Sub(info.Amount)
 	stm, err := ledgercrud.UpdateSetWithValidate(
-		info,
+		ledgerInfo,
 		&ledgercrud.Req{
-			AppID:      &appID,
-			UserID:     &userID,
-			CoinTypeID: &coinTypeID,
+			AppID:      &info.AppID,
+			UserID:     &info.UserID,
+			CoinTypeID: &info.CoinTypeID,
 			Locked:     &locked,
-			Spendable:  &spendable,
+			Spendable:  &info.Amount,
 		},
 	)
 	if err != nil {
@@ -97,16 +100,15 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		return nil, err
 	}
 	if info == nil {
-		return nil, nil
+		return nil, fmt.Errorf("withdraw not found")
 	}
-	if info.State == types.WithdrawState_Transferring {
-		return nil, fmt.Errorf("withdraw in transferring state can not be delete")
+	if info.State != types.WithdrawState_Reviewing {
+		return nil, fmt.Errorf("withdraw only in reviewing state can be deleted")
 	}
 
 	handler := &deleteHandler{
 		Handler: h,
 	}
-	handler.withdraw = info
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if err := handler.deleteWithdraw(ctx, tx); err != nil {
