@@ -20,16 +20,26 @@ import (
 
 type deleteHandler struct {
 	*Handler
-	statementsMap map[string]*npool.GoodStatement
 }
 
 func (h *deleteHandler) updateGoodLedger(req *goodstatementcrud.Req, ctx context.Context, tx *ent.Tx) error {
-	statement, _ := h.statementsMap[req.ID.String()] //nolint
+	statement, err := tx.
+		GoodStatement.
+		Query().
+		Where(
+			entgoodstatement.ID(*req.ID),
+			entgoodstatement.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
 	stm, err := goodledgercrud.SetQueryConds(
 		tx.GoodLedger.Query(),
 		&goodledgercrud.Conds{
-			GoodID:     &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.GoodID)},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(statement.CoinTypeID)},
+			GoodID:     &cruder.Cond{Op: cruder.EQ, Val: statement.GoodID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: statement.CoinTypeID},
 		})
 	if err != nil {
 		return err
@@ -112,45 +122,14 @@ func (h *deleteHandler) deleteUnsoldStatement(req *goodstatementcrud.Req, ctx co
 	return nil
 }
 
-func (h *deleteHandler) tryGetAllGoodStatements(ctx context.Context) error {
-	ids := []uuid.UUID{}
-	for _, req := range h.Reqs {
-		if req.ID == nil {
-			return fmt.Errorf("invalid good statement id")
-		}
-		ids = append(ids, *req.ID)
-	}
-
-	h.Conds = &goodstatementcrud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
-	}
-	h.Limit = int32(len(ids))
-	infos, _, err := h.GetGoodStatements(ctx)
-	if err != nil {
-		return err
-	}
-
-	h.statementsMap = map[string]*npool.GoodStatement{}
-	for _, info := range infos {
-		h.statementsMap[info.ID] = info
-	}
-	return nil
-}
-
 func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
 	handler := &deleteHandler{
 		Handler: h,
 	}
-	if err := handler.tryGetAllGoodStatements(ctx); err != nil {
-		return nil, err
-	}
+	ids := []uuid.UUID{}
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				_, ok := handler.statementsMap[req.ID.String()]
-				if !ok {
-					return fmt.Errorf("good statement not found %v", req.ID.String())
-				}
 				if err := handler.deleteGoodStatement(req, ctx, tx); err != nil {
 					return err
 				}
@@ -160,6 +139,7 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if err := handler.updateGoodLedger(req, ctx, tx); err != nil {
 					return err
 				}
+				ids = append(ids, *req.ID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -172,9 +152,13 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		return nil, err
 	}
 
-	infos := []*npool.GoodStatement{}
-	for _, value := range handler.statementsMap {
-		infos = append(infos, value)
+	h.Conds = &goodstatementcrud.Conds{
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	}
+	h.Limit = int32(len(ids))
+	infos, _, err := h.GetGoodStatements(ctx)
+	if err != nil {
+		return nil, err
 	}
 	return infos, nil
 }
