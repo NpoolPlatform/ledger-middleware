@@ -284,7 +284,7 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: id,
 			}
 		}
-        if conds.Amount != nil {
+		if conds.Amount != nil {
 			amount, err := decimal.NewFromString(conds.GetAmount().GetValue())
 			if err != nil {
 				return err
