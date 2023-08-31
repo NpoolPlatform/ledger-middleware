@@ -20,45 +20,30 @@ import (
 
 type deleteHandler struct {
 	*Handler
-	statementsMap map[string]*npool.Statement
-}
-
-func (h *deleteHandler) tryGetAllStatements(ctx context.Context) error {
-	ids := []uuid.UUID{}
-	for _, req := range h.Reqs {
-		if req.ID == nil {
-			return fmt.Errorf("invalid statement id")
-		}
-		ids = append(ids, *req.ID)
-	}
-
-	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
-	}
-	h.Limit = int32(len(ids))
-
-	infos, _, err := h.GetStatements(ctx)
-	if err != nil {
-		return err
-	}
-
-	h.statementsMap = map[string]*npool.Statement{}
-	for _, info := range infos {
-		h.statementsMap[info.ID] = info
-	}
-	return nil
 }
 
 func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
 	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
 		return nil
 	}
+	statement, err := tx.
+		Statement.
+		Query().
+		Where(
+			entstatement.ID(*req.ID),
+			entstatement.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
 	stm, err := profitcrud.SetQueryConds(
 		tx.Profit.Query(),
 		&profitcrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: statement.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: statement.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: statement.CoinTypeID},
 		},
 	)
 	if err != nil {
@@ -68,11 +53,8 @@ func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent
 	if err != nil {
 		return err
 	}
-	if info == nil {
-		return fmt.Errorf("profit not found")
-	}
 
-	amount := decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount))
+	amount := decimal.NewFromInt(0).Sub(statement.Amount)
 	stm1, err := profitcrud.UpdateSetWithValidate(
 		info,
 		&profitcrud.Req{
@@ -89,12 +71,23 @@ func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent
 }
 
 func (h *deleteHandler) updateLedger(req *crud.Req, ctx context.Context, tx *ent.Tx) error {
+	statement, err := tx.
+		Statement.
+		Query().
+		Where(
+			entstatement.ID(*req.ID),
+			entstatement.DeletedAt(0),
+		).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
 	stm, err := ledgercrud.SetQueryConds(
 		tx.Ledger.Query(),
 		&ledgercrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+			AppID:      &cruder.Cond{Op: cruder.EQ, Val: statement.AppID},
+			UserID:     &cruder.Cond{Op: cruder.EQ, Val: statement.UserID},
+			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: statement.CoinTypeID},
 		})
 	if err != nil {
 		return err
@@ -106,13 +99,14 @@ func (h *deleteHandler) updateLedger(req *crud.Req, ctx context.Context, tx *ent
 
 	incoming := decimal.NewFromInt(0)
 	outcoming := decimal.NewFromInt(0)
-	switch *req.IOType {
+	ioType := basetypes.IOType(basetypes.IOType_value[statement.IoType])
+	switch ioType {
 	case basetypes.IOType_Incoming:
-		incoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
+		incoming = decimal.NewFromInt(0).Sub(statement.Amount)
 	case basetypes.IOType_Outcoming:
-		outcoming = decimal.RequireFromString(fmt.Sprintf("-%v", req.Amount.String()))
+		outcoming = decimal.NewFromInt(0).Sub(statement.Amount)
 	default:
-		return fmt.Errorf("invalid io type %v", *req.IOType)
+		return fmt.Errorf("invalid io type %v", statement.IoType)
 	}
 	spendable := incoming.Sub(outcoming)
 
@@ -160,20 +154,30 @@ func (h *deleteHandler) deleteStatement(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, error) {
-	handler := &deleteHandler{
-		Handler: h,
+	ids := []uuid.UUID{}
+	for _, req := range h.Reqs {
+		if req.ID == nil {
+			return nil, fmt.Errorf("invalid statement id")
+		}
+		ids = append(ids, *req.ID)
 	}
-	if err := handler.tryGetAllStatements(ctx); err != nil {
+
+	h.Conds = &crud.Conds{
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	}
+	h.Limit = int32(len(ids))
+	infos, _, err := h.GetStatements(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	handler := &deleteHandler{
+		Handler: h,
+	}
+
+	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
-				_, ok := handler.statementsMap[req.ID.String()]
-				if !ok {
-					return fmt.Errorf("statement not found %v", req.ID.String())
-				}
 				if err := handler.deleteStatement(req, ctx, tx); err != nil {
 					return err
 				}
@@ -194,37 +198,11 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 	if err != nil {
 		return nil, err
 	}
-
-	infos := []*npool.Statement{}
-	for _, value := range handler.statementsMap {
-		infos = append(infos, value)
-	}
 	return infos, nil
 }
 
 func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error) {
-	info, err := h.GetStatement(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if info == nil {
-		return nil, nil
-	}
-
-	appID := uuid.MustParse(info.AppID)
-	userID := uuid.MustParse(info.UserID)
-	coinTypeID := uuid.MustParse(info.CoinTypeID)
-	amount := decimal.RequireFromString(info.Amount)
-	h.Reqs = append(h.Reqs, &crud.Req{
-		ID:         h.ID,
-		AppID:      &appID,
-		UserID:     &userID,
-		CoinTypeID: &coinTypeID,
-		IOType:     &info.IOType,
-		IOSubType:  &info.IOSubType,
-		IOExtra:    &info.IOExtra,
-		Amount:     &amount,
-	})
+	h.Reqs = []*crud.Req{&h.Req}
 	infos, err := h.DeleteStatements(ctx)
 	if err != nil {
 		return nil, err
@@ -235,6 +213,5 @@ func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error)
 	if len(infos) > 1 {
 		return nil, fmt.Errorf("to many statements")
 	}
-
 	return infos[0], nil
 }

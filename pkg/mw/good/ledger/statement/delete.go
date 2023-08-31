@@ -126,8 +126,21 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	handler := &deleteHandler{
 		Handler: h,
 	}
+
 	ids := []uuid.UUID{}
-	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	for _, req := range h.Reqs {
+		ids = append(ids, *req.ID)
+	}
+	h.Conds = &goodstatementcrud.Conds{
+		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	}
+	h.Limit = int32(len(ids))
+	infos, _, err := h.GetGoodStatements(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			_fn := func() error {
 				if err := handler.deleteGoodStatement(req, ctx, tx); err != nil {
@@ -139,7 +152,6 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if err := handler.updateGoodLedger(req, ctx, tx); err != nil {
 					return err
 				}
-				ids = append(ids, *req.ID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -148,15 +160,6 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	h.Conds = &goodstatementcrud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
-	}
-	h.Limit = int32(len(ids))
-	infos, _, err := h.GetGoodStatements(ctx)
 	if err != nil {
 		return nil, err
 	}
