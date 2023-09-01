@@ -175,8 +175,9 @@ func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, re
 	locked := decimal.NewFromInt(0)
 
 	if info == nil {
-		if *req.IOType != basetypes.IOType_Incoming {
-			return fmt.Errorf("spendable(%v) less than 0", spendable.String())
+		if incoming.Cmp(decimal.NewFromInt(0)) < 0 || spendable.Cmp(decimal.NewFromInt(0)) < 0 ||
+			outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("insufficient funds")
 		}
 		if _, err := ledgercrud.CreateSet(
 			tx.Ledger.Create(),
