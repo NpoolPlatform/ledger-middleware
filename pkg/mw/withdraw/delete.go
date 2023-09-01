@@ -111,10 +111,10 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.deleteWithdraw(ctx, tx); err != nil {
+		if err := handler.unlockBalance(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.unlockBalance(ctx, tx); err != nil {
+		if err := handler.deleteWithdraw(ctx, tx); err != nil {
 			return err
 		}
 		return nil
