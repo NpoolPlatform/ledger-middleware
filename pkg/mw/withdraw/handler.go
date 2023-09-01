@@ -280,6 +280,22 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: basetypes.WithdrawState(state),
 			}
 		}
+		if conds.CreatedAt != nil {
+			h.Conds.CreatedAt = &cruder.Cond{
+				Op:  conds.GetCreatedAt().GetOp(),
+				Val: conds.GetCreatedAt().GetValue(),
+			}
+		}
+		if conds.AccountID != nil {
+			id, err := uuid.Parse(conds.GetAccountID().GetValue())
+			if err != nil {
+				return err
+			}
+			h.Conds.AccountID = &cruder.Cond{
+				Op:  conds.GetAccountID().GetOp(),
+				Val: id,
+			}
+		}
 		return nil
 	}
 }

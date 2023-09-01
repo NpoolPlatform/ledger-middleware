@@ -22,65 +22,66 @@ type updateHandler struct {
 	withdraw *ent.Withdraw
 }
 
+//nolint
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
-    err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
-        info, err := cli.
-            Withdraw.
-            Query().
-            Where(
-            entwithdraw.ID(*h.ID),
-            entwithdraw.DeletedAt(0),
-            ).
-            Only(ctx)
-        if err != nil {
-            return err
-        }
-        h.withdraw = info
-        return nil
-    })
-    if err != nil {
-        return err
-    }
+	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		info, err := cli.
+			Withdraw.
+			Query().
+			Where(
+				entwithdraw.ID(*h.ID),
+				entwithdraw.DeletedAt(0),
+			).
+			Only(ctx)
+		if err != nil {
+			return err
+		}
+		h.withdraw = info
+		return nil
+	})
+	if err != nil {
+		return err
+	}
 
-    if h.State == nil {
-        return nil
-    }
-    state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
-    switch state {
-    case types.WithdrawState_Rejected:
-        fallthrough //nolint
-    case types.WithdrawState_TransactionFail:
-        fallthrough //nolint
-    case types.WithdrawState_Successful:
-        return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
-}
+	if h.State == nil {
+		return nil
+	}
+	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
+	switch state {
+	case types.WithdrawState_Rejected:
+		fallthrough //nolint
+	case types.WithdrawState_TransactionFail:
+		fallthrough //nolint
+	case types.WithdrawState_Successful:
+		return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
+	}
 
-    switch state {
-    case types.WithdrawState_Reviewing:
-        switch *h.State {
-        case types.WithdrawState_Rejected:
-        case types.WithdrawState_Transferring:
-        default:
-            return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
-    }
-    case types.WithdrawState_Transferring:
-        if h.PlatformTransactionID == nil && h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
-            return fmt.Errorf("invalid platform transaction id")
-        }
-        switch *h.State {
-        case types.WithdrawState_TransactionFail:
-        case types.WithdrawState_Successful:
-        default:
-            return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
-    }
-        return nil
-}
-    if *h.State == types.WithdrawState_Transferring {
-        if h.PlatformTransactionID == nil && h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
-            return fmt.Errorf("invalid platform transaction id")
-        }
-    }
-    return nil
+	switch state {
+	case types.WithdrawState_Reviewing:
+		switch *h.State {
+		case types.WithdrawState_Rejected:
+		case types.WithdrawState_Transferring:
+		default:
+			return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
+		}
+	case types.WithdrawState_Transferring:
+		if h.PlatformTransactionID == nil && h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
+			return fmt.Errorf("invalid platform transaction id")
+		}
+		switch *h.State {
+		case types.WithdrawState_TransactionFail:
+		case types.WithdrawState_Successful:
+		default:
+			return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
+		}
+		return nil
+	}
+	if *h.State == types.WithdrawState_Transferring {
+		if h.PlatformTransactionID == nil && h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
+			return fmt.Errorf("invalid platform transaction id")
+		}
+	}
+	return nil
 }
 
 func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {

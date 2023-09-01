@@ -82,6 +82,7 @@ type Conds struct {
 	Address    *cruder.Cond
 	State      *cruder.Cond
 	Amount     *cruder.Cond
+	CreatedAt  *cruder.Cond
 }
 
 func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, error) { //nolint
@@ -184,6 +185,26 @@ func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, erro
 			q.Where(entwithdraw.State(state.String()))
 		default:
 			return nil, fmt.Errorf("invalid state op field %v", conds.State.Op)
+		}
+	}
+	if conds.CreatedAt != nil {
+		createdAt, ok := conds.CreatedAt.Val.(uint32)
+		if !ok {
+			return nil, fmt.Errorf("invalid created at  %v", conds.CreatedAt.Val)
+		}
+		switch conds.CreatedAt.Op {
+		case cruder.EQ:
+			q.Where(entwithdraw.CreatedAt(createdAt))
+		case cruder.GT:
+			q.Where(entwithdraw.CreatedAtGT(createdAt))
+		case cruder.GTE:
+			q.Where(entwithdraw.CreatedAtGTE(createdAt))
+		case cruder.LT:
+			q.Where(entwithdraw.CreatedAtLT(createdAt))
+		case cruder.LTE:
+			q.Where(entwithdraw.CreatedAtLTE(createdAt))
+		default:
+			return nil, fmt.Errorf("invalid creatd at op field %v", conds.CreatedAt.Op)
 		}
 	}
 	return q, nil
