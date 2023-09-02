@@ -174,6 +174,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			withdraw.FieldChainTransactionID:    {Type: field.TypeString, Column: withdraw.FieldChainTransactionID},
 			withdraw.FieldState:                 {Type: field.TypeString, Column: withdraw.FieldState},
 			withdraw.FieldAmount:                {Type: field.TypeFloat64, Column: withdraw.FieldAmount},
+			withdraw.FieldReviewID:              {Type: field.TypeUUID, Column: withdraw.FieldReviewID},
 		},
 	}
 	return graph
@@ -788,4 +789,9 @@ func (f *WithdrawFilter) WhereState(p entql.StringP) {
 // WhereAmount applies the entql float64 predicate on the amount field.
 func (f *WithdrawFilter) WhereAmount(p entql.Float64P) {
 	f.Where(p.Field(withdraw.FieldAmount))
+}
+
+// WhereReviewID applies the entql [16]byte predicate on the review_id field.
+func (f *WithdrawFilter) WhereReviewID(p entql.ValueP) {
+	f.Where(p.Field(withdraw.FieldReviewID))
 }

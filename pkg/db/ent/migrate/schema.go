@@ -137,6 +137,7 @@ var (
 		{Name: "chain_transaction_id", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "state", Type: field.TypeString, Nullable: true, Default: "DefaultWithdrawState"},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "review_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// WithdrawsTable holds the schema information for the "withdraws" table.
 	WithdrawsTable = &schema.Table{

@@ -41,6 +41,8 @@ type Withdraw struct {
 	State string `json:"state,omitempty"`
 	// Amount holds the value of the "amount" field.
 	Amount decimal.Decimal `json:"amount,omitempty"`
+	// ReviewID holds the value of the "review_id" field.
+	ReviewID uuid.UUID `json:"review_id,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -54,7 +56,7 @@ func (*Withdraw) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case withdraw.FieldAddress, withdraw.FieldChainTransactionID, withdraw.FieldState:
 			values[i] = new(sql.NullString)
-		case withdraw.FieldID, withdraw.FieldAppID, withdraw.FieldUserID, withdraw.FieldCoinTypeID, withdraw.FieldAccountID, withdraw.FieldPlatformTransactionID:
+		case withdraw.FieldID, withdraw.FieldAppID, withdraw.FieldUserID, withdraw.FieldCoinTypeID, withdraw.FieldAccountID, withdraw.FieldPlatformTransactionID, withdraw.FieldReviewID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Withdraw", columns[i])
@@ -149,6 +151,12 @@ func (w *Withdraw) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil {
 				w.Amount = *value
 			}
+		case withdraw.FieldReviewID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field review_id", values[i])
+			} else if value != nil {
+				w.ReviewID = *value
+			}
 		}
 	}
 	return nil
@@ -212,6 +220,9 @@ func (w *Withdraw) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("amount=")
 	builder.WriteString(fmt.Sprintf("%v", w.Amount))
+	builder.WriteString(", ")
+	builder.WriteString("review_id=")
+	builder.WriteString(fmt.Sprintf("%v", w.ReviewID))
 	builder.WriteByte(')')
 	return builder.String()
 }

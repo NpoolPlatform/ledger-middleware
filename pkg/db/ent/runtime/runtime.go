@@ -361,6 +361,10 @@ func init() {
 	withdrawDescState := withdrawFields[8].Descriptor()
 	// withdraw.DefaultState holds the default value on creation for the state field.
 	withdraw.DefaultState = withdrawDescState.Default.(string)
+	// withdrawDescReviewID is the schema descriptor for review_id field.
+	withdrawDescReviewID := withdrawFields[10].Descriptor()
+	// withdraw.DefaultReviewID holds the default value on creation for the review_id field.
+	withdraw.DefaultReviewID = withdrawDescReviewID.Default.(func() uuid.UUID)
 	// withdrawDescID is the schema descriptor for id field.
 	withdrawDescID := withdrawFields[0].Descriptor()
 	// withdraw.DefaultID holds the default value on creation for the id field.

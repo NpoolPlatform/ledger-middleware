@@ -78,6 +78,12 @@ func (Withdraw) Fields() []ent.Field {
 				dialect.MySQL: "decimal(37, 18)",
 			}).
 			Optional(),
+		field.
+			UUID("review_id", uuid.UUID{}).
+			Optional().
+			Default(func() uuid.UUID {
+				return uuid.UUID{}
+			}),
 	}
 }
 

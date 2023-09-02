@@ -271,6 +271,26 @@ func (wu *WithdrawUpdate) ClearAmount() *WithdrawUpdate {
 	return wu
 }
 
+// SetReviewID sets the "review_id" field.
+func (wu *WithdrawUpdate) SetReviewID(u uuid.UUID) *WithdrawUpdate {
+	wu.mutation.SetReviewID(u)
+	return wu
+}
+
+// SetNillableReviewID sets the "review_id" field if the given value is not nil.
+func (wu *WithdrawUpdate) SetNillableReviewID(u *uuid.UUID) *WithdrawUpdate {
+	if u != nil {
+		wu.SetReviewID(*u)
+	}
+	return wu
+}
+
+// ClearReviewID clears the value of the "review_id" field.
+func (wu *WithdrawUpdate) ClearReviewID() *WithdrawUpdate {
+	wu.mutation.ClearReviewID()
+	return wu
+}
+
 // Mutation returns the WithdrawMutation object of the builder.
 func (wu *WithdrawUpdate) Mutation() *WithdrawMutation {
 	return wu.mutation
@@ -527,6 +547,19 @@ func (wu *WithdrawUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: withdraw.FieldAmount,
+		})
+	}
+	if value, ok := wu.mutation.ReviewID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: withdraw.FieldReviewID,
+		})
+	}
+	if wu.mutation.ReviewIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: withdraw.FieldReviewID,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, wu.driver, _spec); err != nil {
@@ -787,6 +820,26 @@ func (wuo *WithdrawUpdateOne) AddAmount(d decimal.Decimal) *WithdrawUpdateOne {
 // ClearAmount clears the value of the "amount" field.
 func (wuo *WithdrawUpdateOne) ClearAmount() *WithdrawUpdateOne {
 	wuo.mutation.ClearAmount()
+	return wuo
+}
+
+// SetReviewID sets the "review_id" field.
+func (wuo *WithdrawUpdateOne) SetReviewID(u uuid.UUID) *WithdrawUpdateOne {
+	wuo.mutation.SetReviewID(u)
+	return wuo
+}
+
+// SetNillableReviewID sets the "review_id" field if the given value is not nil.
+func (wuo *WithdrawUpdateOne) SetNillableReviewID(u *uuid.UUID) *WithdrawUpdateOne {
+	if u != nil {
+		wuo.SetReviewID(*u)
+	}
+	return wuo
+}
+
+// ClearReviewID clears the value of the "review_id" field.
+func (wuo *WithdrawUpdateOne) ClearReviewID() *WithdrawUpdateOne {
+	wuo.mutation.ClearReviewID()
 	return wuo
 }
 
@@ -1076,6 +1129,19 @@ func (wuo *WithdrawUpdateOne) sqlSave(ctx context.Context) (_node *Withdraw, err
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: withdraw.FieldAmount,
+		})
+	}
+	if value, ok := wuo.mutation.ReviewID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: withdraw.FieldReviewID,
+		})
+	}
+	if wuo.mutation.ReviewIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: withdraw.FieldReviewID,
 		})
 	}
 	_node = &Withdraw{config: wuo.config}

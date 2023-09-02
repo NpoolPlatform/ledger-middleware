@@ -192,6 +192,20 @@ func (wc *WithdrawCreate) SetNillableAmount(d *decimal.Decimal) *WithdrawCreate 
 	return wc
 }
 
+// SetReviewID sets the "review_id" field.
+func (wc *WithdrawCreate) SetReviewID(u uuid.UUID) *WithdrawCreate {
+	wc.mutation.SetReviewID(u)
+	return wc
+}
+
+// SetNillableReviewID sets the "review_id" field if the given value is not nil.
+func (wc *WithdrawCreate) SetNillableReviewID(u *uuid.UUID) *WithdrawCreate {
+	if u != nil {
+		wc.SetReviewID(*u)
+	}
+	return wc
+}
+
 // SetID sets the "id" field.
 func (wc *WithdrawCreate) SetID(u uuid.UUID) *WithdrawCreate {
 	wc.mutation.SetID(u)
@@ -353,6 +367,13 @@ func (wc *WithdrawCreate) defaults() error {
 		v := withdraw.DefaultState
 		wc.mutation.SetState(v)
 	}
+	if _, ok := wc.mutation.ReviewID(); !ok {
+		if withdraw.DefaultReviewID == nil {
+			return fmt.Errorf("ent: uninitialized withdraw.DefaultReviewID (forgotten import ent/runtime?)")
+		}
+		v := withdraw.DefaultReviewID()
+		wc.mutation.SetReviewID(v)
+	}
 	if _, ok := wc.mutation.ID(); !ok {
 		if withdraw.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized withdraw.DefaultID (forgotten import ent/runtime?)")
@@ -506,6 +527,14 @@ func (wc *WithdrawCreate) createSpec() (*Withdraw, *sqlgraph.CreateSpec) {
 			Column: withdraw.FieldAmount,
 		})
 		_node.Amount = value
+	}
+	if value, ok := wc.mutation.ReviewID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: withdraw.FieldReviewID,
+		})
+		_node.ReviewID = value
 	}
 	return _node, _spec
 }
@@ -780,6 +809,24 @@ func (u *WithdrawUpsert) AddAmount(v decimal.Decimal) *WithdrawUpsert {
 // ClearAmount clears the value of the "amount" field.
 func (u *WithdrawUpsert) ClearAmount() *WithdrawUpsert {
 	u.SetNull(withdraw.FieldAmount)
+	return u
+}
+
+// SetReviewID sets the "review_id" field.
+func (u *WithdrawUpsert) SetReviewID(v uuid.UUID) *WithdrawUpsert {
+	u.Set(withdraw.FieldReviewID, v)
+	return u
+}
+
+// UpdateReviewID sets the "review_id" field to the value that was provided on create.
+func (u *WithdrawUpsert) UpdateReviewID() *WithdrawUpsert {
+	u.SetExcluded(withdraw.FieldReviewID)
+	return u
+}
+
+// ClearReviewID clears the value of the "review_id" field.
+func (u *WithdrawUpsert) ClearReviewID() *WithdrawUpsert {
+	u.SetNull(withdraw.FieldReviewID)
 	return u
 }
 
@@ -1089,6 +1136,27 @@ func (u *WithdrawUpsertOne) UpdateAmount() *WithdrawUpsertOne {
 func (u *WithdrawUpsertOne) ClearAmount() *WithdrawUpsertOne {
 	return u.Update(func(s *WithdrawUpsert) {
 		s.ClearAmount()
+	})
+}
+
+// SetReviewID sets the "review_id" field.
+func (u *WithdrawUpsertOne) SetReviewID(v uuid.UUID) *WithdrawUpsertOne {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.SetReviewID(v)
+	})
+}
+
+// UpdateReviewID sets the "review_id" field to the value that was provided on create.
+func (u *WithdrawUpsertOne) UpdateReviewID() *WithdrawUpsertOne {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.UpdateReviewID()
+	})
+}
+
+// ClearReviewID clears the value of the "review_id" field.
+func (u *WithdrawUpsertOne) ClearReviewID() *WithdrawUpsertOne {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.ClearReviewID()
 	})
 }
 
@@ -1564,6 +1632,27 @@ func (u *WithdrawUpsertBulk) UpdateAmount() *WithdrawUpsertBulk {
 func (u *WithdrawUpsertBulk) ClearAmount() *WithdrawUpsertBulk {
 	return u.Update(func(s *WithdrawUpsert) {
 		s.ClearAmount()
+	})
+}
+
+// SetReviewID sets the "review_id" field.
+func (u *WithdrawUpsertBulk) SetReviewID(v uuid.UUID) *WithdrawUpsertBulk {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.SetReviewID(v)
+	})
+}
+
+// UpdateReviewID sets the "review_id" field to the value that was provided on create.
+func (u *WithdrawUpsertBulk) UpdateReviewID() *WithdrawUpsertBulk {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.UpdateReviewID()
+	})
+}
+
+// ClearReviewID clears the value of the "review_id" field.
+func (u *WithdrawUpsertBulk) ClearReviewID() *WithdrawUpsertBulk {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.ClearReviewID()
 	})
 }
 

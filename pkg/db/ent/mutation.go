@@ -6341,6 +6341,7 @@ type WithdrawMutation struct {
 	state                   *string
 	amount                  *decimal.Decimal
 	addamount               *decimal.Decimal
+	review_id               *uuid.UUID
 	clearedFields           map[string]struct{}
 	done                    bool
 	oldValue                func(context.Context) (*Withdraw, error)
@@ -7081,6 +7082,55 @@ func (m *WithdrawMutation) ResetAmount() {
 	delete(m.clearedFields, withdraw.FieldAmount)
 }
 
+// SetReviewID sets the "review_id" field.
+func (m *WithdrawMutation) SetReviewID(u uuid.UUID) {
+	m.review_id = &u
+}
+
+// ReviewID returns the value of the "review_id" field in the mutation.
+func (m *WithdrawMutation) ReviewID() (r uuid.UUID, exists bool) {
+	v := m.review_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReviewID returns the old "review_id" field's value of the Withdraw entity.
+// If the Withdraw object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WithdrawMutation) OldReviewID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReviewID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReviewID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReviewID: %w", err)
+	}
+	return oldValue.ReviewID, nil
+}
+
+// ClearReviewID clears the value of the "review_id" field.
+func (m *WithdrawMutation) ClearReviewID() {
+	m.review_id = nil
+	m.clearedFields[withdraw.FieldReviewID] = struct{}{}
+}
+
+// ReviewIDCleared returns if the "review_id" field was cleared in this mutation.
+func (m *WithdrawMutation) ReviewIDCleared() bool {
+	_, ok := m.clearedFields[withdraw.FieldReviewID]
+	return ok
+}
+
+// ResetReviewID resets all changes to the "review_id" field.
+func (m *WithdrawMutation) ResetReviewID() {
+	m.review_id = nil
+	delete(m.clearedFields, withdraw.FieldReviewID)
+}
+
 // Where appends a list predicates to the WithdrawMutation builder.
 func (m *WithdrawMutation) Where(ps ...predicate.Withdraw) {
 	m.predicates = append(m.predicates, ps...)
@@ -7100,7 +7150,7 @@ func (m *WithdrawMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WithdrawMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, withdraw.FieldCreatedAt)
 	}
@@ -7137,6 +7187,9 @@ func (m *WithdrawMutation) Fields() []string {
 	if m.amount != nil {
 		fields = append(fields, withdraw.FieldAmount)
 	}
+	if m.review_id != nil {
+		fields = append(fields, withdraw.FieldReviewID)
+	}
 	return fields
 }
 
@@ -7169,6 +7222,8 @@ func (m *WithdrawMutation) Field(name string) (ent.Value, bool) {
 		return m.State()
 	case withdraw.FieldAmount:
 		return m.Amount()
+	case withdraw.FieldReviewID:
+		return m.ReviewID()
 	}
 	return nil, false
 }
@@ -7202,6 +7257,8 @@ func (m *WithdrawMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldState(ctx)
 	case withdraw.FieldAmount:
 		return m.OldAmount(ctx)
+	case withdraw.FieldReviewID:
+		return m.OldReviewID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Withdraw field %s", name)
 }
@@ -7294,6 +7351,13 @@ func (m *WithdrawMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAmount(v)
+		return nil
+	case withdraw.FieldReviewID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReviewID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Withdraw field %s", name)
@@ -7403,6 +7467,9 @@ func (m *WithdrawMutation) ClearedFields() []string {
 	if m.FieldCleared(withdraw.FieldAmount) {
 		fields = append(fields, withdraw.FieldAmount)
 	}
+	if m.FieldCleared(withdraw.FieldReviewID) {
+		fields = append(fields, withdraw.FieldReviewID)
+	}
 	return fields
 }
 
@@ -7443,6 +7510,9 @@ func (m *WithdrawMutation) ClearField(name string) error {
 		return nil
 	case withdraw.FieldAmount:
 		m.ClearAmount()
+		return nil
+	case withdraw.FieldReviewID:
+		m.ClearReviewID()
 		return nil
 	}
 	return fmt.Errorf("unknown Withdraw nullable field %s", name)
@@ -7487,6 +7557,9 @@ func (m *WithdrawMutation) ResetField(name string) error {
 		return nil
 	case withdraw.FieldAmount:
 		m.ResetAmount()
+		return nil
+	case withdraw.FieldReviewID:
+		m.ResetReviewID()
 		return nil
 	}
 	return fmt.Errorf("unknown Withdraw field %s", name)
