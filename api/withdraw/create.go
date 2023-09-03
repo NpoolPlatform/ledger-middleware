@@ -29,7 +29,6 @@ func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawReq
 		withdraw1.WithAmount(req.Amount, true),
 		withdraw1.WithPlatformTransactionID(req.PlatformTransactionID, false),
 		withdraw1.WithAddress(req.Address, true),
-		withdraw1.WithReviewID(req.ReviewID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

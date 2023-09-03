@@ -44,14 +44,15 @@ var (
 		Amount:                "999.999999999",
 		State:                 types.WithdrawState_Reviewing,
 		StateStr:              types.WithdrawState_Reviewing.String(),
-		PlatformTransactionID: "00000000-0000-0000-0000-000000000000",
+		PlatformTransactionID: uuid.Nil.String(),
+		ReviewID:              uuid.NewString(),
 	}
 )
 
 func createLedger(t *testing.T) {
 	ioType := types.IOType_Incoming
 	ioSubType := types.IOSubType_Deposit
-	ioExtra := fmt.Sprintf(`{"AppID": "%v", "AccountID": "%v"}`, uuid.NewString(), uuid.NewString())
+	ioExtra := fmt.Sprintf(`{"AppID": "%v","AccountID": "%v"}`, uuid.NewString(), uuid.NewString())
 	amount := "10000"
 
 	info, err := statementmwcli.CreateStatement(

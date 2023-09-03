@@ -27,6 +27,7 @@ func (s *Server) UpdateWithdraw(ctx context.Context, in *npool.UpdateWithdrawReq
 		withdraw1.WithState(req.State, false),
 		withdraw1.WithRollback(req.Rollback, false),
 		withdraw1.WithFeeAmount(req.FeeAmount, false),
+		withdraw1.WithReviewID(req.ReviewID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

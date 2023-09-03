@@ -94,7 +94,12 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		}
 		toStates = []types.WithdrawState{toState}
 	} else {
-		if *h.State == types.WithdrawState_Transferring {
+		switch *h.State {
+		case types.WithdrawState_Reviewing:
+			if h.ReviewID == nil {
+				return fmt.Errorf("invalid review id")
+			}
+		case types.WithdrawState_Transferring:
 			if h.PlatformTransactionID == nil &&
 				h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
 				return fmt.Errorf("invalid platform transaction id")
