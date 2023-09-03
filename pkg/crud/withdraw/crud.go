@@ -23,6 +23,7 @@ type Req struct {
 	PlatformTransactionID *uuid.UUID
 	ChainTransactionID    *string
 	State                 *basetypes.WithdrawState
+	ReviewID              *uuid.UUID
 	CreatedAt             *uint32
 	DeletedAt             *uint32
 }
@@ -52,8 +53,10 @@ func CreateSet(c *ent.WithdrawCreate, in *Req) *ent.WithdrawCreate {
 	if in.PlatformTransactionID != nil {
 		c.SetPlatformTransactionID(*in.PlatformTransactionID)
 	}
-
-	c.SetState(basetypes.WithdrawState_Reviewing.String())
+	if in.ReviewID != nil {
+		c.SetReviewID(*in.ReviewID)
+	}
+	c.SetState(basetypes.WithdrawState_Created.String())
 	return c
 }
 

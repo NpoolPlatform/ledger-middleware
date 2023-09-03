@@ -15,11 +15,12 @@ import (
 
 type Handler struct {
 	crud.Req
+	FeeAmount *decimal.Decimal
+	Rollback  *bool
 	Reqs      []*crud.Req
 	Conds     *crud.Conds
 	Offset    int32
 	Limit     int32
-	FeeAmount *decimal.Decimal
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -223,6 +224,30 @@ func WithFeeAmount(feeAmount *string, must bool) func(context.Context, *Handler)
 			return fmt.Errorf("fee amount is less than equal 0 %v", *feeAmount)
 		}
 		h.FeeAmount = &_feeAmount
+		return nil
+	}
+}
+
+func WithReviewID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid review id")
+			}
+			return nil
+		}
+		_id, err := uuid.Parse(*id)
+		if err != nil {
+			return err
+		}
+		h.ReviewID = &_id
+		return nil
+	}
+}
+
+func WithRollback(b *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.Rollback = b
 		return nil
 	}
 }
