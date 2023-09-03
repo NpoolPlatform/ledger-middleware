@@ -17,7 +17,6 @@ type Handler struct {
 	crud.Req
 	FeeAmount *decimal.Decimal
 	Rollback  *bool
-	Reqs      []*crud.Req
 	Conds     *crud.Conds
 	Offset    int32
 	Limit     int32

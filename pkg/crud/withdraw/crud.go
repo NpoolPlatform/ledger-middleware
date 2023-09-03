@@ -70,6 +70,9 @@ func UpdateSet(u *ent.WithdrawUpdateOne, req *Req) *ent.WithdrawUpdateOne {
 	if req.State != nil {
 		u.SetState(req.State.String())
 	}
+	if req.ReviewID != nil {
+		u.SetReviewID(*req.ReviewID)
+	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}

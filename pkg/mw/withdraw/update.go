@@ -121,7 +121,7 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	return nil
 }
 
-func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
+func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
 	if h.State == nil {
 		return nil
 	}
@@ -173,7 +173,8 @@ func (h *updateHandler) tryUpdateLedger(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
-	if h.PlatformTransactionID != nil && h.withdraw.PlatformTransactionID.String() != uuid.Nil.String() {
+	if h.PlatformTransactionID != nil &&
+		h.withdraw.PlatformTransactionID.String() != uuid.Nil.String() {
 		return fmt.Errorf("current platform transaction id can not be updated")
 	}
 	if _, err := crud.UpdateSet(
@@ -233,7 +234,7 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		if err := handler.updateWithdraw(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.tryUpdateLedger(ctx, tx); err != nil {
+		if err := handler.updateLedger(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.createStatement(ctx, tx); err != nil {

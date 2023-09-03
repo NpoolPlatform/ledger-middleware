@@ -36,9 +36,10 @@ var (
 		AccountID:             uuid.NewString(),
 		Address:               uuid.NewString(),
 		Amount:                "999.999999999",
-		State:                 types.WithdrawState_Reviewing,
-		StateStr:              types.WithdrawState_Reviewing.String(),
-		PlatformTransactionID: "00000000-0000-0000-0000-000000000000",
+		State:                 types.WithdrawState_Created,
+		StateStr:              types.WithdrawState_Created.String(),
+		PlatformTransactionID: uuid.Nil.String(),
+		ReviewID:              uuid.Nil.String(),
 	}
 )
 
@@ -86,15 +87,15 @@ func createWithdraw(t *testing.T) {
 }
 
 func updateWithdraw(t *testing.T) {
-	ret.State = types.WithdrawState_Rejected
-	ret.StateStr = types.WithdrawState_Rejected.String()
-	ret.PlatformTransactionID = uuid.NewString()
+	ret.State = types.WithdrawState_Reviewing
+	ret.StateStr = types.WithdrawState_Reviewing.String()
+	ret.ReviewID = uuid.NewString()
 
 	handler, err := NewHandler(
 		context.Background(),
 		WithID(&ret.ID, true),
 		WithState(&ret.State, false),
-		WithPlatformTransactionID(&ret.PlatformTransactionID, false),
+		WithReviewID(&ret.ReviewID, false),
 	)
 	assert.Nil(t, err)
 
@@ -148,7 +149,12 @@ func deleteWithdraw(t *testing.T) {
 	assert.Nil(t, err)
 
 	info, err := handler.DeleteWithdraw(context.Background())
-	assert.NotNil(t, err)
+	if assert.Nil(t, err) {
+		assert.Equal(t, &ret, info)
+	}
+
+	info, err = handler.GetWithdraw(context.Background())
+	assert.Nil(t, err)
 	assert.Nil(t, info)
 }
 

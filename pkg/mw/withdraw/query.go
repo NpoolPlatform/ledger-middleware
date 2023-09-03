@@ -32,6 +32,7 @@ func (h *queryHandler) selectWithdraw(stm *ent.WithdrawQuery) {
 		entwithdraw.FieldPlatformTransactionID,
 		entwithdraw.FieldAddress,
 		entwithdraw.FieldAmount,
+		entwithdraw.FieldReviewID,
 		entwithdraw.FieldCreatedAt,
 		entwithdraw.FieldUpdatedAt,
 	)
