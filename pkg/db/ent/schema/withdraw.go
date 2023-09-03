@@ -70,7 +70,7 @@ func (Withdraw) Fields() []ent.Field {
 		field.
 			String("state").
 			Optional().
-			Default(basetypes.WithdrawState_DefaultWithdrawState.String()),
+			Default(basetypes.WithdrawState_Created.String()),
 		field.
 			Float("amount").
 			GoType(decimal.Decimal{}).

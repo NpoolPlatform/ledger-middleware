@@ -135,7 +135,7 @@ var (
 		{Name: "address", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "platform_transaction_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "chain_transaction_id", Type: field.TypeString, Nullable: true, Default: ""},
-		{Name: "state", Type: field.TypeString, Nullable: true, Default: "DefaultWithdrawState"},
+		{Name: "state", Type: field.TypeString, Nullable: true, Default: "Created"},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
 		{Name: "review_id", Type: field.TypeUUID, Nullable: true},
 	}
