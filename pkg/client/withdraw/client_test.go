@@ -42,10 +42,10 @@ var (
 		AccountID:             uuid.NewString(),
 		Address:               uuid.NewString(),
 		Amount:                "999.999999999",
-		State:                 types.WithdrawState_Reviewing,
-		StateStr:              types.WithdrawState_Reviewing.String(),
+		State:                 types.WithdrawState_Created,
+		StateStr:              types.WithdrawState_Created.String(),
 		PlatformTransactionID: uuid.Nil.String(),
-		ReviewID:              uuid.NewString(),
+		ReviewID:              uuid.Nil.String(),
 	}
 )
 
@@ -89,14 +89,14 @@ func createWithdraw(t *testing.T) {
 }
 
 func updateWithdraw(t *testing.T) {
-	ret.State = types.WithdrawState_Rejected
-	ret.StateStr = types.WithdrawState_Rejected.String()
-	ret.PlatformTransactionID = uuid.NewString()
+	ret.State = types.WithdrawState_Reviewing
+	ret.StateStr = types.WithdrawState_Reviewing.String()
+	ret.ReviewID = uuid.NewString()
 
 	info, err := UpdateWithdraw(context.Background(), &npool.WithdrawReq{
-		ID:                    &ret.ID,
-		PlatformTransactionID: &ret.PlatformTransactionID,
-		State:                 &ret.State,
+		ID:       &ret.ID,
+		State:    &ret.State,
+		ReviewID: &ret.ReviewID,
 	})
 	if assert.Nil(t, err) {
 		ret.UpdatedAt = info.UpdatedAt
@@ -125,8 +125,13 @@ func getWithdraws(t *testing.T) {
 }
 
 func deleteWithdraw(t *testing.T) {
-	info, err := DeleteWithdraw(context.Background(), &npool.WithdrawReq{ID: &ret.ID})
-	assert.NotNil(t, err)
+	info, err := DeleteWithdraw(context.Background(), ret.ID)
+	if assert.Nil(t, err) {
+		assert.Equal(t, &ret, info)
+	}
+
+	info, err = GetWithdraw(context.Background(), ret.ID)
+	assert.Nil(t, err)
 	assert.Nil(t, info)
 }
 
