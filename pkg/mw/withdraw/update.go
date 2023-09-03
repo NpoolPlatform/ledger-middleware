@@ -22,6 +22,31 @@ type updateHandler struct {
 	withdraw *ent.Withdraw
 }
 
+var (
+	stateMap    map[types.WithdrawState][]types.WithdrawState
+	rollbackMap map[types.WithdrawState]types.WithdrawState
+)
+
+func init() {
+	stateMap = map[types.WithdrawState][]types.WithdrawState{
+		types.WithdrawState_Created:                {types.WithdrawState_Reviewing},
+		types.WithdrawState_Reviewing:              {types.WithdrawState_Approved, types.WithdrawState_PreRejected},
+		types.WithdrawState_Approved:               {types.WithdrawState_Transferring},
+		types.WithdrawState_Transferring:           {types.WithdrawState_PreFail, types.WithdrawState_PreSuccessful},
+		types.WithdrawState_PreRejected:            {types.WithdrawState_ReturnRejectedBalance},
+		types.WithdrawState_ReturnRejectedBalance:  {types.WithdrawState_Rejected},
+		types.WithdrawState_PreFail:                {types.WithdrawState_ReturnFailBalance},
+		types.WithdrawState_ReturnFailBalance:      {types.WithdrawState_TransactionFail},
+		types.WithdrawState_PreSuccessful:          {types.WithdrawState_SpendSuccessfulBalance},
+		types.WithdrawState_SpendSuccessfulBalance: {types.WithdrawState_Successful},
+	}
+	rollbackMap = map[types.WithdrawState]types.WithdrawState{
+		types.WithdrawState_TransactionFail: types.WithdrawState_ReturnFailBalance,
+		types.WithdrawState_Rejected:        types.WithdrawState_ReturnRejectedBalance,
+		types.WithdrawState_Successful:      types.WithdrawState_SpendSuccessfulBalance,
+	}
+}
+
 //nolint
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
@@ -47,40 +72,47 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		return nil
 	}
 	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
-	switch state {
-	case types.WithdrawState_Rejected:
-		fallthrough //nolint
-	case types.WithdrawState_TransactionFail:
-		fallthrough //nolint
-	case types.WithdrawState_Successful:
-		return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
+	if h.Rollback == nil || !*h.Rollback {
+		switch state {
+		case types.WithdrawState_Rejected:
+			fallthrough //nolint
+		case types.WithdrawState_TransactionFail:
+			fallthrough //nolint
+		case types.WithdrawState_Successful:
+			return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
+		}
 	}
 
-	switch state {
-	case types.WithdrawState_Reviewing:
-		switch *h.State {
-		case types.WithdrawState_Rejected:
-		case types.WithdrawState_Transferring:
-		default:
-			return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
+	toStates := []types.WithdrawState{}
+	if h.Rollback != nil && *h.Rollback {
+		if *h.State != types.WithdrawState(types.WithdrawState_value[h.withdraw.State]) {
+			return fmt.Errorf("invalid rollback state")
 		}
-	case types.WithdrawState_Transferring:
-		if h.PlatformTransactionID == nil && h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
-			return fmt.Errorf("invalid platform transaction id")
+		toState, ok := rollbackMap[*h.State]
+		if !ok {
+			return fmt.Errorf("invalid rollback state")
 		}
-		switch *h.State {
-		case types.WithdrawState_TransactionFail:
-		case types.WithdrawState_Successful:
-		default:
-			return fmt.Errorf("can not update withdraw state from %v to %v", h.withdraw.State, h.State.String())
+		toStates = []types.WithdrawState{toState}
+	} else {
+		if *h.State == types.WithdrawState_Transferring {
+			if h.PlatformTransactionID == nil &&
+				h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
+				return fmt.Errorf("invalid platform transaction id")
+			}
 		}
-		return nil
+		toStates = stateMap[state]
 	}
-	if *h.State == types.WithdrawState_Transferring {
-		if h.PlatformTransactionID == nil && h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
-			return fmt.Errorf("invalid platform transaction id")
+
+	allow := false
+	for _, state := range toStates {
+		if state == *h.State {
+			allow = true
 		}
 	}
+	if !allow {
+		return fmt.Errorf("permission denied %v -> %v", h.withdraw.State, *h.State)
+	}
+
 	return nil
 }
 

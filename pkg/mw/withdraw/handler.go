@@ -185,6 +185,7 @@ func WithAddress(address *string, must bool) func(context.Context, *Handler) err
 	}
 }
 
+//nolint
 func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if state == nil {
@@ -193,14 +194,22 @@ func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, 
 			}
 			return nil
 		}
-		flag := false
-		for _state := range basetypes.WithdrawState_value {
-			if _state == state.String() && _state != basetypes.WithdrawState_DefaultWithdrawState.String() {
-				flag = true
-			}
-		}
-		if !flag {
-			return fmt.Errorf("invalid state %v", *state)
+		switch *state {
+		case basetypes.WithdrawState_Created:
+		case basetypes.WithdrawState_Reviewing:
+		case basetypes.WithdrawState_Approved:
+		case basetypes.WithdrawState_Transferring:
+		case basetypes.WithdrawState_PreRejected:
+		case basetypes.WithdrawState_ReturnRejectedBalance:
+		case basetypes.WithdrawState_Rejected:
+		case basetypes.WithdrawState_PreFail:
+		case basetypes.WithdrawState_ReturnFailBalance:
+		case basetypes.WithdrawState_TransactionFail:
+		case basetypes.WithdrawState_PreSuccessful:
+		case basetypes.WithdrawState_SpendSuccessfulBalance:
+		case basetypes.WithdrawState_Successful:
+		default:
+			return fmt.Errorf("invalid state")
 		}
 		h.State = state
 		return nil
