@@ -130,6 +130,7 @@ func (h *Handler) GetGoodStatements(ctx context.Context) ([]*npool.GoodStatement
 			return err
 		}
 		handler.stmSelect.
+			Order(ent.Desc(entgoodstatement.FieldBenefitDate)).
 			Offset(int(handler.Offset)).
 			Limit(int(handler.Limit))
 		return handler.scan(_ctx)
