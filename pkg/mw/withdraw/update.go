@@ -49,6 +49,10 @@ func init() {
 
 //nolint
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
+	if h.State == nil {
+		return nil
+	}
+
 	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		info, err := cli.
 			Withdraw.
@@ -68,9 +72,6 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		return err
 	}
 
-	if h.State == nil {
-		return nil
-	}
 	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
 	if h.Rollback == nil || !*h.Rollback {
 		switch state {
@@ -110,6 +111,7 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	for _, state := range toStates {
 		if state == *h.State {
 			allow = true
+			break
 		}
 	}
 	if !allow {
