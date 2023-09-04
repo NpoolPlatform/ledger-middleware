@@ -91,22 +91,22 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("invalid rollback state")
 		}
-		toStates = []types.WithdrawState{toState}
-	} else {
-		switch *h.State {
-		case types.WithdrawState_Reviewing:
-			if h.ReviewID == nil {
-				return fmt.Errorf("invalid review id")
-			}
-		case types.WithdrawState_Transferring:
-			if h.PlatformTransactionID == nil &&
-				h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
-				return fmt.Errorf("invalid platform transaction id")
-			}
-		}
-		toStates = stateMap[state]
+		h.State = &toState
+		return nil
 	}
 
+	switch *h.State {
+	case types.WithdrawState_Reviewing:
+		if h.ReviewID == nil {
+			return fmt.Errorf("invalid review id")
+		}
+	case types.WithdrawState_Transferring:
+		if h.PlatformTransactionID == nil &&
+			h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
+			return fmt.Errorf("invalid platform transaction id")
+		}
+	}
+	toStates = stateMap[state]
 	allow := false
 	for _, state := range toStates {
 		if state == *h.State {
