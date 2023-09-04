@@ -299,7 +299,7 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			for _, val := range conds.GetIOSubTypes().GetValue() {
 				ioSubTypes = append(ioSubTypes, basetypes.IOSubType_name[int32(val)])
 			}
-			h.Conds.IOSubTypes = &cruder.Cond{Op: conds.GetIOSubType().GetOp(), Val: ioSubTypes}
+			h.Conds.IOSubTypes = &cruder.Cond{Op: conds.GetIOSubTypes().GetOp(), Val: ioSubTypes}
 		}
 		return nil
 	}

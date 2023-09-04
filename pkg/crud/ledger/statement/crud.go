@@ -233,11 +233,11 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 		if !ok {
 			return nil, fmt.Errorf("invalid io sub types %v", conds.IOSubTypes.Val)
 		}
-		switch conds.IOSubType.Op {
+		switch conds.IOSubTypes.Op {
 		case cruder.IN:
 			q.Where(entstatement.IoSubTypeIn(subTypes...))
 		default:
-			return nil, fmt.Errorf("invalid io sub type op field %v", conds.IOSubTypes.Op)
+			return nil, fmt.Errorf("invalid io sub types op field %v", conds.IOSubTypes.Op)
 		}
 	}
 	return q, nil

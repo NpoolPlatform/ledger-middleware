@@ -150,7 +150,6 @@ func WithChainTransactionID(id *string, must bool) func(context.Context, *Handle
 	}
 }
 
-//nolint
 func WithAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -215,7 +214,6 @@ func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, 
 	}
 }
 
-//nolint
 func WithFeeAmount(feeAmount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if feeAmount == nil {
