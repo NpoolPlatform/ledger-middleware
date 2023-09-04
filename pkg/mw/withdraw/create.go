@@ -2,15 +2,12 @@ package withdraw
 
 import (
 	"context"
-	"fmt"
 
-	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/withdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -57,14 +54,6 @@ func (h *createHandler) lockBalance(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *createHandler) createWithdraw(ctx context.Context, tx *ent.Tx) error {
-	key := fmt.Sprintf("%v:%v:%v:%v", basetypes.Prefix_PrefixCreateWithdraw, *h.AppID, *h.UserID, *h.ID)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-
 	if _, err := crud.CreateSet(
 		tx.Withdraw.Create(),
 		&h.Req,
