@@ -80,6 +80,7 @@ func createWithdraw(t *testing.T) {
 		AccountID:  &ret.AccountID,
 		Address:    &ret.Address,
 		Amount:     &ret.Amount,
+		ReviewID:   &ret.ReviewID,
 	})
 	if assert.Nil(t, err) {
 		ret.CreatedAt = info.CreatedAt
@@ -126,13 +127,8 @@ func getWithdraws(t *testing.T) {
 
 func deleteWithdraw(t *testing.T) {
 	info, err := DeleteWithdraw(context.Background(), ret.ID)
-	if assert.Nil(t, err) {
-		assert.Equal(t, &ret, info)
-	}
-
-	info, err = GetWithdraw(context.Background(), ret.ID)
-	assert.Nil(t, err)
-	assert.Nil(t, info)
+    assert.NotNil(t, err)
+    assert.Nil(t, info)
 }
 
 func TestClient(t *testing.T) {

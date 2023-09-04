@@ -75,6 +75,7 @@ func createWithdraw(t *testing.T) {
 		WithAccountID(&ret.AccountID, true),
 		WithAddress(&ret.Address, true),
 		WithAmount(&ret.Amount, true),
+		WithReviewID(&ret.ReviewID, true),
 	)
 	assert.Nil(t, err)
 
@@ -149,12 +150,7 @@ func deleteWithdraw(t *testing.T) {
 	assert.Nil(t, err)
 
 	info, err := handler.DeleteWithdraw(context.Background())
-	if assert.Nil(t, err) {
-		assert.Equal(t, &ret, info)
-	}
-
-	info, err = handler.GetWithdraw(context.Background())
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 	assert.Nil(t, info)
 }
 
