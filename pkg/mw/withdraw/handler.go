@@ -150,7 +150,6 @@ func WithChainTransactionID(id *string, must bool) func(context.Context, *Handle
 	}
 }
 
-//nolint
 func WithAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -215,12 +214,11 @@ func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, 
 	}
 }
 
-//nolint
 func WithFeeAmount(feeAmount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if feeAmount == nil {
 			if must {
-				return fmt.Errorf("invalid fee amount")
+				return fmt.Errorf("invalid feeamount")
 			}
 			return nil
 		}
@@ -228,8 +226,8 @@ func WithFeeAmount(feeAmount *string, must bool) func(context.Context, *Handler)
 		if err != nil {
 			return err
 		}
-		if _feeAmount.Cmp(decimal.NewFromInt(0)) <= 0 {
-			return fmt.Errorf("fee amount is less than equal 0 %v", *feeAmount)
+		if _feeAmount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("invalid feeamount")
 		}
 		h.FeeAmount = &_feeAmount
 		return nil

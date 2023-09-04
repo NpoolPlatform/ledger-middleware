@@ -215,6 +215,7 @@ func WithEndAt(endAt uint32) func(context.Context, *Handler) error {
 	}
 }
 
+//nolint
 func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Conds = &crud.Conds{}
@@ -292,6 +293,13 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Op:  conds.GetEndAt().GetOp(),
 				Val: conds.GetEndAt().GetValue(),
 			}
+		}
+		if len(conds.IOSubTypes.GetValue()) > 0 {
+			ioSubTypes := []string{}
+			for _, val := range conds.GetIOSubTypes().GetValue() {
+				ioSubTypes = append(ioSubTypes, basetypes.IOSubType_name[int32(val)])
+			}
+			h.Conds.IOSubTypes = &cruder.Cond{Op: conds.GetIOSubTypes().GetOp(), Val: ioSubTypes}
 		}
 		return nil
 	}
