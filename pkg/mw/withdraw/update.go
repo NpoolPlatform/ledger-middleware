@@ -200,8 +200,13 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("invalid fee amount")
 	}
 
-	ioExtra := fmt.Sprintf(`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
-		h.withdraw.ID, h.withdraw.PlatformTransactionID.String(), *h.ChainTransactionID, h.FeeAmount.String(), h.withdraw.AccountID,
+	ioExtra := fmt.Sprintf(
+		`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
+		h.withdraw.ID,
+		h.withdraw.PlatformTransactionID.String(),
+		*h.ChainTransactionID,
+		h.FeeAmount.String(),
+		h.withdraw.AccountID,
 	)
 
 	ioType := types.IOType_Outcoming
