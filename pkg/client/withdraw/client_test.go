@@ -127,8 +127,8 @@ func getWithdraws(t *testing.T) {
 
 func deleteWithdraw(t *testing.T) {
 	info, err := DeleteWithdraw(context.Background(), ret.ID)
-    assert.NotNil(t, err)
-    assert.Nil(t, info)
+	assert.NotNil(t, err)
+	assert.Nil(t, info)
 }
 
 func TestClient(t *testing.T) {
