@@ -49,7 +49,7 @@ func init() {
 
 //nolint
 func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
-	if h.State == nil {
+	if h.State == nil && h.PlatformTransactionID == nil && h.ReviewID == nil {
 		return nil
 	}
 
@@ -70,6 +70,9 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	})
 	if err != nil {
 		return err
+	}
+	if h.State == nil {
+		return nil
 	}
 
 	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
@@ -101,8 +104,7 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 			return fmt.Errorf("invalid review id")
 		}
 	case types.WithdrawState_Transferring:
-		if h.PlatformTransactionID == nil &&
-			h.withdraw.PlatformTransactionID.String() == uuid.Nil.String() {
+		if h.PlatformTransactionID == nil {
 			return fmt.Errorf("invalid platform transaction id")
 		}
 	}
@@ -173,9 +175,15 @@ func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
-	if h.PlatformTransactionID != nil &&
-		h.withdraw.PlatformTransactionID.String() != uuid.Nil.String() {
-		return fmt.Errorf("current platform transaction id can not be updated")
+	if h.PlatformTransactionID != nil {
+		if h.withdraw.PlatformTransactionID != uuid.Nil && *h.PlatformTransactionID != h.withdraw.PlatformTransactionID {
+			return fmt.Errorf("current platform transaction id can not be updated")
+		}
+	}
+	if h.ReviewID != nil {
+		if h.withdraw.ReviewID != uuid.Nil && *h.ReviewID != h.withdraw.ReviewID {
+			return fmt.Errorf("current review id can not be updated")
+		}
 	}
 	if _, err := crud.UpdateSet(
 		tx.Withdraw.UpdateOneID(*h.ID),
