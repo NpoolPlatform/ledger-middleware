@@ -84,10 +84,8 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	}
 
 	toStates := []types.WithdrawState{}
-	if h.Rollback != nil && *h.Rollback {
-		if *h.State != types.WithdrawState(types.WithdrawState_value[h.withdraw.State]) {
-			return fmt.Errorf("invalid rollback state")
-		}
+	if h.Rollback != nil && *h.Rollback &&
+		*h.State != types.WithdrawState(types.WithdrawState_value[h.withdraw.State]) {
 		toState, ok := rollbackMap[*h.State]
 		if !ok {
 			return fmt.Errorf("invalid rollback state")
