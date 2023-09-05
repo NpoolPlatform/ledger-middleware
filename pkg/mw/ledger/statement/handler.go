@@ -294,12 +294,26 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: conds.GetEndAt().GetValue(),
 			}
 		}
-		if len(conds.IOSubTypes.GetValue()) > 0 {
+		if len(conds.GetIOSubTypes().GetValue()) > 0 {
 			ioSubTypes := []string{}
 			for _, val := range conds.GetIOSubTypes().GetValue() {
 				ioSubTypes = append(ioSubTypes, basetypes.IOSubType_name[int32(val)])
 			}
 			h.Conds.IOSubTypes = &cruder.Cond{Op: conds.GetIOSubTypes().GetOp(), Val: ioSubTypes}
+		}
+		if len(conds.GetCoinTypeIDs().GetValue()) > 0 {
+			ids := []uuid.UUID{}
+			for _, val := range conds.GetCoinTypeIDs().GetValue() {
+				id, err := uuid.Parse(val)
+				if err != nil {
+					return err
+				}
+				ids = append(ids, id)
+			}
+			h.Conds.CoinTypeIDs = &cruder.Cond{
+				Op:  conds.GetCoinTypeIDs().GetOp(),
+				Val: ids,
+			}
 		}
 		return nil
 	}
