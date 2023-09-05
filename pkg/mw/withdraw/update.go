@@ -76,6 +76,14 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 	}
 
 	state := types.WithdrawState(types.WithdrawState_value[h.withdraw.State])
+
+	switch state {
+	case types.WithdrawState_TransactionFail:
+		fallthrough //nolint
+	case types.WithdrawState_Successful:
+		return fmt.Errorf("permission denied")
+	}
+
 	if h.Rollback == nil || !*h.Rollback {
 		switch state {
 		case types.WithdrawState_Rejected:
@@ -83,7 +91,7 @@ func (h *updateHandler) checkWithdrawState(ctx context.Context) error {
 		case types.WithdrawState_TransactionFail:
 			fallthrough //nolint
 		case types.WithdrawState_Successful:
-			return fmt.Errorf("current withdraw state(%v) can not be update", h.withdraw.State)
+			return fmt.Errorf("permission denied")
 		}
 	}
 
