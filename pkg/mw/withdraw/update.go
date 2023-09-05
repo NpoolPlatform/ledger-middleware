@@ -182,36 +182,48 @@ func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
-func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
-	stm := tx.Withdraw.Query().Where(
-		entwithdraw.IDNEQ(*h.ID),
-	)
-	if h.PlatformTransactionID != nil {
-		stm.Where(
-			entwithdraw.PlatformTransactionID(*h.PlatformTransactionID),
-		)
-		if h.withdraw.PlatformTransactionID != uuid.Nil &&
-			*h.PlatformTransactionID != h.withdraw.PlatformTransactionID {
-			return fmt.Errorf("permission denied")
-		}
-	}
-	if h.ReviewID != nil {
-		stm.Where(
-			entwithdraw.ReviewID(*h.ReviewID),
-		)
-		if h.withdraw.ReviewID != uuid.Nil &&
-			*h.ReviewID != h.withdraw.ReviewID {
-			return fmt.Errorf("permission denied")
-		}
+func (h *updateHandler) checkWithdraw(ctx context.Context) error {
+	if h.PlatformTransactionID == nil && h.ReviewID == nil {
+		return nil
 	}
 
-	exist, err := stm.Exist(ctx)
-	if err != nil {
-		return err
+	if h.withdraw.PlatformTransactionID != uuid.Nil &&
+		h.PlatformTransactionID != nil &&
+		*h.PlatformTransactionID != h.withdraw.PlatformTransactionID {
+		return fmt.Errorf("permission denied")
 	}
-	if exist {
-		return fmt.Errorf("already exists")
+	if h.withdraw.ReviewID != uuid.Nil &&
+		h.ReviewID != nil &&
+		*h.ReviewID != h.withdraw.ReviewID {
+		return fmt.Errorf("permission denied")
 	}
+
+	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
+		stm := cli.Withdraw.Query().Where(
+			entwithdraw.IDNEQ(*h.ID),
+		)
+		if h.PlatformTransactionID != nil {
+			stm.Where(
+				entwithdraw.PlatformTransactionID(*h.PlatformTransactionID),
+			)
+		}
+		if h.ReviewID != nil {
+			stm.Where(
+				entwithdraw.ReviewID(*h.ReviewID),
+			)
+		}
+		exist, err := stm.Exist(_ctx)
+		if err != nil {
+			return err
+		}
+		if exist {
+			return fmt.Errorf("already exists")
+		}
+		return nil
+	})
+}
+
+func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
 
 	if _, err := crud.UpdateSet(
 		tx.Withdraw.UpdateOneID(*h.ID),
@@ -269,6 +281,9 @@ func (h *Handler) UpdateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		Handler: h,
 	}
 	if err := handler.checkWithdrawState(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.checkWithdraw(ctx); err != nil {
 		return nil, err
 	}
 	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
