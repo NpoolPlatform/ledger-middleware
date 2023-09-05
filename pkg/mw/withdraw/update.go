@@ -224,7 +224,6 @@ func (h *updateHandler) checkWithdraw(ctx context.Context) error {
 }
 
 func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
-
 	if _, err := crud.UpdateSet(
 		tx.Withdraw.UpdateOneID(*h.ID),
 		&h.Req,
