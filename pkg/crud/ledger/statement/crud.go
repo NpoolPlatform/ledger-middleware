@@ -65,18 +65,19 @@ func UpdateSet(u *ent.StatementUpdateOne, req *Req) *ent.StatementUpdateOne {
 }
 
 type Conds struct {
-	ID         *cruder.Cond
-	AppID      *cruder.Cond
-	UserID     *cruder.Cond
-	CoinTypeID *cruder.Cond
-	IOType     *cruder.Cond
-	IOSubType  *cruder.Cond
-	Amount     *cruder.Cond
-	IOExtra    *cruder.Cond
-	StartAt    *cruder.Cond
-	EndAt      *cruder.Cond
-	IDs        *cruder.Cond
-	IOSubTypes *cruder.Cond
+	ID          *cruder.Cond
+	AppID       *cruder.Cond
+	UserID      *cruder.Cond
+	CoinTypeID  *cruder.Cond
+	IOType      *cruder.Cond
+	IOSubType   *cruder.Cond
+	Amount      *cruder.Cond
+	IOExtra     *cruder.Cond
+	StartAt     *cruder.Cond
+	EndAt       *cruder.Cond
+	IDs         *cruder.Cond
+	IOSubTypes  *cruder.Cond
+	CoinTypeIDs *cruder.Cond
 }
 
 func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
@@ -230,6 +231,18 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			q.Where(entstatement.IoSubTypeIn(subTypes...))
 		default:
 			return nil, fmt.Errorf("invalid io sub types op field %v", conds.IOSubTypes.Op)
+		}
+	}
+	if conds.CoinTypeIDs != nil {
+		ids, ok := conds.CoinTypeIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid coin type ids %v", conds.CoinTypeIDs.Val)
+		}
+		switch conds.CoinTypeIDs.Op {
+		case cruder.IN:
+			q.Where(entstatement.CoinTypeIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)
 		}
 	}
 	return q, nil
