@@ -183,16 +183,36 @@ func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *updateHandler) updateWithdraw(ctx context.Context, tx *ent.Tx) error {
+	stm := tx.Withdraw.Query().Where(
+		entwithdraw.IDNEQ(*h.ID),
+	)
 	if h.PlatformTransactionID != nil {
-		if h.withdraw.PlatformTransactionID != uuid.Nil && *h.PlatformTransactionID != h.withdraw.PlatformTransactionID {
-			return fmt.Errorf("current platform transaction id can not be updated")
+		stm.Where(
+			entwithdraw.PlatformTransactionID(*h.PlatformTransactionID),
+		)
+		if h.withdraw.PlatformTransactionID != uuid.Nil &&
+			*h.PlatformTransactionID != h.withdraw.PlatformTransactionID {
+			return fmt.Errorf("permission denied")
 		}
 	}
 	if h.ReviewID != nil {
-		if h.withdraw.ReviewID != uuid.Nil && *h.ReviewID != h.withdraw.ReviewID {
-			return fmt.Errorf("current review id can not be updated")
+		stm.Where(
+			entwithdraw.ReviewID(*h.ReviewID),
+		)
+		if h.withdraw.ReviewID != uuid.Nil &&
+			*h.ReviewID != h.withdraw.ReviewID {
+			return fmt.Errorf("permission denied")
 		}
 	}
+
+	exist, err := stm.Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if exist {
+		return fmt.Errorf("already exists")
+	}
+
 	if _, err := crud.UpdateSet(
 		tx.Withdraw.UpdateOneID(*h.ID),
 		&h.Req,
