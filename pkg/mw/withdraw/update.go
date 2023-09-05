@@ -240,18 +240,15 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 	if h.State.String() != types.WithdrawState_Successful.String() {
 		return nil
 	}
-	if h.ChainTransactionID == nil {
-		return fmt.Errorf("invalid chain transaction id")
-	}
 	if h.FeeAmount == nil {
-		return fmt.Errorf("invalid fee amount")
+		return fmt.Errorf("invalid feeamount")
 	}
 
 	ioExtra := fmt.Sprintf(
 		`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
 		h.withdraw.ID,
 		h.withdraw.PlatformTransactionID.String(),
-		*h.ChainTransactionID,
+		h.withdraw.ChainTransactionID,
 		h.FeeAmount.String(),
 		h.withdraw.AccountID,
 	)

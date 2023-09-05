@@ -142,9 +142,6 @@ func WithChainTransactionID(id *string, must bool) func(context.Context, *Handle
 			}
 			return nil
 		}
-		if *id == "" {
-			return fmt.Errorf("chain transaction id")
-		}
 		h.ChainTransactionID = id
 		return nil
 	}
