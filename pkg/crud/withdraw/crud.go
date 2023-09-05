@@ -50,12 +50,6 @@ func CreateSet(c *ent.WithdrawCreate, in *Req) *ent.WithdrawCreate {
 	if in.Amount != nil {
 		c.SetAmount(*in.Amount)
 	}
-	if in.PlatformTransactionID != nil {
-		c.SetPlatformTransactionID(*in.PlatformTransactionID)
-	}
-	if in.ReviewID != nil {
-		c.SetReviewID(*in.ReviewID)
-	}
 	c.SetState(basetypes.WithdrawState_Created.String())
 	return c
 }
@@ -80,15 +74,18 @@ func UpdateSet(u *ent.WithdrawUpdateOne, req *Req) *ent.WithdrawUpdateOne {
 }
 
 type Conds struct {
-	ID         *cruder.Cond
-	AppID      *cruder.Cond
-	UserID     *cruder.Cond
-	CoinTypeID *cruder.Cond
-	AccountID  *cruder.Cond
-	Address    *cruder.Cond
-	State      *cruder.Cond
-	Amount     *cruder.Cond
-	CreatedAt  *cruder.Cond
+	ID                    *cruder.Cond
+	AppID                 *cruder.Cond
+	UserID                *cruder.Cond
+	CoinTypeID            *cruder.Cond
+	AccountID             *cruder.Cond
+	Address               *cruder.Cond
+	State                 *cruder.Cond
+	Amount                *cruder.Cond
+	CreatedAt             *cruder.Cond
+	ReviewID              *cruder.Cond
+	PlatformTransactionID *cruder.Cond
+	ChainTransactionID    *cruder.Cond
 }
 
 func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, error) { //nolint
@@ -104,6 +101,8 @@ func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, erro
 		switch conds.ID.Op {
 		case cruder.EQ:
 			q.Where(entwithdraw.ID(id))
+		case cruder.NEQ:
+			q.Where(entwithdraw.IDNEQ(id))
 		default:
 			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
 		}
@@ -211,6 +210,42 @@ func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, erro
 			q.Where(entwithdraw.CreatedAtLTE(createdAt))
 		default:
 			return nil, fmt.Errorf("invalid creatd at op field %v", conds.CreatedAt.Op)
+		}
+	}
+	if conds.ReviewID != nil {
+		reviewID, ok := conds.ReviewID.Val.(uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid review id %v", conds.ReviewID.Val)
+		}
+		switch conds.ReviewID.Op {
+		case cruder.EQ:
+			q.Where(entwithdraw.ReviewID(reviewID))
+		default:
+			return nil, fmt.Errorf("invalid review id op field %v", conds.ReviewID.Op)
+		}
+	}
+	if conds.PlatformTransactionID != nil {
+		txID, ok := conds.PlatformTransactionID.Val.(uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid tx id %v", conds.PlatformTransactionID.Val)
+		}
+		switch conds.PlatformTransactionID.Op {
+		case cruder.EQ:
+			q.Where(entwithdraw.PlatformTransactionID(txID))
+		default:
+			return nil, fmt.Errorf("invalid tx id op field %v", conds.PlatformTransactionID.Op)
+		}
+	}
+	if conds.ChainTransactionID != nil {
+		txID, ok := conds.ChainTransactionID.Val.(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid tx id %v", conds.ChainTransactionID.Val)
+		}
+		switch conds.ChainTransactionID.Op {
+		case cruder.EQ:
+			q.Where(entwithdraw.ChainTransactionID(txID))
+		default:
+			return nil, fmt.Errorf("invalid tx id op field %v", conds.ChainTransactionID.Op)
 		}
 	}
 	return q, nil
