@@ -49,7 +49,7 @@ func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
 		c.SetAmount(*in.Amount)
 	}
 	if in.IOExtra != nil {
-		c.SetIoExtra(*in.IOExtra)
+		c.SetIoExtraV1(*in.IOExtra)
 	}
 	if in.CreatedAt != nil {
 		c.SetCreatedAt(*in.CreatedAt)
@@ -180,7 +180,7 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 		}
 		switch conds.IOExtra.Op {
 		case cruder.LIKE:
-			q.Where(entstatement.IoExtraContains(extra))
+			q.Where(entstatement.IoExtraV1Contains(extra))
 		default:
 			return nil, fmt.Errorf("invalid io extra op field %v", conds.IOExtra.Op)
 		}

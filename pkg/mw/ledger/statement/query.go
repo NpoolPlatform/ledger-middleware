@@ -29,7 +29,7 @@ func (h *queryHandler) selectStatement(stm *ent.StatementQuery) {
 		entstatement.FieldIoType,
 		entstatement.FieldIoSubType,
 		entstatement.FieldAmount,
-		entstatement.FieldIoExtra,
+		entstatement.FieldIoExtraV1,
 		entstatement.FieldCreatedAt,
 		entstatement.FieldUpdatedAt,
 	)
