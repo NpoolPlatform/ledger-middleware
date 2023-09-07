@@ -231,6 +231,26 @@ func (su *StatementUpdate) ClearIoExtra() *StatementUpdate {
 	return su
 }
 
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (su *StatementUpdate) SetIoExtraV1(s string) *StatementUpdate {
+	su.mutation.SetIoExtraV1(s)
+	return su
+}
+
+// SetNillableIoExtraV1 sets the "io_extra_v1" field if the given value is not nil.
+func (su *StatementUpdate) SetNillableIoExtraV1(s *string) *StatementUpdate {
+	if s != nil {
+		su.SetIoExtraV1(*s)
+	}
+	return su
+}
+
+// ClearIoExtraV1 clears the value of the "io_extra_v1" field.
+func (su *StatementUpdate) ClearIoExtraV1() *StatementUpdate {
+	su.mutation.ClearIoExtraV1()
+	return su
+}
+
 // Mutation returns the StatementMutation object of the builder.
 func (su *StatementUpdate) Mutation() *StatementMutation {
 	return su.mutation
@@ -316,6 +336,11 @@ func (su *StatementUpdate) check() error {
 	if v, ok := su.mutation.IoExtra(); ok {
 		if err := statement.IoExtraValidator(v); err != nil {
 			return &ValidationError{Name: "io_extra", err: fmt.Errorf(`ent: validator failed for field "Statement.io_extra": %w`, err)}
+		}
+	}
+	if v, ok := su.mutation.IoExtraV1(); ok {
+		if err := statement.IoExtraV1Validator(v); err != nil {
+			return &ValidationError{Name: "io_extra_v1", err: fmt.Errorf(`ent: validator failed for field "Statement.io_extra_v1": %w`, err)}
 		}
 	}
 	return nil
@@ -477,6 +502,19 @@ func (su *StatementUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: statement.FieldIoExtra,
+		})
+	}
+	if value, ok := su.mutation.IoExtraV1(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: statement.FieldIoExtraV1,
+		})
+	}
+	if su.mutation.IoExtraV1Cleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: statement.FieldIoExtraV1,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
@@ -700,6 +738,26 @@ func (suo *StatementUpdateOne) ClearIoExtra() *StatementUpdateOne {
 	return suo
 }
 
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (suo *StatementUpdateOne) SetIoExtraV1(s string) *StatementUpdateOne {
+	suo.mutation.SetIoExtraV1(s)
+	return suo
+}
+
+// SetNillableIoExtraV1 sets the "io_extra_v1" field if the given value is not nil.
+func (suo *StatementUpdateOne) SetNillableIoExtraV1(s *string) *StatementUpdateOne {
+	if s != nil {
+		suo.SetIoExtraV1(*s)
+	}
+	return suo
+}
+
+// ClearIoExtraV1 clears the value of the "io_extra_v1" field.
+func (suo *StatementUpdateOne) ClearIoExtraV1() *StatementUpdateOne {
+	suo.mutation.ClearIoExtraV1()
+	return suo
+}
+
 // Mutation returns the StatementMutation object of the builder.
 func (suo *StatementUpdateOne) Mutation() *StatementMutation {
 	return suo.mutation
@@ -798,6 +856,11 @@ func (suo *StatementUpdateOne) check() error {
 	if v, ok := suo.mutation.IoExtra(); ok {
 		if err := statement.IoExtraValidator(v); err != nil {
 			return &ValidationError{Name: "io_extra", err: fmt.Errorf(`ent: validator failed for field "Statement.io_extra": %w`, err)}
+		}
+	}
+	if v, ok := suo.mutation.IoExtraV1(); ok {
+		if err := statement.IoExtraV1Validator(v); err != nil {
+			return &ValidationError{Name: "io_extra_v1", err: fmt.Errorf(`ent: validator failed for field "Statement.io_extra_v1": %w`, err)}
 		}
 	}
 	return nil
@@ -976,6 +1039,19 @@ func (suo *StatementUpdateOne) sqlSave(ctx context.Context) (_node *Statement, e
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: statement.FieldIoExtra,
+		})
+	}
+	if value, ok := suo.mutation.IoExtraV1(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: statement.FieldIoExtraV1,
+		})
+	}
+	if suo.mutation.IoExtraV1Cleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: statement.FieldIoExtraV1,
 		})
 	}
 	_node = &Statement{config: suo.config}

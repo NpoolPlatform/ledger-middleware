@@ -164,6 +164,20 @@ func (sc *StatementCreate) SetNillableIoExtra(s *string) *StatementCreate {
 	return sc
 }
 
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (sc *StatementCreate) SetIoExtraV1(s string) *StatementCreate {
+	sc.mutation.SetIoExtraV1(s)
+	return sc
+}
+
+// SetNillableIoExtraV1 sets the "io_extra_v1" field if the given value is not nil.
+func (sc *StatementCreate) SetNillableIoExtraV1(s *string) *StatementCreate {
+	if s != nil {
+		sc.SetIoExtraV1(*s)
+	}
+	return sc
+}
+
 // SetID sets the "id" field.
 func (sc *StatementCreate) SetID(u uuid.UUID) *StatementCreate {
 	sc.mutation.SetID(u)
@@ -311,6 +325,10 @@ func (sc *StatementCreate) defaults() error {
 		v := statement.DefaultIoExtra
 		sc.mutation.SetIoExtra(v)
 	}
+	if _, ok := sc.mutation.IoExtraV1(); !ok {
+		v := statement.DefaultIoExtraV1
+		sc.mutation.SetIoExtraV1(v)
+	}
 	if _, ok := sc.mutation.ID(); !ok {
 		if statement.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized statement.DefaultID (forgotten import ent/runtime?)")
@@ -335,6 +353,11 @@ func (sc *StatementCreate) check() error {
 	if v, ok := sc.mutation.IoExtra(); ok {
 		if err := statement.IoExtraValidator(v); err != nil {
 			return &ValidationError{Name: "io_extra", err: fmt.Errorf(`ent: validator failed for field "Statement.io_extra": %w`, err)}
+		}
+	}
+	if v, ok := sc.mutation.IoExtraV1(); ok {
+		if err := statement.IoExtraV1Validator(v); err != nil {
+			return &ValidationError{Name: "io_extra_v1", err: fmt.Errorf(`ent: validator failed for field "Statement.io_extra_v1": %w`, err)}
 		}
 	}
 	return nil
@@ -453,6 +476,14 @@ func (sc *StatementCreate) createSpec() (*Statement, *sqlgraph.CreateSpec) {
 			Column: statement.FieldIoExtra,
 		})
 		_node.IoExtra = value
+	}
+	if value, ok := sc.mutation.IoExtraV1(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: statement.FieldIoExtraV1,
+		})
+		_node.IoExtraV1 = value
 	}
 	return _node, _spec
 }
@@ -691,6 +722,24 @@ func (u *StatementUpsert) UpdateIoExtra() *StatementUpsert {
 // ClearIoExtra clears the value of the "io_extra" field.
 func (u *StatementUpsert) ClearIoExtra() *StatementUpsert {
 	u.SetNull(statement.FieldIoExtra)
+	return u
+}
+
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (u *StatementUpsert) SetIoExtraV1(v string) *StatementUpsert {
+	u.Set(statement.FieldIoExtraV1, v)
+	return u
+}
+
+// UpdateIoExtraV1 sets the "io_extra_v1" field to the value that was provided on create.
+func (u *StatementUpsert) UpdateIoExtraV1() *StatementUpsert {
+	u.SetExcluded(statement.FieldIoExtraV1)
+	return u
+}
+
+// ClearIoExtraV1 clears the value of the "io_extra_v1" field.
+func (u *StatementUpsert) ClearIoExtraV1() *StatementUpsert {
+	u.SetNull(statement.FieldIoExtraV1)
 	return u
 }
 
@@ -958,6 +1007,27 @@ func (u *StatementUpsertOne) UpdateIoExtra() *StatementUpsertOne {
 func (u *StatementUpsertOne) ClearIoExtra() *StatementUpsertOne {
 	return u.Update(func(s *StatementUpsert) {
 		s.ClearIoExtra()
+	})
+}
+
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (u *StatementUpsertOne) SetIoExtraV1(v string) *StatementUpsertOne {
+	return u.Update(func(s *StatementUpsert) {
+		s.SetIoExtraV1(v)
+	})
+}
+
+// UpdateIoExtraV1 sets the "io_extra_v1" field to the value that was provided on create.
+func (u *StatementUpsertOne) UpdateIoExtraV1() *StatementUpsertOne {
+	return u.Update(func(s *StatementUpsert) {
+		s.UpdateIoExtraV1()
+	})
+}
+
+// ClearIoExtraV1 clears the value of the "io_extra_v1" field.
+func (u *StatementUpsertOne) ClearIoExtraV1() *StatementUpsertOne {
+	return u.Update(func(s *StatementUpsert) {
+		s.ClearIoExtraV1()
 	})
 }
 
@@ -1391,6 +1461,27 @@ func (u *StatementUpsertBulk) UpdateIoExtra() *StatementUpsertBulk {
 func (u *StatementUpsertBulk) ClearIoExtra() *StatementUpsertBulk {
 	return u.Update(func(s *StatementUpsert) {
 		s.ClearIoExtra()
+	})
+}
+
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (u *StatementUpsertBulk) SetIoExtraV1(v string) *StatementUpsertBulk {
+	return u.Update(func(s *StatementUpsert) {
+		s.SetIoExtraV1(v)
+	})
+}
+
+// UpdateIoExtraV1 sets the "io_extra_v1" field to the value that was provided on create.
+func (u *StatementUpsertBulk) UpdateIoExtraV1() *StatementUpsertBulk {
+	return u.Update(func(s *StatementUpsert) {
+		s.UpdateIoExtraV1()
+	})
+}
+
+// ClearIoExtraV1 clears the value of the "io_extra_v1" field.
+func (u *StatementUpsertBulk) ClearIoExtraV1() *StatementUpsertBulk {
+	return u.Update(func(s *StatementUpsert) {
+		s.ClearIoExtraV1()
 	})
 }
 

@@ -249,6 +249,12 @@ func init() {
 	statement.DefaultIoExtra = statementDescIoExtra.Default.(string)
 	// statement.IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
 	statement.IoExtraValidator = statementDescIoExtra.Validators[0].(func(string) error)
+	// statementDescIoExtraV1 is the schema descriptor for io_extra_v1 field.
+	statementDescIoExtraV1 := statementFields[8].Descriptor()
+	// statement.DefaultIoExtraV1 holds the default value on creation for the io_extra_v1 field.
+	statement.DefaultIoExtraV1 = statementDescIoExtraV1.Default.(string)
+	// statement.IoExtraV1Validator is a validator for the "io_extra_v1" field. It is called by the builders before save.
+	statement.IoExtraV1Validator = statementDescIoExtraV1.Validators[0].(func(string) error)
 	// statementDescID is the schema descriptor for id field.
 	statementDescID := statementFields[0].Descriptor()
 	// statement.DefaultID holds the default value on creation for the id field.

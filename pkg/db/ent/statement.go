@@ -37,6 +37,8 @@ type Statement struct {
 	Amount decimal.Decimal `json:"amount,omitempty"`
 	// IoExtra holds the value of the "io_extra" field.
 	IoExtra string `json:"io_extra,omitempty"`
+	// IoExtraV1 holds the value of the "io_extra_v1" field.
+	IoExtraV1 string `json:"io_extra_v1,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -48,7 +50,7 @@ func (*Statement) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(decimal.Decimal)
 		case statement.FieldCreatedAt, statement.FieldUpdatedAt, statement.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
-		case statement.FieldIoType, statement.FieldIoSubType, statement.FieldIoExtra:
+		case statement.FieldIoType, statement.FieldIoSubType, statement.FieldIoExtra, statement.FieldIoExtraV1:
 			values[i] = new(sql.NullString)
 		case statement.FieldID, statement.FieldAppID, statement.FieldUserID, statement.FieldCoinTypeID:
 			values[i] = new(uuid.UUID)
@@ -133,6 +135,12 @@ func (s *Statement) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				s.IoExtra = value.String
 			}
+		case statement.FieldIoExtraV1:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field io_extra_v1", values[i])
+			} else if value.Valid {
+				s.IoExtraV1 = value.String
+			}
 		}
 	}
 	return nil
@@ -190,6 +198,9 @@ func (s *Statement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("io_extra=")
 	builder.WriteString(s.IoExtra)
+	builder.WriteString(", ")
+	builder.WriteString("io_extra_v1=")
+	builder.WriteString(s.IoExtraV1)
 	builder.WriteByte(')')
 	return builder.String()
 }

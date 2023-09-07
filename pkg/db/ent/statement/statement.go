@@ -32,6 +32,8 @@ const (
 	FieldAmount = "amount"
 	// FieldIoExtra holds the string denoting the io_extra field in the database.
 	FieldIoExtra = "io_extra"
+	// FieldIoExtraV1 holds the string denoting the io_extra_v1 field in the database.
+	FieldIoExtraV1 = "io_extra_v1"
 	// Table holds the table name of the statement in the database.
 	Table = "details"
 )
@@ -49,6 +51,7 @@ var Columns = []string{
 	FieldIoSubType,
 	FieldAmount,
 	FieldIoExtra,
+	FieldIoExtraV1,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -92,6 +95,10 @@ var (
 	DefaultIoExtra string
 	// IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
 	IoExtraValidator func(string) error
+	// DefaultIoExtraV1 holds the default value on creation for the "io_extra_v1" field.
+	DefaultIoExtraV1 string
+	// IoExtraV1Validator is a validator for the "io_extra_v1" field. It is called by the builders before save.
+	IoExtraV1Validator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

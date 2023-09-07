@@ -97,6 +97,7 @@ var (
 		{Name: "io_sub_type", Type: field.TypeString, Nullable: true, Default: "DefaultSubType"},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
 		{Name: "io_extra", Type: field.TypeString, Nullable: true, Size: 512, Default: ""},
+		{Name: "io_extra_v1", Type: field.TypeString, Nullable: true, Size: 512, Default: ""},
 	}
 	// DetailsTable holds the schema information for the "details" table.
 	DetailsTable = &schema.Table{

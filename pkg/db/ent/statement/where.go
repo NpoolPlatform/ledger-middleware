@@ -150,6 +150,13 @@ func IoExtra(v string) predicate.Statement {
 	})
 }
 
+// IoExtraV1 applies equality check predicate on the "io_extra_v1" field. It's identical to IoExtraV1EQ.
+func IoExtraV1(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIoExtraV1), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v uint32) predicate.Statement {
 	return predicate.Statement(func(s *sql.Selector) {
@@ -990,6 +997,119 @@ func IoExtraEqualFold(v string) predicate.Statement {
 func IoExtraContainsFold(v string) predicate.Statement {
 	return predicate.Statement(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldIoExtra), v))
+	})
+}
+
+// IoExtraV1EQ applies the EQ predicate on the "io_extra_v1" field.
+func IoExtraV1EQ(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1NEQ applies the NEQ predicate on the "io_extra_v1" field.
+func IoExtraV1NEQ(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1In applies the In predicate on the "io_extra_v1" field.
+func IoExtraV1In(vs ...string) predicate.Statement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldIoExtraV1), v...))
+	})
+}
+
+// IoExtraV1NotIn applies the NotIn predicate on the "io_extra_v1" field.
+func IoExtraV1NotIn(vs ...string) predicate.Statement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldIoExtraV1), v...))
+	})
+}
+
+// IoExtraV1GT applies the GT predicate on the "io_extra_v1" field.
+func IoExtraV1GT(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1GTE applies the GTE predicate on the "io_extra_v1" field.
+func IoExtraV1GTE(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1LT applies the LT predicate on the "io_extra_v1" field.
+func IoExtraV1LT(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1LTE applies the LTE predicate on the "io_extra_v1" field.
+func IoExtraV1LTE(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1Contains applies the Contains predicate on the "io_extra_v1" field.
+func IoExtraV1Contains(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1HasPrefix applies the HasPrefix predicate on the "io_extra_v1" field.
+func IoExtraV1HasPrefix(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1HasSuffix applies the HasSuffix predicate on the "io_extra_v1" field.
+func IoExtraV1HasSuffix(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1IsNil applies the IsNil predicate on the "io_extra_v1" field.
+func IoExtraV1IsNil() predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldIoExtraV1)))
+	})
+}
+
+// IoExtraV1NotNil applies the NotNil predicate on the "io_extra_v1" field.
+func IoExtraV1NotNil() predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldIoExtraV1)))
+	})
+}
+
+// IoExtraV1EqualFold applies the EqualFold predicate on the "io_extra_v1" field.
+func IoExtraV1EqualFold(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldIoExtraV1), v))
+	})
+}
+
+// IoExtraV1ContainsFold applies the ContainsFold predicate on the "io_extra_v1" field.
+func IoExtraV1ContainsFold(v string) predicate.Statement {
+	return predicate.Statement(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldIoExtraV1), v))
 	})
 }
 

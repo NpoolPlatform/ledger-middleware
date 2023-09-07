@@ -128,6 +128,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			statement.FieldIoSubType:  {Type: field.TypeString, Column: statement.FieldIoSubType},
 			statement.FieldAmount:     {Type: field.TypeFloat64, Column: statement.FieldAmount},
 			statement.FieldIoExtra:    {Type: field.TypeString, Column: statement.FieldIoExtra},
+			statement.FieldIoExtraV1:  {Type: field.TypeString, Column: statement.FieldIoExtraV1},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
@@ -609,6 +610,11 @@ func (f *StatementFilter) WhereAmount(p entql.Float64P) {
 // WhereIoExtra applies the entql string predicate on the io_extra field.
 func (f *StatementFilter) WhereIoExtra(p entql.StringP) {
 	f.Where(p.Field(statement.FieldIoExtra))
+}
+
+// WhereIoExtraV1 applies the entql string predicate on the io_extra_v1 field.
+func (f *StatementFilter) WhereIoExtraV1(p entql.StringP) {
+	f.Where(p.Field(statement.FieldIoExtraV1))
 }
 
 // addPredicate implements the predicateAdder interface.

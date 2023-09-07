@@ -4301,6 +4301,7 @@ type StatementMutation struct {
 	amount        *decimal.Decimal
 	addamount     *decimal.Decimal
 	io_extra      *string
+	io_extra_v1   *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Statement, error)
@@ -4943,6 +4944,55 @@ func (m *StatementMutation) ResetIoExtra() {
 	delete(m.clearedFields, statement.FieldIoExtra)
 }
 
+// SetIoExtraV1 sets the "io_extra_v1" field.
+func (m *StatementMutation) SetIoExtraV1(s string) {
+	m.io_extra_v1 = &s
+}
+
+// IoExtraV1 returns the value of the "io_extra_v1" field in the mutation.
+func (m *StatementMutation) IoExtraV1() (r string, exists bool) {
+	v := m.io_extra_v1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIoExtraV1 returns the old "io_extra_v1" field's value of the Statement entity.
+// If the Statement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StatementMutation) OldIoExtraV1(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIoExtraV1 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIoExtraV1 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIoExtraV1: %w", err)
+	}
+	return oldValue.IoExtraV1, nil
+}
+
+// ClearIoExtraV1 clears the value of the "io_extra_v1" field.
+func (m *StatementMutation) ClearIoExtraV1() {
+	m.io_extra_v1 = nil
+	m.clearedFields[statement.FieldIoExtraV1] = struct{}{}
+}
+
+// IoExtraV1Cleared returns if the "io_extra_v1" field was cleared in this mutation.
+func (m *StatementMutation) IoExtraV1Cleared() bool {
+	_, ok := m.clearedFields[statement.FieldIoExtraV1]
+	return ok
+}
+
+// ResetIoExtraV1 resets all changes to the "io_extra_v1" field.
+func (m *StatementMutation) ResetIoExtraV1() {
+	m.io_extra_v1 = nil
+	delete(m.clearedFields, statement.FieldIoExtraV1)
+}
+
 // Where appends a list predicates to the StatementMutation builder.
 func (m *StatementMutation) Where(ps ...predicate.Statement) {
 	m.predicates = append(m.predicates, ps...)
@@ -4962,7 +5012,7 @@ func (m *StatementMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StatementMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, statement.FieldCreatedAt)
 	}
@@ -4993,6 +5043,9 @@ func (m *StatementMutation) Fields() []string {
 	if m.io_extra != nil {
 		fields = append(fields, statement.FieldIoExtra)
 	}
+	if m.io_extra_v1 != nil {
+		fields = append(fields, statement.FieldIoExtraV1)
+	}
 	return fields
 }
 
@@ -5021,6 +5074,8 @@ func (m *StatementMutation) Field(name string) (ent.Value, bool) {
 		return m.Amount()
 	case statement.FieldIoExtra:
 		return m.IoExtra()
+	case statement.FieldIoExtraV1:
+		return m.IoExtraV1()
 	}
 	return nil, false
 }
@@ -5050,6 +5105,8 @@ func (m *StatementMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldAmount(ctx)
 	case statement.FieldIoExtra:
 		return m.OldIoExtra(ctx)
+	case statement.FieldIoExtraV1:
+		return m.OldIoExtraV1(ctx)
 	}
 	return nil, fmt.Errorf("unknown Statement field %s", name)
 }
@@ -5128,6 +5185,13 @@ func (m *StatementMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIoExtra(v)
+		return nil
+	case statement.FieldIoExtraV1:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIoExtraV1(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Statement field %s", name)
@@ -5231,6 +5295,9 @@ func (m *StatementMutation) ClearedFields() []string {
 	if m.FieldCleared(statement.FieldIoExtra) {
 		fields = append(fields, statement.FieldIoExtra)
 	}
+	if m.FieldCleared(statement.FieldIoExtraV1) {
+		fields = append(fields, statement.FieldIoExtraV1)
+	}
 	return fields
 }
 
@@ -5265,6 +5332,9 @@ func (m *StatementMutation) ClearField(name string) error {
 		return nil
 	case statement.FieldIoExtra:
 		m.ClearIoExtra()
+		return nil
+	case statement.FieldIoExtraV1:
+		m.ClearIoExtraV1()
 		return nil
 	}
 	return fmt.Errorf("unknown Statement nullable field %s", name)
@@ -5303,6 +5373,9 @@ func (m *StatementMutation) ResetField(name string) error {
 		return nil
 	case statement.FieldIoExtra:
 		m.ResetIoExtra()
+		return nil
+	case statement.FieldIoExtraV1:
+		m.ResetIoExtraV1()
 		return nil
 	}
 	return fmt.Errorf("unknown Statement field %s", name)
