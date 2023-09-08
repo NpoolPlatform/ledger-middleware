@@ -3,12 +3,15 @@ package ledger
 import (
 	"context"
 	"fmt"
+	"time"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	ledgerlockcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/lock"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	entledgerlock "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
@@ -88,6 +91,33 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
 	}
+	if h.LockID == nil {
+		return fmt.Errorf("invalid lock id")
+	}
+
+	lock, err := tx.
+		LedgerLock.
+		Query().
+		Where(
+			entledgerlock.ID(*h.LockID),
+			entledgerlock.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+
+	now := uint32(time.Now().Unix())
+	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
+		DeletedAt: &now,
+	}).Save(ctx); err != nil {
+		return err
+	}
+
 	info, err := tx.
 		Ledger.
 		Query().

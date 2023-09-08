@@ -29,6 +29,7 @@ func (s *Server) SubBalance(ctx context.Context, in *npool.SubBalanceRequest) (
 		lock1.WithUserID(req.UserID, true),
 		lock1.WithCoinTypeID(req.CoinTypeID, true),
 		lock1.WithSpendable(req.Spendable, false),
+		lock1.WithLockID(req.LockID, false),
 		lock1.WithLocked(req.Locked, false),
 		lock1.WithIOSubType(req.IOSubType, false),
 		lock1.WithIOExtra(req.IOExtra, false),

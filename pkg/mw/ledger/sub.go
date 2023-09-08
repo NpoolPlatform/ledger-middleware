@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	lockcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/lock"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
@@ -72,6 +73,18 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
+	}
+	if h.LockID == nil {
+		return fmt.Errorf("invalid lock id")
+	}
+
+	if _, err := lockcrud.CreateSet(
+		tx.LedgerLock.Create(),
+		&lockcrud.Req{
+			ID: h.LockID,
+		},
+	).Save(ctx); err != nil {
+		return err
 	}
 
 	info, err := tx.

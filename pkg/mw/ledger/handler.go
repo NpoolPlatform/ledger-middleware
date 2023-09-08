@@ -16,12 +16,14 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs      []*crud.Req
-	Conds     *crud.Conds
-	Offset    int32
-	Limit     int32
-	IOSubType *basetypes.IOSubType
-	IOExtra   *string
+	Reqs        []*crud.Req
+	Conds       *crud.Conds
+	Offset      int32
+	Limit       int32
+	IOSubType   *basetypes.IOSubType
+	IOExtra     *string
+	LockID      *uuid.UUID
+	StatementID *uuid.UUID
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -99,6 +101,24 @@ func WithStatementID(id *string, must bool) func(context.Context, *Handler) erro
 		}
 
 		h.StatementID = &_id
+		return nil
+	}
+}
+
+func WithLockID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid lock id")
+			}
+			return nil
+		}
+		_id, err := uuid.Parse(*id)
+		if err != nil {
+			return err
+		}
+
+		h.LockID = &_id
 		return nil
 	}
 }

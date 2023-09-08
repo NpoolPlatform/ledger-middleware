@@ -29,6 +29,7 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 		lock1.WithUserID(req.UserID, false),
 		lock1.WithCoinTypeID(req.CoinTypeID, false),
 		lock1.WithLocked(req.Locked, false),
+		lock1.WithLockID(req.LockID, false),
 		lock1.WithSpendable(req.Spendable, false),
 		lock1.WithIOSubType(req.IOSubType, false),
 		lock1.WithIOExtra(req.IOExtra, false),
