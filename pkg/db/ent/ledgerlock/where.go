@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // ID filters vertices based on their ID field.
@@ -97,6 +98,13 @@ func UpdatedAt(v uint32) predicate.LedgerLock {
 func DeletedAt(v uint32) predicate.LedgerLock {
 	return predicate.LedgerLock(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldDeletedAt), v))
+	})
+}
+
+// Amount applies equality check predicate on the "amount" field. It's identical to AmountEQ.
+func Amount(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAmount), v))
 	})
 }
 
@@ -289,6 +297,84 @@ func DeletedAtLT(v uint32) predicate.LedgerLock {
 func DeletedAtLTE(v uint32) predicate.LedgerLock {
 	return predicate.LedgerLock(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldDeletedAt), v))
+	})
+}
+
+// AmountEQ applies the EQ predicate on the "amount" field.
+func AmountEQ(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAmount), v))
+	})
+}
+
+// AmountNEQ applies the NEQ predicate on the "amount" field.
+func AmountNEQ(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAmount), v))
+	})
+}
+
+// AmountIn applies the In predicate on the "amount" field.
+func AmountIn(vs ...decimal.Decimal) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldAmount), v...))
+	})
+}
+
+// AmountNotIn applies the NotIn predicate on the "amount" field.
+func AmountNotIn(vs ...decimal.Decimal) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldAmount), v...))
+	})
+}
+
+// AmountGT applies the GT predicate on the "amount" field.
+func AmountGT(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldAmount), v))
+	})
+}
+
+// AmountGTE applies the GTE predicate on the "amount" field.
+func AmountGTE(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldAmount), v))
+	})
+}
+
+// AmountLT applies the LT predicate on the "amount" field.
+func AmountLT(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldAmount), v))
+	})
+}
+
+// AmountLTE applies the LTE predicate on the "amount" field.
+func AmountLTE(v decimal.Decimal) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldAmount), v))
+	})
+}
+
+// AmountIsNil applies the IsNil predicate on the "amount" field.
+func AmountIsNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAmount)))
+	})
+}
+
+// AmountNotNil applies the NotNil predicate on the "amount" field.
+func AmountNotNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAmount)))
 	})
 }
 

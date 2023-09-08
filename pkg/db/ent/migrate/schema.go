@@ -73,6 +73,7 @@ var (
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
 	}
 	// LedgerLocksTable holds the schema information for the "ledger_locks" table.
 	LedgerLocksTable = &schema.Table{

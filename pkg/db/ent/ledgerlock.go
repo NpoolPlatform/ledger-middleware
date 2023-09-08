@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // LedgerLock is the model entity for the LedgerLock schema.
@@ -22,6 +23,8 @@ type LedgerLock struct {
 	UpdatedAt uint32 `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt uint32 `json:"deleted_at,omitempty"`
+	// Amount holds the value of the "amount" field.
+	Amount decimal.Decimal `json:"amount,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -29,6 +32,8 @@ func (*LedgerLock) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case ledgerlock.FieldAmount:
+			values[i] = new(decimal.Decimal)
 		case ledgerlock.FieldCreatedAt, ledgerlock.FieldUpdatedAt, ledgerlock.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
 		case ledgerlock.FieldID:
@@ -72,6 +77,12 @@ func (ll *LedgerLock) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				ll.DeletedAt = uint32(value.Int64)
 			}
+		case ledgerlock.FieldAmount:
+			if value, ok := values[i].(*decimal.Decimal); !ok {
+				return fmt.Errorf("unexpected type %T for field amount", values[i])
+			} else if value != nil {
+				ll.Amount = *value
+			}
 		}
 	}
 	return nil
@@ -108,6 +119,9 @@ func (ll *LedgerLock) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(fmt.Sprintf("%v", ll.DeletedAt))
+	builder.WriteString(", ")
+	builder.WriteString("amount=")
+	builder.WriteString(fmt.Sprintf("%v", ll.Amount))
 	builder.WriteByte(')')
 	return builder.String()
 }

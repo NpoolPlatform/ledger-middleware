@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
+	"github.com/shopspring/decimal"
 )
 
 // LedgerLockUpdate is the builder for updating LedgerLock entities.
@@ -79,6 +80,33 @@ func (llu *LedgerLockUpdate) SetNillableDeletedAt(u *uint32) *LedgerLockUpdate {
 // AddDeletedAt adds u to the "deleted_at" field.
 func (llu *LedgerLockUpdate) AddDeletedAt(u int32) *LedgerLockUpdate {
 	llu.mutation.AddDeletedAt(u)
+	return llu
+}
+
+// SetAmount sets the "amount" field.
+func (llu *LedgerLockUpdate) SetAmount(d decimal.Decimal) *LedgerLockUpdate {
+	llu.mutation.ResetAmount()
+	llu.mutation.SetAmount(d)
+	return llu
+}
+
+// SetNillableAmount sets the "amount" field if the given value is not nil.
+func (llu *LedgerLockUpdate) SetNillableAmount(d *decimal.Decimal) *LedgerLockUpdate {
+	if d != nil {
+		llu.SetAmount(*d)
+	}
+	return llu
+}
+
+// AddAmount adds d to the "amount" field.
+func (llu *LedgerLockUpdate) AddAmount(d decimal.Decimal) *LedgerLockUpdate {
+	llu.mutation.AddAmount(d)
+	return llu
+}
+
+// ClearAmount clears the value of the "amount" field.
+func (llu *LedgerLockUpdate) ClearAmount() *LedgerLockUpdate {
+	llu.mutation.ClearAmount()
 	return llu
 }
 
@@ -216,6 +244,26 @@ func (llu *LedgerLockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: ledgerlock.FieldDeletedAt,
 		})
 	}
+	if value, ok := llu.mutation.Amount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: ledgerlock.FieldAmount,
+		})
+	}
+	if value, ok := llu.mutation.AddedAmount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: ledgerlock.FieldAmount,
+		})
+	}
+	if llu.mutation.AmountCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: ledgerlock.FieldAmount,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, llu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{ledgerlock.Label}
@@ -287,6 +335,33 @@ func (lluo *LedgerLockUpdateOne) SetNillableDeletedAt(u *uint32) *LedgerLockUpda
 // AddDeletedAt adds u to the "deleted_at" field.
 func (lluo *LedgerLockUpdateOne) AddDeletedAt(u int32) *LedgerLockUpdateOne {
 	lluo.mutation.AddDeletedAt(u)
+	return lluo
+}
+
+// SetAmount sets the "amount" field.
+func (lluo *LedgerLockUpdateOne) SetAmount(d decimal.Decimal) *LedgerLockUpdateOne {
+	lluo.mutation.ResetAmount()
+	lluo.mutation.SetAmount(d)
+	return lluo
+}
+
+// SetNillableAmount sets the "amount" field if the given value is not nil.
+func (lluo *LedgerLockUpdateOne) SetNillableAmount(d *decimal.Decimal) *LedgerLockUpdateOne {
+	if d != nil {
+		lluo.SetAmount(*d)
+	}
+	return lluo
+}
+
+// AddAmount adds d to the "amount" field.
+func (lluo *LedgerLockUpdateOne) AddAmount(d decimal.Decimal) *LedgerLockUpdateOne {
+	lluo.mutation.AddAmount(d)
+	return lluo
+}
+
+// ClearAmount clears the value of the "amount" field.
+func (lluo *LedgerLockUpdateOne) ClearAmount() *LedgerLockUpdateOne {
+	lluo.mutation.ClearAmount()
 	return lluo
 }
 
@@ -452,6 +527,26 @@ func (lluo *LedgerLockUpdateOne) sqlSave(ctx context.Context) (_node *LedgerLock
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: ledgerlock.FieldDeletedAt,
+		})
+	}
+	if value, ok := lluo.mutation.Amount(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: ledgerlock.FieldAmount,
+		})
+	}
+	if value, ok := lluo.mutation.AddedAmount(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: ledgerlock.FieldAmount,
+		})
+	}
+	if lluo.mutation.AmountCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Column: ledgerlock.FieldAmount,
 		})
 	}
 	_node = &LedgerLock{config: lluo.config}

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // LedgerLockCreate is the builder for creating a LedgerLock entity.
@@ -61,6 +62,20 @@ func (llc *LedgerLockCreate) SetDeletedAt(u uint32) *LedgerLockCreate {
 func (llc *LedgerLockCreate) SetNillableDeletedAt(u *uint32) *LedgerLockCreate {
 	if u != nil {
 		llc.SetDeletedAt(*u)
+	}
+	return llc
+}
+
+// SetAmount sets the "amount" field.
+func (llc *LedgerLockCreate) SetAmount(d decimal.Decimal) *LedgerLockCreate {
+	llc.mutation.SetAmount(d)
+	return llc
+}
+
+// SetNillableAmount sets the "amount" field if the given value is not nil.
+func (llc *LedgerLockCreate) SetNillableAmount(d *decimal.Decimal) *LedgerLockCreate {
+	if d != nil {
+		llc.SetAmount(*d)
 	}
 	return llc
 }
@@ -261,6 +276,14 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 		})
 		_node.DeletedAt = value
 	}
+	if value, ok := llc.mutation.Amount(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeFloat64,
+			Value:  value,
+			Column: ledgerlock.FieldAmount,
+		})
+		_node.Amount = value
+	}
 	return _node, _spec
 }
 
@@ -366,6 +389,30 @@ func (u *LedgerLockUpsert) UpdateDeletedAt() *LedgerLockUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *LedgerLockUpsert) AddDeletedAt(v uint32) *LedgerLockUpsert {
 	u.Add(ledgerlock.FieldDeletedAt, v)
+	return u
+}
+
+// SetAmount sets the "amount" field.
+func (u *LedgerLockUpsert) SetAmount(v decimal.Decimal) *LedgerLockUpsert {
+	u.Set(ledgerlock.FieldAmount, v)
+	return u
+}
+
+// UpdateAmount sets the "amount" field to the value that was provided on create.
+func (u *LedgerLockUpsert) UpdateAmount() *LedgerLockUpsert {
+	u.SetExcluded(ledgerlock.FieldAmount)
+	return u
+}
+
+// AddAmount adds v to the "amount" field.
+func (u *LedgerLockUpsert) AddAmount(v decimal.Decimal) *LedgerLockUpsert {
+	u.Add(ledgerlock.FieldAmount, v)
+	return u
+}
+
+// ClearAmount clears the value of the "amount" field.
+func (u *LedgerLockUpsert) ClearAmount() *LedgerLockUpsert {
+	u.SetNull(ledgerlock.FieldAmount)
 	return u
 }
 
@@ -479,6 +526,34 @@ func (u *LedgerLockUpsertOne) AddDeletedAt(v uint32) *LedgerLockUpsertOne {
 func (u *LedgerLockUpsertOne) UpdateDeletedAt() *LedgerLockUpsertOne {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetAmount sets the "amount" field.
+func (u *LedgerLockUpsertOne) SetAmount(v decimal.Decimal) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetAmount(v)
+	})
+}
+
+// AddAmount adds v to the "amount" field.
+func (u *LedgerLockUpsertOne) AddAmount(v decimal.Decimal) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.AddAmount(v)
+	})
+}
+
+// UpdateAmount sets the "amount" field to the value that was provided on create.
+func (u *LedgerLockUpsertOne) UpdateAmount() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateAmount()
+	})
+}
+
+// ClearAmount clears the value of the "amount" field.
+func (u *LedgerLockUpsertOne) ClearAmount() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearAmount()
 	})
 }
 
@@ -758,6 +833,34 @@ func (u *LedgerLockUpsertBulk) AddDeletedAt(v uint32) *LedgerLockUpsertBulk {
 func (u *LedgerLockUpsertBulk) UpdateDeletedAt() *LedgerLockUpsertBulk {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetAmount sets the "amount" field.
+func (u *LedgerLockUpsertBulk) SetAmount(v decimal.Decimal) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetAmount(v)
+	})
+}
+
+// AddAmount adds v to the "amount" field.
+func (u *LedgerLockUpsertBulk) AddAmount(v decimal.Decimal) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.AddAmount(v)
+	})
+}
+
+// UpdateAmount sets the "amount" field to the value that was provided on create.
+func (u *LedgerLockUpsertBulk) UpdateAmount() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateAmount()
+	})
+}
+
+// ClearAmount clears the value of the "amount" field.
+func (u *LedgerLockUpsertBulk) ClearAmount() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearAmount()
 	})
 }
 

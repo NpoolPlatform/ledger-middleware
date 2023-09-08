@@ -2,9 +2,11 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/mixin"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // LedgerLock holds the schema definition for the LedgerLock entity.
@@ -25,6 +27,13 @@ func (LedgerLock) Fields() []ent.Field {
 			UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Unique(),
+		field.
+			Float("amount").
+			GoType(decimal.Decimal{}).
+			SchemaType(map[string]string{
+				dialect.MySQL: "decimal(37, 18)",
+			}).
+			Optional(),
 	}
 }
 

@@ -18,6 +18,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
+	// FieldAmount holds the string denoting the amount field in the database.
+	FieldAmount = "amount"
 	// Table holds the table name of the ledgerlock in the database.
 	Table = "ledger_locks"
 )
@@ -28,6 +30,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
+	FieldAmount,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

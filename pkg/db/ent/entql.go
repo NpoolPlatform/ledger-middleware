@@ -102,6 +102,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ledgerlock.FieldCreatedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldCreatedAt},
 			ledgerlock.FieldUpdatedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldUpdatedAt},
 			ledgerlock.FieldDeletedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldDeletedAt},
+			ledgerlock.FieldAmount:    {Type: field.TypeFloat64, Column: ledgerlock.FieldAmount},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
@@ -517,6 +518,11 @@ func (f *LedgerLockFilter) WhereUpdatedAt(p entql.Uint32P) {
 // WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
 func (f *LedgerLockFilter) WhereDeletedAt(p entql.Uint32P) {
 	f.Where(p.Field(ledgerlock.FieldDeletedAt))
+}
+
+// WhereAmount applies the entql float64 predicate on the amount field.
+func (f *LedgerLockFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(ledgerlock.FieldAmount))
 }
 
 // addPredicate implements the predicateAdder interface.
