@@ -72,11 +72,7 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 	})
 }
 
-func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
-	if h.Spendable == nil {
-		return nil
-	}
-
+func (h *subHandler) createLedgerLock(ctx context.Context, tx *ent.Tx) error {
 	if _, err := ledgerlockcrud.CreateSet(
 		tx.LedgerLock.Create(),
 		&ledgerlockcrud.Req{
@@ -84,6 +80,44 @@ func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 			Amount: h.Spendable,
 		},
 	).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+//nolint
+func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
+	lock, err := tx.
+		LedgerLock.
+		Query().
+		Where(
+			entledgerlock.ID(*h.LockID),
+			entledgerlock.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	if h.Locked.Cmp(lock.Amount) != 0 {
+		return fmt.Errorf("invalid amount")
+	}
+
+	now := uint32(time.Now().Unix())
+	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
+		DeletedAt: &now,
+	}).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
+	if h.Spendable == nil {
+		return nil
+	}
+
+	if err := h.createLedgerLock(ctx, tx); err != nil {
 		return err
 	}
 
@@ -129,25 +163,8 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
-	lock, err := tx.
-		LedgerLock.
-		Query().
-		Where(
-			entledgerlock.ID(*h.LockID),
-			entledgerlock.DeletedAt(0),
-		).
-		ForUpdate().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-	if h.Locked.Cmp(lock.Amount) != 0 {
-		return fmt.Errorf("invalid amount")
-	}
-	now := uint32(time.Now().Unix())
-	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
-		DeletedAt: &now,
-	}).Save(ctx); err != nil {
+
+	if err := h.deleteLedgerLock(ctx, tx); err != nil {
 		return err
 	}
 

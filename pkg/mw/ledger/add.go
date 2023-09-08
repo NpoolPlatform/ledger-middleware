@@ -87,14 +87,8 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 	})
 }
 
-func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
-	if h.Spendable == nil {
-		return nil
-	}
-	if h.LockID == nil {
-		return fmt.Errorf("invalid lock id")
-	}
-
+//nolint
+func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
 	lock, err := tx.
 		LedgerLock.
 		Query().
@@ -115,6 +109,20 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
 		DeletedAt: &now,
 	}).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
+	if h.Spendable == nil {
+		return nil
+	}
+	if h.LockID == nil {
+		return fmt.Errorf("invalid lock id")
+	}
+
+	if err := h.deleteLedgerLock(ctx, tx); err != nil {
 		return err
 	}
 
