@@ -162,6 +162,7 @@ func unlockBalance(t *testing.T) {
 var (
 	spendable   = "10"
 	statementID = uuid.NewString()
+	lockID1     = uuid.NewString()
 	spendReq    = &ledgerpb.LedgerReq{
 		AppID:       &appID,
 		UserID:      &userID,
@@ -170,12 +171,19 @@ var (
 		IOExtra:     &ioExtra,
 		Locked:      &spendable,
 		StatementID: &statementID,
+		LockID:      &lockID1,
 	}
 )
 
 func spendBalance(t *testing.T) {
 	// lock
-	info, err := SubBalance(context.Background(), &req)
+	info, err := SubBalance(context.Background(), &ledgerpb.LedgerReq{
+		AppID:      req.AppID,
+		UserID:     req.UserID,
+		CoinTypeID: req.CoinTypeID,
+		Spendable:  req.Spendable,
+		LockID:     &lockID1,
+	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 	}
