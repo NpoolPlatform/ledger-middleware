@@ -34,8 +34,8 @@ var (
 	appID      = uuid.NewString()
 	userID     = uuid.NewString()
 	coinTypeID = uuid.NewString()
-
-	deposit1 = npool.Statement{
+	lockID     = uuid.NewString()
+	deposit1   = npool.Statement{
 		ID:           uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
@@ -103,6 +103,7 @@ var (
 		IOSubType:  &ioSubType,
 		IOExtra:    &ioExtra,
 		Spendable:  &locked,
+		LockID:     &lockID,
 	}
 
 	ledgerResult1 = ledgerpb.Ledger{
