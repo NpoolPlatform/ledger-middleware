@@ -13,6 +13,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
@@ -40,6 +41,7 @@ func columnChecker(table string) func(string) error {
 		goodledger.Table:      goodledger.ValidColumn,
 		goodstatement.Table:   goodstatement.ValidColumn,
 		ledger.Table:          ledger.ValidColumn,
+		ledgerlock.Table:      ledgerlock.ValidColumn,
 		profit.Table:          profit.ValidColumn,
 		statement.Table:       statement.ValidColumn,
 		unsoldstatement.Table: unsoldstatement.ValidColumn,

@@ -48,6 +48,19 @@ func (f LedgerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return f(ctx, mv)
 }
 
+// The LedgerLockFunc type is an adapter to allow the use of ordinary
+// function as LedgerLock mutator.
+type LedgerLockFunc func(context.Context, *ent.LedgerLockMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LedgerLockFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LedgerLockMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LedgerLockMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The ProfitFunc type is an adapter to allow the use of ordinary
 // function as Profit mutator.
 type ProfitFunc func(context.Context, *ent.ProfitMutation) (ent.Value, error)

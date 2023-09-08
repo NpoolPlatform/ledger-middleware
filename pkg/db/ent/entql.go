@@ -6,6 +6,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
@@ -19,7 +20,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 7)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 8)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   goodledger.Table,
@@ -89,6 +90,22 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   ledgerlock.Table,
+			Columns: ledgerlock.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: ledgerlock.FieldID,
+			},
+		},
+		Type: "LedgerLock",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			ledgerlock.FieldCreatedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldCreatedAt},
+			ledgerlock.FieldUpdatedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldUpdatedAt},
+			ledgerlock.FieldDeletedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldDeletedAt},
+		},
+	}
+	graph.Nodes[4] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profit.Table,
 			Columns: profit.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -107,7 +124,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profit.FieldIncoming:   {Type: field.TypeFloat64, Column: profit.FieldIncoming},
 		},
 	}
-	graph.Nodes[4] = &sqlgraph.Node{
+	graph.Nodes[5] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   statement.Table,
 			Columns: statement.Columns,
@@ -131,7 +148,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			statement.FieldIoExtraV1:  {Type: field.TypeString, Column: statement.FieldIoExtraV1},
 		},
 	}
-	graph.Nodes[5] = &sqlgraph.Node{
+	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   unsoldstatement.Table,
 			Columns: unsoldstatement.Columns,
@@ -152,7 +169,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			unsoldstatement.FieldStatementID: {Type: field.TypeUUID, Column: unsoldstatement.FieldStatementID},
 		},
 	}
-	graph.Nodes[6] = &sqlgraph.Node{
+	graph.Nodes[7] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   withdraw.Table,
 			Columns: withdraw.Columns,
@@ -448,6 +465,61 @@ func (f *LedgerFilter) WhereSpendable(p entql.Float64P) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (llq *LedgerLockQuery) addPredicate(pred func(s *sql.Selector)) {
+	llq.predicates = append(llq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the LedgerLockQuery builder.
+func (llq *LedgerLockQuery) Filter() *LedgerLockFilter {
+	return &LedgerLockFilter{config: llq.config, predicateAdder: llq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *LedgerLockMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the LedgerLockMutation builder.
+func (m *LedgerLockMutation) Filter() *LedgerLockFilter {
+	return &LedgerLockFilter{config: m.config, predicateAdder: m}
+}
+
+// LedgerLockFilter provides a generic filtering capability at runtime for LedgerLockQuery.
+type LedgerLockFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *LedgerLockFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *LedgerLockFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(ledgerlock.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *LedgerLockFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(ledgerlock.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *LedgerLockFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(ledgerlock.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *LedgerLockFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(ledgerlock.FieldDeletedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (pq *ProfitQuery) addPredicate(pred func(s *sql.Selector)) {
 	pq.predicates = append(pq.predicates, pred)
 }
@@ -476,7 +548,7 @@ type ProfitFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfitFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -551,7 +623,7 @@ type StatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *StatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -646,7 +718,7 @@ type UnsoldStatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UnsoldStatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -726,7 +798,7 @@ type WithdrawFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WithdrawFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

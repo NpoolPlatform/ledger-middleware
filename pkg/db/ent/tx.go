@@ -20,6 +20,8 @@ type Tx struct {
 	GoodStatement *GoodStatementClient
 	// Ledger is the client for interacting with the Ledger builders.
 	Ledger *LedgerClient
+	// LedgerLock is the client for interacting with the LedgerLock builders.
+	LedgerLock *LedgerLockClient
 	// Profit is the client for interacting with the Profit builders.
 	Profit *ProfitClient
 	// Statement is the client for interacting with the Statement builders.
@@ -166,6 +168,7 @@ func (tx *Tx) init() {
 	tx.GoodLedger = NewGoodLedgerClient(tx.config)
 	tx.GoodStatement = NewGoodStatementClient(tx.config)
 	tx.Ledger = NewLedgerClient(tx.config)
+	tx.LedgerLock = NewLedgerLockClient(tx.config)
 	tx.Profit = NewProfitClient(tx.config)
 	tx.Statement = NewStatementClient(tx.config)
 	tx.UnsoldStatement = NewUnsoldStatementClient(tx.config)

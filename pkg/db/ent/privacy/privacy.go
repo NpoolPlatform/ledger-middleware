@@ -222,6 +222,30 @@ func (f LedgerMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.LedgerMutation", m)
 }
 
+// The LedgerLockQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type LedgerLockQueryRuleFunc func(context.Context, *ent.LedgerLockQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f LedgerLockQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.LedgerLockQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.LedgerLockQuery", q)
+}
+
+// The LedgerLockMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type LedgerLockMutationRuleFunc func(context.Context, *ent.LedgerLockMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f LedgerLockMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.LedgerLockMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.LedgerLockMutation", m)
+}
+
 // The ProfitQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type ProfitQueryRuleFunc func(context.Context, *ent.ProfitQuery) error
@@ -359,6 +383,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.LedgerQuery:
 		return q.Filter(), nil
+	case *ent.LedgerLockQuery:
+		return q.Filter(), nil
 	case *ent.ProfitQuery:
 		return q.Filter(), nil
 	case *ent.StatementQuery:
@@ -379,6 +405,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.GoodStatementMutation:
 		return m.Filter(), nil
 	case *ent.LedgerMutation:
+		return m.Filter(), nil
+	case *ent.LedgerLockMutation:
 		return m.Filter(), nil
 	case *ent.ProfitMutation:
 		return m.Filter(), nil

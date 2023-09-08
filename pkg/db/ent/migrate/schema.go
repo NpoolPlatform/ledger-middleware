@@ -67,6 +67,19 @@ var (
 		Columns:    GeneralsColumns,
 		PrimaryKey: []*schema.Column{GeneralsColumns[0]},
 	}
+	// LedgerLocksColumns holds the columns for the "ledger_locks" table.
+	LedgerLocksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+	}
+	// LedgerLocksTable holds the schema information for the "ledger_locks" table.
+	LedgerLocksTable = &schema.Table{
+		Name:       "ledger_locks",
+		Columns:    LedgerLocksColumns,
+		PrimaryKey: []*schema.Column{LedgerLocksColumns[0]},
+	}
 	// ProfitsColumns holds the columns for the "profits" table.
 	ProfitsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -151,6 +164,7 @@ var (
 		MiningGeneralsTable,
 		MiningDetailsTable,
 		GeneralsTable,
+		LedgerLocksTable,
 		ProfitsTable,
 		DetailsTable,
 		MiningUnsoldsTable,

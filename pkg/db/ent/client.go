@@ -14,6 +14,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
@@ -34,6 +35,8 @@ type Client struct {
 	GoodStatement *GoodStatementClient
 	// Ledger is the client for interacting with the Ledger builders.
 	Ledger *LedgerClient
+	// LedgerLock is the client for interacting with the LedgerLock builders.
+	LedgerLock *LedgerLockClient
 	// Profit is the client for interacting with the Profit builders.
 	Profit *ProfitClient
 	// Statement is the client for interacting with the Statement builders.
@@ -58,6 +61,7 @@ func (c *Client) init() {
 	c.GoodLedger = NewGoodLedgerClient(c.config)
 	c.GoodStatement = NewGoodStatementClient(c.config)
 	c.Ledger = NewLedgerClient(c.config)
+	c.LedgerLock = NewLedgerLockClient(c.config)
 	c.Profit = NewProfitClient(c.config)
 	c.Statement = NewStatementClient(c.config)
 	c.UnsoldStatement = NewUnsoldStatementClient(c.config)
@@ -98,6 +102,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		GoodLedger:      NewGoodLedgerClient(cfg),
 		GoodStatement:   NewGoodStatementClient(cfg),
 		Ledger:          NewLedgerClient(cfg),
+		LedgerLock:      NewLedgerLockClient(cfg),
 		Profit:          NewProfitClient(cfg),
 		Statement:       NewStatementClient(cfg),
 		UnsoldStatement: NewUnsoldStatementClient(cfg),
@@ -124,6 +129,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		GoodLedger:      NewGoodLedgerClient(cfg),
 		GoodStatement:   NewGoodStatementClient(cfg),
 		Ledger:          NewLedgerClient(cfg),
+		LedgerLock:      NewLedgerLockClient(cfg),
 		Profit:          NewProfitClient(cfg),
 		Statement:       NewStatementClient(cfg),
 		UnsoldStatement: NewUnsoldStatementClient(cfg),
@@ -160,6 +166,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.GoodLedger.Use(hooks...)
 	c.GoodStatement.Use(hooks...)
 	c.Ledger.Use(hooks...)
+	c.LedgerLock.Use(hooks...)
 	c.Profit.Use(hooks...)
 	c.Statement.Use(hooks...)
 	c.UnsoldStatement.Use(hooks...)
@@ -437,6 +444,97 @@ func (c *LedgerClient) GetX(ctx context.Context, id uuid.UUID) *Ledger {
 func (c *LedgerClient) Hooks() []Hook {
 	hooks := c.hooks.Ledger
 	return append(hooks[:len(hooks):len(hooks)], ledger.Hooks[:]...)
+}
+
+// LedgerLockClient is a client for the LedgerLock schema.
+type LedgerLockClient struct {
+	config
+}
+
+// NewLedgerLockClient returns a client for the LedgerLock from the given config.
+func NewLedgerLockClient(c config) *LedgerLockClient {
+	return &LedgerLockClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ledgerlock.Hooks(f(g(h())))`.
+func (c *LedgerLockClient) Use(hooks ...Hook) {
+	c.hooks.LedgerLock = append(c.hooks.LedgerLock, hooks...)
+}
+
+// Create returns a builder for creating a LedgerLock entity.
+func (c *LedgerLockClient) Create() *LedgerLockCreate {
+	mutation := newLedgerLockMutation(c.config, OpCreate)
+	return &LedgerLockCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LedgerLock entities.
+func (c *LedgerLockClient) CreateBulk(builders ...*LedgerLockCreate) *LedgerLockCreateBulk {
+	return &LedgerLockCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LedgerLock.
+func (c *LedgerLockClient) Update() *LedgerLockUpdate {
+	mutation := newLedgerLockMutation(c.config, OpUpdate)
+	return &LedgerLockUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LedgerLockClient) UpdateOne(ll *LedgerLock) *LedgerLockUpdateOne {
+	mutation := newLedgerLockMutation(c.config, OpUpdateOne, withLedgerLock(ll))
+	return &LedgerLockUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LedgerLockClient) UpdateOneID(id uuid.UUID) *LedgerLockUpdateOne {
+	mutation := newLedgerLockMutation(c.config, OpUpdateOne, withLedgerLockID(id))
+	return &LedgerLockUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LedgerLock.
+func (c *LedgerLockClient) Delete() *LedgerLockDelete {
+	mutation := newLedgerLockMutation(c.config, OpDelete)
+	return &LedgerLockDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LedgerLockClient) DeleteOne(ll *LedgerLock) *LedgerLockDeleteOne {
+	return c.DeleteOneID(ll.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *LedgerLockClient) DeleteOneID(id uuid.UUID) *LedgerLockDeleteOne {
+	builder := c.Delete().Where(ledgerlock.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LedgerLockDeleteOne{builder}
+}
+
+// Query returns a query builder for LedgerLock.
+func (c *LedgerLockClient) Query() *LedgerLockQuery {
+	return &LedgerLockQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a LedgerLock entity by its id.
+func (c *LedgerLockClient) Get(ctx context.Context, id uuid.UUID) (*LedgerLock, error) {
+	return c.Query().Where(ledgerlock.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LedgerLockClient) GetX(ctx context.Context, id uuid.UUID) *LedgerLock {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LedgerLockClient) Hooks() []Hook {
+	hooks := c.hooks.LedgerLock
+	return append(hooks[:len(hooks):len(hooks)], ledgerlock.Hooks[:]...)
 }
 
 // ProfitClient is a client for the Profit schema.

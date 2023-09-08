@@ -31,6 +31,7 @@ type hooks struct {
 	GoodLedger      []ent.Hook
 	GoodStatement   []ent.Hook
 	Ledger          []ent.Hook
+	LedgerLock      []ent.Hook
 	Profit          []ent.Hook
 	Statement       []ent.Hook
 	UnsoldStatement []ent.Hook

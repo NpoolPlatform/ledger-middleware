@@ -8,6 +8,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/schema"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
@@ -151,6 +152,38 @@ func init() {
 	ledgerDescID := ledgerFields[0].Descriptor()
 	// ledger.DefaultID holds the default value on creation for the id field.
 	ledger.DefaultID = ledgerDescID.Default.(func() uuid.UUID)
+	ledgerlockMixin := schema.LedgerLock{}.Mixin()
+	ledgerlock.Policy = privacy.NewPolicies(ledgerlockMixin[0], schema.LedgerLock{})
+	ledgerlock.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := ledgerlock.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	ledgerlockMixinFields0 := ledgerlockMixin[0].Fields()
+	_ = ledgerlockMixinFields0
+	ledgerlockFields := schema.LedgerLock{}.Fields()
+	_ = ledgerlockFields
+	// ledgerlockDescCreatedAt is the schema descriptor for created_at field.
+	ledgerlockDescCreatedAt := ledgerlockMixinFields0[0].Descriptor()
+	// ledgerlock.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ledgerlock.DefaultCreatedAt = ledgerlockDescCreatedAt.Default.(func() uint32)
+	// ledgerlockDescUpdatedAt is the schema descriptor for updated_at field.
+	ledgerlockDescUpdatedAt := ledgerlockMixinFields0[1].Descriptor()
+	// ledgerlock.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	ledgerlock.DefaultUpdatedAt = ledgerlockDescUpdatedAt.Default.(func() uint32)
+	// ledgerlock.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	ledgerlock.UpdateDefaultUpdatedAt = ledgerlockDescUpdatedAt.UpdateDefault.(func() uint32)
+	// ledgerlockDescDeletedAt is the schema descriptor for deleted_at field.
+	ledgerlockDescDeletedAt := ledgerlockMixinFields0[2].Descriptor()
+	// ledgerlock.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	ledgerlock.DefaultDeletedAt = ledgerlockDescDeletedAt.Default.(func() uint32)
+	// ledgerlockDescID is the schema descriptor for id field.
+	ledgerlockDescID := ledgerlockFields[0].Descriptor()
+	// ledgerlock.DefaultID holds the default value on creation for the id field.
+	ledgerlock.DefaultID = ledgerlockDescID.Default.(func() uuid.UUID)
 	profitMixin := schema.Profit{}.Mixin()
 	profit.Policy = privacy.NewPolicies(profitMixin[0], schema.Profit{})
 	profit.Hooks[0] = func(next ent.Mutator) ent.Mutator {
