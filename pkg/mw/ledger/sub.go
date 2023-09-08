@@ -3,13 +3,15 @@ package ledger
 import (
 	"context"
 	"fmt"
+	"time"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
-	lockcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/lock"
+	ledgerlockcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/lock"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
+	entledgerlock "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	entstatement "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
@@ -74,13 +76,10 @@ func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if h.Spendable == nil {
 		return nil
 	}
-	if h.LockID == nil {
-		return fmt.Errorf("invalid lock id")
-	}
 
-	if _, err := lockcrud.CreateSet(
+	if _, err := ledgerlockcrud.CreateSet(
 		tx.LedgerLock.Create(),
-		&lockcrud.Req{
+		&ledgerlockcrud.Req{
 			ID:     h.LockID,
 			Amount: h.Spendable,
 		},
@@ -130,6 +129,28 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	if h.Locked == nil {
 		return nil
 	}
+	lock, err := tx.
+		LedgerLock.
+		Query().
+		Where(
+			entledgerlock.ID(*h.LockID),
+			entledgerlock.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	if h.Locked.Cmp(lock.Amount) != 0 {
+		return fmt.Errorf("invalid amount")
+	}
+	now := uint32(time.Now().Unix())
+	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
+		DeletedAt: &now,
+	}).Save(ctx); err != nil {
+		return err
+	}
+
 	ioType := types.IOType_Outcoming
 	if _, err := statementcrud.CreateSet(
 		tx.Statement.Create(),
