@@ -81,7 +81,8 @@ func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
 	if _, err := lockcrud.CreateSet(
 		tx.LedgerLock.Create(),
 		&lockcrud.Req{
-			ID: h.LockID,
+			ID:     h.LockID,
+			Amount: h.Spendable,
 		},
 	).Save(ctx); err != nil {
 		return err

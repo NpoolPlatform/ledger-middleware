@@ -88,9 +88,6 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 }
 
 func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
-	if h.Spendable == nil {
-		return nil
-	}
 	if h.LockID == nil {
 		return fmt.Errorf("invalid lock id")
 	}
@@ -110,6 +107,7 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 		}
 		return err
 	}
+	h.Spendable = &lock.Amount
 
 	now := uint32(time.Now().Unix())
 	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
