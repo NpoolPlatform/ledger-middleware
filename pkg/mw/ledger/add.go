@@ -125,10 +125,6 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("invalid lock id")
 	}
 
-	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
-		return err
-	}
-
 	info, err := tx.
 		Ledger.
 		Query().
@@ -144,6 +140,10 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 		return err
 	}
 	h.ledger = info
+
+	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
+		return err
+	}
 
 	spendable := *h.Spendable
 	locked := decimal.NewFromInt(0).Sub(*h.Spendable)

@@ -167,6 +167,22 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(*h.AppID),
+			entledger.UserID(*h.UserID),
+			entledger.CoinTypeID(*h.CoinTypeID),
+			entledger.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	h.ledger = info
+
 	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
 		return err
 	}
@@ -190,22 +206,6 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 
 	locked := decimal.NewFromInt(0).Sub(*h.Locked)
 	outcoming := *h.Locked
-
-	info, err := tx.
-		Ledger.
-		Query().
-		Where(
-			entledger.AppID(*h.AppID),
-			entledger.UserID(*h.UserID),
-			entledger.CoinTypeID(*h.CoinTypeID),
-			entledger.DeletedAt(0),
-		).
-		ForUpdate().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-	h.ledger = info
 
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		h.ledger,
