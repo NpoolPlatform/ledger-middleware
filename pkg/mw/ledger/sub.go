@@ -86,7 +86,7 @@ func (h *subHandler) createLedgerLock(ctx context.Context, tx *ent.Tx) error {
 }
 
 //nolint
-func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
+func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) (bool, error) {
 	lock, err := tx.
 		LedgerLock.
 		Query().
@@ -97,19 +97,22 @@ func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
 		ForUpdate().
 		Only(ctx)
 	if err != nil {
-		return err
+		if ent.IsNotFound(err) {
+			return false, nil
+		}
+		return false, err
 	}
 	if h.Locked.Cmp(lock.Amount) != 0 {
-		return fmt.Errorf("invalid amount")
+		return false, fmt.Errorf("invalid amount")
 	}
 
 	now := uint32(time.Now().Unix())
 	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
 		DeletedAt: &now,
 	}).Save(ctx); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
@@ -164,7 +167,7 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
-	if err := h.deleteLedgerLock(ctx, tx); err != nil {
+	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
 		return err
 	}
 

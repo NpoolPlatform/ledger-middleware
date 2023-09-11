@@ -88,7 +88,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 }
 
 //nolint
-func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
+func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) (bool, error) {
 	lock, err := tx.
 		LedgerLock.
 		Query().
@@ -99,19 +99,22 @@ func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
 		ForUpdate().
 		Only(ctx)
 	if err != nil {
-		return err
+		if ent.IsNotFound(err) {
+			return false, nil
+		}
+		return false, err
 	}
 	if h.Spendable.Cmp(lock.Amount) != 0 {
-		return fmt.Errorf("invalid amount")
+		return false, fmt.Errorf("invalid amount")
 	}
 
 	now := uint32(time.Now().Unix())
 	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
 		DeletedAt: &now,
 	}).Save(ctx); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
@@ -122,7 +125,7 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("invalid lock id")
 	}
 
-	if err := h.deleteLedgerLock(ctx, tx); err != nil {
+	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
 		return err
 	}
 
