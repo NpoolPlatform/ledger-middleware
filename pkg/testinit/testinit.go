@@ -5,7 +5,7 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/NpoolPlatform/ledger-manager/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/app"
 

@@ -3,14 +3,14 @@ package api
 import (
 	"context"
 
-	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/v1/ledger"
-	ledger2 "github.com/NpoolPlatform/ledger-middleware/api/v2/ledger"
-	mbookkeeping "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/bookkeeping"
-	mdetail "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/detail"
-	mgeneral "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/general"
-	unsold "github.com/NpoolPlatform/ledger-middleware/api/v2/mining/unsold"
+	goodledger "github.com/NpoolPlatform/ledger-middleware/api/good/ledger"
+	goodstatement "github.com/NpoolPlatform/ledger-middleware/api/good/ledger/statement"
+	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
+	profit "github.com/NpoolPlatform/ledger-middleware/api/ledger/profit"
+	statement "github.com/NpoolPlatform/ledger-middleware/api/ledger/statement"
+	withdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw"
 
-	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v1"
+	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v2"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -23,11 +23,11 @@ type Server struct {
 func Register(server grpc.ServiceRegistrar) {
 	ledger.RegisterMiddlewareServer(server, &Server{})
 	ledger1.Register(server)
-	ledger2.Register(server)
-	mdetail.Register(server)
-	mbookkeeping.Register(server)
-	mgeneral.Register(server)
-	unsold.Register(server)
+	goodledger.Register(server)
+	statement.Register(server)
+	profit.Register(server)
+	withdraw.Register(server)
+	goodstatement.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
