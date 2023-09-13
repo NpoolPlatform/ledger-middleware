@@ -151,6 +151,7 @@ func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, 
 		switch *_type {
 		case basetypes.IOSubType_Withdrawal:
 		case basetypes.IOSubType_Payment:
+		case basetypes.IOSubType_CommissionRevoke:
 		default:
 			return fmt.Errorf("invalid io sub type")
 		}
