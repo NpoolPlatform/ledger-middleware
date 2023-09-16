@@ -21,7 +21,7 @@ func (s *Server) AddBalance(ctx context.Context, in *npool.AddBalanceRequest) (
 			"AddBalance",
 			"In", in,
 		)
-		return &npool.AddBalanceResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+		return &npool.AddBalanceResponse{}, status.Error(codes.Aborted, "invalid info")
 	}
 	handler, err := lock1.NewHandler(
 		ctx,

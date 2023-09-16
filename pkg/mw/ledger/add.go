@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -27,11 +28,11 @@ type addHandler struct {
 
 func (h *addHandler) validate() error {
 	if h.Spendable != nil && h.Locked != nil {
-		return fmt.Errorf("spendable & locked is not allowed")
+		return fmt.Errorf("not allowed")
 	}
 	if h.Spendable != nil {
 		if h.AppID == nil || h.UserID == nil || h.CoinTypeID == nil {
-			return fmt.Errorf("invalid appid or userid or cointypeid")
+			return fmt.Errorf("invalid parameter")
 		}
 	}
 	return nil
@@ -50,7 +51,7 @@ func (h *addHandler) getStatement(ctx context.Context, cli *ent.Client) error {
 		return err
 	}
 	if info.IoType != types.IOType_Outcoming.String() {
-		return fmt.Errorf("io type should be outcoming")
+		return fmt.Errorf("invalid iotype")
 	}
 	h.statement = info
 	return nil
@@ -61,7 +62,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 		return nil
 	}
 	if h.StatementID == nil {
-		return fmt.Errorf("invalid statement id")
+		return fmt.Errorf("invalid statementid")
 	}
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		if err := h.getStatement(ctx, cli); err != nil {
@@ -77,9 +78,6 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 			).
 			Only(ctx)
 		if err != nil {
-			if ent.IsNotFound(err) {
-				return nil
-			}
 			return err
 		}
 		h.rollback = info
@@ -88,7 +86,7 @@ func (h *addHandler) getRollbackStatement(ctx context.Context) error {
 }
 
 //nolint
-func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) (bool, error) {
+func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
 	lock, err := tx.
 		LedgerLock.
 		Query().
@@ -99,22 +97,19 @@ func (h *addHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) (bool, er
 		ForUpdate().
 		Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return false, nil
-		}
-		return false, err
+		return err
 	}
 	if h.Spendable.Cmp(lock.Amount) != 0 {
-		return false, fmt.Errorf("invalid amount")
+		return fmt.Errorf("invalid amount")
 	}
 
 	now := uint32(time.Now().Unix())
 	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
 		DeletedAt: &now,
 	}).Save(ctx); err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
@@ -141,7 +136,7 @@ func (h *addHandler) tryUnlock(ctx context.Context, tx *ent.Tx) error {
 	}
 	h.ledger = info
 
-	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
+	if err := h.deleteLedgerLock(ctx, tx); err != nil {
 		return err
 	}
 
@@ -172,6 +167,22 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
+	info, err := tx.
+		Ledger.
+		Query().
+		Where(
+			entledger.AppID(h.statement.AppID),
+			entledger.UserID(h.statement.UserID),
+			entledger.CoinTypeID(h.statement.CoinTypeID),
+			entledger.DeletedAt(0),
+		).
+		ForUpdate().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+	h.ledger = info
+
 	ioType := types.IOType_Incoming
 	ioSubType := types.IOSubType(types.IOSubType_value[h.statement.IoSubType])
 	ioExtra := getStatementExtra(h.StatementID.String())
@@ -189,22 +200,6 @@ func (h *addHandler) tryUnspend(ctx context.Context, tx *ent.Tx) error {
 	).Save(ctx); err != nil {
 		return err
 	}
-
-	info, err := tx.
-		Ledger.
-		Query().
-		Where(
-			entledger.AppID(h.statement.AppID),
-			entledger.UserID(h.statement.UserID),
-			entledger.CoinTypeID(h.statement.CoinTypeID),
-			entledger.DeletedAt(0),
-		).
-		ForUpdate().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-	h.ledger = info
 
 	outcoming := decimal.NewFromInt(0).Sub(h.statement.Amount)
 	stm, err := ledgercrud.UpdateSetWithValidate(
@@ -244,6 +239,15 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		return nil
 	})
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		if errors.Is(err, ErrLedgerNotExist) {
+			return nil, nil
+		}
+		if errors.Is(err, ledgercrud.ErrLedgerInconsistent) {
+			return nil, nil
+		}
 		return nil, err
 	}
 

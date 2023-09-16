@@ -17,7 +17,7 @@ func (s *Server) UpdateWithdraw(ctx context.Context, in *npool.UpdateWithdrawReq
 			"UpdateWithdraw",
 			"In", in,
 		)
-		return &npool.UpdateWithdrawResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+		return &npool.UpdateWithdrawResponse{}, status.Error(codes.Aborted, "invalid info")
 	}
 	handler, err := withdraw1.NewHandler(
 		ctx,

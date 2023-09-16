@@ -1,6 +1,7 @@
 package ledger
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/shopspring/decimal"
@@ -78,6 +79,8 @@ func UpdateSet(u *ent.LedgerUpdateOne, req *Req) *ent.LedgerUpdateOne {
 	return u
 }
 
+var ErrLedgerInconsistent = errors.New("ledger inconsistent")
+
 func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, error) {
 	incoming := decimal.NewFromInt(0)
 	if req.Incoming != nil {
@@ -104,21 +107,20 @@ func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, er
 				Add(spendable).
 				Add(info.Spendable),
 		) != 0 {
-		return nil, fmt.Errorf("outcoming (%v + %v) + locked (%v + %v) + spendable (%v + %v) != incoming (%v + %v)",
-			outcoming, info.Outcoming, locked, info.Locked, spendable, info.Spendable, incoming, info.Incoming)
+		return nil, ErrLedgerInconsistent
 	}
 
 	if locked.Add(info.Locked).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("locked (%v) + locked (%v) < 0", locked, info.Locked)
+		return nil, ErrLedgerInconsistent
 	}
 	if incoming.Add(info.Incoming).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("incoming (%v) + incoming (%v) < 0", locked, info.Incoming)
+		return nil, ErrLedgerInconsistent
 	}
 	if outcoming.Add(info.Outcoming).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("outcoming (%v) + outcoming (%v) < 0", locked, info.Outcoming)
+		return nil, ErrLedgerInconsistent
 	}
 	if spendable.Add(info.Spendable).Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, fmt.Errorf("spendable (%v) + spendable(%v) < 0", spendable, info.Spendable)
+		return nil, ErrLedgerInconsistent
 	}
 
 	incoming = incoming.Add(info.Incoming)

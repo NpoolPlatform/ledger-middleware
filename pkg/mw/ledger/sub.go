@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -62,9 +63,6 @@ func (h *subHandler) getStatement(ctx context.Context) error {
 			).
 			Only(ctx)
 		if err != nil {
-			if ent.IsNotFound(err) {
-				return nil
-			}
 			return err
 		}
 		h.statement = info
@@ -86,7 +84,7 @@ func (h *subHandler) createLedgerLock(ctx context.Context, tx *ent.Tx) error {
 }
 
 //nolint
-func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) (bool, error) {
+func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) error {
 	lock, err := tx.
 		LedgerLock.
 		Query().
@@ -97,22 +95,19 @@ func (h *subHandler) deleteLedgerLock(ctx context.Context, tx *ent.Tx) (bool, er
 		ForUpdate().
 		Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return false, nil
-		}
-		return false, err
+		return err
 	}
 	if h.Locked.Cmp(lock.Amount) != 0 {
-		return false, fmt.Errorf("invalid amount")
+		return fmt.Errorf("invalid amount")
 	}
 
 	now := uint32(time.Now().Unix())
 	if _, err := ledgerlockcrud.UpdateSet(lock.Update(), &ledgerlockcrud.Req{
 		DeletedAt: &now,
 	}).Save(ctx); err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 func (h *subHandler) tryLock(ctx context.Context, tx *ent.Tx) error {
@@ -183,7 +178,7 @@ func (h *subHandler) trySpend(ctx context.Context, tx *ent.Tx) error {
 	}
 	h.ledger = info
 
-	if deleted, err := h.deleteLedgerLock(ctx, tx); err != nil || !deleted {
+	if err := h.deleteLedgerLock(ctx, tx); err != nil {
 		return err
 	}
 
@@ -250,6 +245,15 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 		return nil
 	})
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		if errors.Is(err, ErrLedgerNotExist) {
+			return nil, nil
+		}
+		if errors.Is(err, ledgercrud.ErrLedgerInconsistent) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
