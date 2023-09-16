@@ -248,9 +248,6 @@ func (h *Handler) SubBalance(ctx context.Context) (info *ledgermwpb.Ledger, err 
 		if ent.IsNotFound(err) {
 			return nil, nil
 		}
-		if errors.Is(err, ErrLedgerNotExist) {
-			return nil, nil
-		}
 		if errors.Is(err, ledgercrud.ErrLedgerInconsistent) {
 			return nil, nil
 		}

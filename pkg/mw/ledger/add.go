@@ -242,9 +242,6 @@ func (h *Handler) AddBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		if ent.IsNotFound(err) {
 			return nil, nil
 		}
-		if errors.Is(err, ErrLedgerNotExist) {
-			return nil, nil
-		}
 		if errors.Is(err, ledgercrud.ErrLedgerInconsistent) {
 			return nil, nil
 		}
