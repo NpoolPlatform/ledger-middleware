@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/mixin"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -28,12 +29,28 @@ func (LedgerLock) Fields() []ent.Field {
 			Default(uuid.New).
 			Unique(),
 		field.
+			UUID("ledger_id", uuid.UUID{}).
+			Optional().
+			Default(func() uuid.UUID {
+				return uuid.Nil
+			}),
+		field.
+			UUID("statement_id", uuid.UUID{}).
+			Optional().
+			Default(func() uuid.UUID {
+				return uuid.Nil
+			}),
+		field.
 			Float("amount").
 			GoType(decimal.Decimal{}).
 			SchemaType(map[string]string{
 				dialect.MySQL: "decimal(37, 18)",
 			}).
 			Optional(),
+		field.
+			String("lock_state").
+			Optional().
+			Default(types.LedgerLockState_LedgerLockLocked.String()),
 	}
 }
 

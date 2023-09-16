@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -83,6 +84,46 @@ func (llu *LedgerLockUpdate) AddDeletedAt(u int32) *LedgerLockUpdate {
 	return llu
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (llu *LedgerLockUpdate) SetLedgerID(u uuid.UUID) *LedgerLockUpdate {
+	llu.mutation.SetLedgerID(u)
+	return llu
+}
+
+// SetNillableLedgerID sets the "ledger_id" field if the given value is not nil.
+func (llu *LedgerLockUpdate) SetNillableLedgerID(u *uuid.UUID) *LedgerLockUpdate {
+	if u != nil {
+		llu.SetLedgerID(*u)
+	}
+	return llu
+}
+
+// ClearLedgerID clears the value of the "ledger_id" field.
+func (llu *LedgerLockUpdate) ClearLedgerID() *LedgerLockUpdate {
+	llu.mutation.ClearLedgerID()
+	return llu
+}
+
+// SetStatementID sets the "statement_id" field.
+func (llu *LedgerLockUpdate) SetStatementID(u uuid.UUID) *LedgerLockUpdate {
+	llu.mutation.SetStatementID(u)
+	return llu
+}
+
+// SetNillableStatementID sets the "statement_id" field if the given value is not nil.
+func (llu *LedgerLockUpdate) SetNillableStatementID(u *uuid.UUID) *LedgerLockUpdate {
+	if u != nil {
+		llu.SetStatementID(*u)
+	}
+	return llu
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (llu *LedgerLockUpdate) ClearStatementID() *LedgerLockUpdate {
+	llu.mutation.ClearStatementID()
+	return llu
+}
+
 // SetAmount sets the "amount" field.
 func (llu *LedgerLockUpdate) SetAmount(d decimal.Decimal) *LedgerLockUpdate {
 	llu.mutation.ResetAmount()
@@ -107,6 +148,26 @@ func (llu *LedgerLockUpdate) AddAmount(d decimal.Decimal) *LedgerLockUpdate {
 // ClearAmount clears the value of the "amount" field.
 func (llu *LedgerLockUpdate) ClearAmount() *LedgerLockUpdate {
 	llu.mutation.ClearAmount()
+	return llu
+}
+
+// SetLockState sets the "lock_state" field.
+func (llu *LedgerLockUpdate) SetLockState(s string) *LedgerLockUpdate {
+	llu.mutation.SetLockState(s)
+	return llu
+}
+
+// SetNillableLockState sets the "lock_state" field if the given value is not nil.
+func (llu *LedgerLockUpdate) SetNillableLockState(s *string) *LedgerLockUpdate {
+	if s != nil {
+		llu.SetLockState(*s)
+	}
+	return llu
+}
+
+// ClearLockState clears the value of the "lock_state" field.
+func (llu *LedgerLockUpdate) ClearLockState() *LedgerLockUpdate {
+	llu.mutation.ClearLockState()
 	return llu
 }
 
@@ -244,6 +305,32 @@ func (llu *LedgerLockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: ledgerlock.FieldDeletedAt,
 		})
 	}
+	if value, ok := llu.mutation.LedgerID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldLedgerID,
+		})
+	}
+	if llu.mutation.LedgerIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: ledgerlock.FieldLedgerID,
+		})
+	}
+	if value, ok := llu.mutation.StatementID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldStatementID,
+		})
+	}
+	if llu.mutation.StatementIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: ledgerlock.FieldStatementID,
+		})
+	}
 	if value, ok := llu.mutation.Amount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
@@ -262,6 +349,19 @@ func (llu *LedgerLockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: ledgerlock.FieldAmount,
+		})
+	}
+	if value, ok := llu.mutation.LockState(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: ledgerlock.FieldLockState,
+		})
+	}
+	if llu.mutation.LockStateCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: ledgerlock.FieldLockState,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, llu.driver, _spec); err != nil {
@@ -338,6 +438,46 @@ func (lluo *LedgerLockUpdateOne) AddDeletedAt(u int32) *LedgerLockUpdateOne {
 	return lluo
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (lluo *LedgerLockUpdateOne) SetLedgerID(u uuid.UUID) *LedgerLockUpdateOne {
+	lluo.mutation.SetLedgerID(u)
+	return lluo
+}
+
+// SetNillableLedgerID sets the "ledger_id" field if the given value is not nil.
+func (lluo *LedgerLockUpdateOne) SetNillableLedgerID(u *uuid.UUID) *LedgerLockUpdateOne {
+	if u != nil {
+		lluo.SetLedgerID(*u)
+	}
+	return lluo
+}
+
+// ClearLedgerID clears the value of the "ledger_id" field.
+func (lluo *LedgerLockUpdateOne) ClearLedgerID() *LedgerLockUpdateOne {
+	lluo.mutation.ClearLedgerID()
+	return lluo
+}
+
+// SetStatementID sets the "statement_id" field.
+func (lluo *LedgerLockUpdateOne) SetStatementID(u uuid.UUID) *LedgerLockUpdateOne {
+	lluo.mutation.SetStatementID(u)
+	return lluo
+}
+
+// SetNillableStatementID sets the "statement_id" field if the given value is not nil.
+func (lluo *LedgerLockUpdateOne) SetNillableStatementID(u *uuid.UUID) *LedgerLockUpdateOne {
+	if u != nil {
+		lluo.SetStatementID(*u)
+	}
+	return lluo
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (lluo *LedgerLockUpdateOne) ClearStatementID() *LedgerLockUpdateOne {
+	lluo.mutation.ClearStatementID()
+	return lluo
+}
+
 // SetAmount sets the "amount" field.
 func (lluo *LedgerLockUpdateOne) SetAmount(d decimal.Decimal) *LedgerLockUpdateOne {
 	lluo.mutation.ResetAmount()
@@ -362,6 +502,26 @@ func (lluo *LedgerLockUpdateOne) AddAmount(d decimal.Decimal) *LedgerLockUpdateO
 // ClearAmount clears the value of the "amount" field.
 func (lluo *LedgerLockUpdateOne) ClearAmount() *LedgerLockUpdateOne {
 	lluo.mutation.ClearAmount()
+	return lluo
+}
+
+// SetLockState sets the "lock_state" field.
+func (lluo *LedgerLockUpdateOne) SetLockState(s string) *LedgerLockUpdateOne {
+	lluo.mutation.SetLockState(s)
+	return lluo
+}
+
+// SetNillableLockState sets the "lock_state" field if the given value is not nil.
+func (lluo *LedgerLockUpdateOne) SetNillableLockState(s *string) *LedgerLockUpdateOne {
+	if s != nil {
+		lluo.SetLockState(*s)
+	}
+	return lluo
+}
+
+// ClearLockState clears the value of the "lock_state" field.
+func (lluo *LedgerLockUpdateOne) ClearLockState() *LedgerLockUpdateOne {
+	lluo.mutation.ClearLockState()
 	return lluo
 }
 
@@ -529,6 +689,32 @@ func (lluo *LedgerLockUpdateOne) sqlSave(ctx context.Context) (_node *LedgerLock
 			Column: ledgerlock.FieldDeletedAt,
 		})
 	}
+	if value, ok := lluo.mutation.LedgerID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldLedgerID,
+		})
+	}
+	if lluo.mutation.LedgerIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: ledgerlock.FieldLedgerID,
+		})
+	}
+	if value, ok := lluo.mutation.StatementID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldStatementID,
+		})
+	}
+	if lluo.mutation.StatementIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: ledgerlock.FieldStatementID,
+		})
+	}
 	if value, ok := lluo.mutation.Amount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
@@ -547,6 +733,19 @@ func (lluo *LedgerLockUpdateOne) sqlSave(ctx context.Context) (_node *LedgerLock
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: ledgerlock.FieldAmount,
+		})
+	}
+	if value, ok := lluo.mutation.LockState(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: ledgerlock.FieldLockState,
+		})
+	}
+	if lluo.mutation.LockStateCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: ledgerlock.FieldLockState,
 		})
 	}
 	_node = &LedgerLock{config: lluo.config}

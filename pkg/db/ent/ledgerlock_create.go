@@ -66,6 +66,34 @@ func (llc *LedgerLockCreate) SetNillableDeletedAt(u *uint32) *LedgerLockCreate {
 	return llc
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (llc *LedgerLockCreate) SetLedgerID(u uuid.UUID) *LedgerLockCreate {
+	llc.mutation.SetLedgerID(u)
+	return llc
+}
+
+// SetNillableLedgerID sets the "ledger_id" field if the given value is not nil.
+func (llc *LedgerLockCreate) SetNillableLedgerID(u *uuid.UUID) *LedgerLockCreate {
+	if u != nil {
+		llc.SetLedgerID(*u)
+	}
+	return llc
+}
+
+// SetStatementID sets the "statement_id" field.
+func (llc *LedgerLockCreate) SetStatementID(u uuid.UUID) *LedgerLockCreate {
+	llc.mutation.SetStatementID(u)
+	return llc
+}
+
+// SetNillableStatementID sets the "statement_id" field if the given value is not nil.
+func (llc *LedgerLockCreate) SetNillableStatementID(u *uuid.UUID) *LedgerLockCreate {
+	if u != nil {
+		llc.SetStatementID(*u)
+	}
+	return llc
+}
+
 // SetAmount sets the "amount" field.
 func (llc *LedgerLockCreate) SetAmount(d decimal.Decimal) *LedgerLockCreate {
 	llc.mutation.SetAmount(d)
@@ -76,6 +104,20 @@ func (llc *LedgerLockCreate) SetAmount(d decimal.Decimal) *LedgerLockCreate {
 func (llc *LedgerLockCreate) SetNillableAmount(d *decimal.Decimal) *LedgerLockCreate {
 	if d != nil {
 		llc.SetAmount(*d)
+	}
+	return llc
+}
+
+// SetLockState sets the "lock_state" field.
+func (llc *LedgerLockCreate) SetLockState(s string) *LedgerLockCreate {
+	llc.mutation.SetLockState(s)
+	return llc
+}
+
+// SetNillableLockState sets the "lock_state" field if the given value is not nil.
+func (llc *LedgerLockCreate) SetNillableLockState(s *string) *LedgerLockCreate {
+	if s != nil {
+		llc.SetLockState(*s)
 	}
 	return llc
 }
@@ -194,6 +236,24 @@ func (llc *LedgerLockCreate) defaults() error {
 		v := ledgerlock.DefaultDeletedAt()
 		llc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := llc.mutation.LedgerID(); !ok {
+		if ledgerlock.DefaultLedgerID == nil {
+			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultLedgerID (forgotten import ent/runtime?)")
+		}
+		v := ledgerlock.DefaultLedgerID()
+		llc.mutation.SetLedgerID(v)
+	}
+	if _, ok := llc.mutation.StatementID(); !ok {
+		if ledgerlock.DefaultStatementID == nil {
+			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultStatementID (forgotten import ent/runtime?)")
+		}
+		v := ledgerlock.DefaultStatementID()
+		llc.mutation.SetStatementID(v)
+	}
+	if _, ok := llc.mutation.LockState(); !ok {
+		v := ledgerlock.DefaultLockState
+		llc.mutation.SetLockState(v)
+	}
 	if _, ok := llc.mutation.ID(); !ok {
 		if ledgerlock.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultID (forgotten import ent/runtime?)")
@@ -276,6 +336,22 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 		})
 		_node.DeletedAt = value
 	}
+	if value, ok := llc.mutation.LedgerID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldLedgerID,
+		})
+		_node.LedgerID = value
+	}
+	if value, ok := llc.mutation.StatementID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldStatementID,
+		})
+		_node.StatementID = value
+	}
 	if value, ok := llc.mutation.Amount(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
@@ -283,6 +359,14 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 			Column: ledgerlock.FieldAmount,
 		})
 		_node.Amount = value
+	}
+	if value, ok := llc.mutation.LockState(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: ledgerlock.FieldLockState,
+		})
+		_node.LockState = value
 	}
 	return _node, _spec
 }
@@ -392,6 +476,42 @@ func (u *LedgerLockUpsert) AddDeletedAt(v uint32) *LedgerLockUpsert {
 	return u
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (u *LedgerLockUpsert) SetLedgerID(v uuid.UUID) *LedgerLockUpsert {
+	u.Set(ledgerlock.FieldLedgerID, v)
+	return u
+}
+
+// UpdateLedgerID sets the "ledger_id" field to the value that was provided on create.
+func (u *LedgerLockUpsert) UpdateLedgerID() *LedgerLockUpsert {
+	u.SetExcluded(ledgerlock.FieldLedgerID)
+	return u
+}
+
+// ClearLedgerID clears the value of the "ledger_id" field.
+func (u *LedgerLockUpsert) ClearLedgerID() *LedgerLockUpsert {
+	u.SetNull(ledgerlock.FieldLedgerID)
+	return u
+}
+
+// SetStatementID sets the "statement_id" field.
+func (u *LedgerLockUpsert) SetStatementID(v uuid.UUID) *LedgerLockUpsert {
+	u.Set(ledgerlock.FieldStatementID, v)
+	return u
+}
+
+// UpdateStatementID sets the "statement_id" field to the value that was provided on create.
+func (u *LedgerLockUpsert) UpdateStatementID() *LedgerLockUpsert {
+	u.SetExcluded(ledgerlock.FieldStatementID)
+	return u
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (u *LedgerLockUpsert) ClearStatementID() *LedgerLockUpsert {
+	u.SetNull(ledgerlock.FieldStatementID)
+	return u
+}
+
 // SetAmount sets the "amount" field.
 func (u *LedgerLockUpsert) SetAmount(v decimal.Decimal) *LedgerLockUpsert {
 	u.Set(ledgerlock.FieldAmount, v)
@@ -413,6 +533,24 @@ func (u *LedgerLockUpsert) AddAmount(v decimal.Decimal) *LedgerLockUpsert {
 // ClearAmount clears the value of the "amount" field.
 func (u *LedgerLockUpsert) ClearAmount() *LedgerLockUpsert {
 	u.SetNull(ledgerlock.FieldAmount)
+	return u
+}
+
+// SetLockState sets the "lock_state" field.
+func (u *LedgerLockUpsert) SetLockState(v string) *LedgerLockUpsert {
+	u.Set(ledgerlock.FieldLockState, v)
+	return u
+}
+
+// UpdateLockState sets the "lock_state" field to the value that was provided on create.
+func (u *LedgerLockUpsert) UpdateLockState() *LedgerLockUpsert {
+	u.SetExcluded(ledgerlock.FieldLockState)
+	return u
+}
+
+// ClearLockState clears the value of the "lock_state" field.
+func (u *LedgerLockUpsert) ClearLockState() *LedgerLockUpsert {
+	u.SetNull(ledgerlock.FieldLockState)
 	return u
 }
 
@@ -529,6 +667,48 @@ func (u *LedgerLockUpsertOne) UpdateDeletedAt() *LedgerLockUpsertOne {
 	})
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (u *LedgerLockUpsertOne) SetLedgerID(v uuid.UUID) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetLedgerID(v)
+	})
+}
+
+// UpdateLedgerID sets the "ledger_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertOne) UpdateLedgerID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateLedgerID()
+	})
+}
+
+// ClearLedgerID clears the value of the "ledger_id" field.
+func (u *LedgerLockUpsertOne) ClearLedgerID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearLedgerID()
+	})
+}
+
+// SetStatementID sets the "statement_id" field.
+func (u *LedgerLockUpsertOne) SetStatementID(v uuid.UUID) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetStatementID(v)
+	})
+}
+
+// UpdateStatementID sets the "statement_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertOne) UpdateStatementID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateStatementID()
+	})
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (u *LedgerLockUpsertOne) ClearStatementID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearStatementID()
+	})
+}
+
 // SetAmount sets the "amount" field.
 func (u *LedgerLockUpsertOne) SetAmount(v decimal.Decimal) *LedgerLockUpsertOne {
 	return u.Update(func(s *LedgerLockUpsert) {
@@ -554,6 +734,27 @@ func (u *LedgerLockUpsertOne) UpdateAmount() *LedgerLockUpsertOne {
 func (u *LedgerLockUpsertOne) ClearAmount() *LedgerLockUpsertOne {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.ClearAmount()
+	})
+}
+
+// SetLockState sets the "lock_state" field.
+func (u *LedgerLockUpsertOne) SetLockState(v string) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetLockState(v)
+	})
+}
+
+// UpdateLockState sets the "lock_state" field to the value that was provided on create.
+func (u *LedgerLockUpsertOne) UpdateLockState() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateLockState()
+	})
+}
+
+// ClearLockState clears the value of the "lock_state" field.
+func (u *LedgerLockUpsertOne) ClearLockState() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearLockState()
 	})
 }
 
@@ -836,6 +1037,48 @@ func (u *LedgerLockUpsertBulk) UpdateDeletedAt() *LedgerLockUpsertBulk {
 	})
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (u *LedgerLockUpsertBulk) SetLedgerID(v uuid.UUID) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetLedgerID(v)
+	})
+}
+
+// UpdateLedgerID sets the "ledger_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertBulk) UpdateLedgerID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateLedgerID()
+	})
+}
+
+// ClearLedgerID clears the value of the "ledger_id" field.
+func (u *LedgerLockUpsertBulk) ClearLedgerID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearLedgerID()
+	})
+}
+
+// SetStatementID sets the "statement_id" field.
+func (u *LedgerLockUpsertBulk) SetStatementID(v uuid.UUID) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetStatementID(v)
+	})
+}
+
+// UpdateStatementID sets the "statement_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertBulk) UpdateStatementID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateStatementID()
+	})
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (u *LedgerLockUpsertBulk) ClearStatementID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearStatementID()
+	})
+}
+
 // SetAmount sets the "amount" field.
 func (u *LedgerLockUpsertBulk) SetAmount(v decimal.Decimal) *LedgerLockUpsertBulk {
 	return u.Update(func(s *LedgerLockUpsert) {
@@ -861,6 +1104,27 @@ func (u *LedgerLockUpsertBulk) UpdateAmount() *LedgerLockUpsertBulk {
 func (u *LedgerLockUpsertBulk) ClearAmount() *LedgerLockUpsertBulk {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.ClearAmount()
+	})
+}
+
+// SetLockState sets the "lock_state" field.
+func (u *LedgerLockUpsertBulk) SetLockState(v string) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetLockState(v)
+	})
+}
+
+// UpdateLockState sets the "lock_state" field to the value that was provided on create.
+func (u *LedgerLockUpsertBulk) UpdateLockState() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateLockState()
+	})
+}
+
+// ClearLockState clears the value of the "lock_state" field.
+func (u *LedgerLockUpsertBulk) ClearLockState() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearLockState()
 	})
 }
 

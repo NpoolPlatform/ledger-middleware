@@ -180,6 +180,18 @@ func init() {
 	ledgerlockDescDeletedAt := ledgerlockMixinFields0[2].Descriptor()
 	// ledgerlock.DefaultDeletedAt holds the default value on creation for the deleted_at field.
 	ledgerlock.DefaultDeletedAt = ledgerlockDescDeletedAt.Default.(func() uint32)
+	// ledgerlockDescLedgerID is the schema descriptor for ledger_id field.
+	ledgerlockDescLedgerID := ledgerlockFields[1].Descriptor()
+	// ledgerlock.DefaultLedgerID holds the default value on creation for the ledger_id field.
+	ledgerlock.DefaultLedgerID = ledgerlockDescLedgerID.Default.(func() uuid.UUID)
+	// ledgerlockDescStatementID is the schema descriptor for statement_id field.
+	ledgerlockDescStatementID := ledgerlockFields[2].Descriptor()
+	// ledgerlock.DefaultStatementID holds the default value on creation for the statement_id field.
+	ledgerlock.DefaultStatementID = ledgerlockDescStatementID.Default.(func() uuid.UUID)
+	// ledgerlockDescLockState is the schema descriptor for lock_state field.
+	ledgerlockDescLockState := ledgerlockFields[4].Descriptor()
+	// ledgerlock.DefaultLockState holds the default value on creation for the lock_state field.
+	ledgerlock.DefaultLockState = ledgerlockDescLockState.Default.(string)
 	// ledgerlockDescID is the schema descriptor for id field.
 	ledgerlockDescID := ledgerlockFields[0].Descriptor()
 	// ledgerlock.DefaultID holds the default value on creation for the id field.

@@ -3439,8 +3439,11 @@ type LedgerLockMutation struct {
 	addupdated_at *int32
 	deleted_at    *uint32
 	adddeleted_at *int32
+	ledger_id     *uuid.UUID
+	statement_id  *uuid.UUID
 	amount        *decimal.Decimal
 	addamount     *decimal.Decimal
+	lock_state    *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*LedgerLock, error)
@@ -3719,6 +3722,104 @@ func (m *LedgerLockMutation) ResetDeletedAt() {
 	m.adddeleted_at = nil
 }
 
+// SetLedgerID sets the "ledger_id" field.
+func (m *LedgerLockMutation) SetLedgerID(u uuid.UUID) {
+	m.ledger_id = &u
+}
+
+// LedgerID returns the value of the "ledger_id" field in the mutation.
+func (m *LedgerLockMutation) LedgerID() (r uuid.UUID, exists bool) {
+	v := m.ledger_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLedgerID returns the old "ledger_id" field's value of the LedgerLock entity.
+// If the LedgerLock object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LedgerLockMutation) OldLedgerID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLedgerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLedgerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLedgerID: %w", err)
+	}
+	return oldValue.LedgerID, nil
+}
+
+// ClearLedgerID clears the value of the "ledger_id" field.
+func (m *LedgerLockMutation) ClearLedgerID() {
+	m.ledger_id = nil
+	m.clearedFields[ledgerlock.FieldLedgerID] = struct{}{}
+}
+
+// LedgerIDCleared returns if the "ledger_id" field was cleared in this mutation.
+func (m *LedgerLockMutation) LedgerIDCleared() bool {
+	_, ok := m.clearedFields[ledgerlock.FieldLedgerID]
+	return ok
+}
+
+// ResetLedgerID resets all changes to the "ledger_id" field.
+func (m *LedgerLockMutation) ResetLedgerID() {
+	m.ledger_id = nil
+	delete(m.clearedFields, ledgerlock.FieldLedgerID)
+}
+
+// SetStatementID sets the "statement_id" field.
+func (m *LedgerLockMutation) SetStatementID(u uuid.UUID) {
+	m.statement_id = &u
+}
+
+// StatementID returns the value of the "statement_id" field in the mutation.
+func (m *LedgerLockMutation) StatementID() (r uuid.UUID, exists bool) {
+	v := m.statement_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatementID returns the old "statement_id" field's value of the LedgerLock entity.
+// If the LedgerLock object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LedgerLockMutation) OldStatementID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatementID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatementID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatementID: %w", err)
+	}
+	return oldValue.StatementID, nil
+}
+
+// ClearStatementID clears the value of the "statement_id" field.
+func (m *LedgerLockMutation) ClearStatementID() {
+	m.statement_id = nil
+	m.clearedFields[ledgerlock.FieldStatementID] = struct{}{}
+}
+
+// StatementIDCleared returns if the "statement_id" field was cleared in this mutation.
+func (m *LedgerLockMutation) StatementIDCleared() bool {
+	_, ok := m.clearedFields[ledgerlock.FieldStatementID]
+	return ok
+}
+
+// ResetStatementID resets all changes to the "statement_id" field.
+func (m *LedgerLockMutation) ResetStatementID() {
+	m.statement_id = nil
+	delete(m.clearedFields, ledgerlock.FieldStatementID)
+}
+
 // SetAmount sets the "amount" field.
 func (m *LedgerLockMutation) SetAmount(d decimal.Decimal) {
 	m.amount = &d
@@ -3789,6 +3890,55 @@ func (m *LedgerLockMutation) ResetAmount() {
 	delete(m.clearedFields, ledgerlock.FieldAmount)
 }
 
+// SetLockState sets the "lock_state" field.
+func (m *LedgerLockMutation) SetLockState(s string) {
+	m.lock_state = &s
+}
+
+// LockState returns the value of the "lock_state" field in the mutation.
+func (m *LedgerLockMutation) LockState() (r string, exists bool) {
+	v := m.lock_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLockState returns the old "lock_state" field's value of the LedgerLock entity.
+// If the LedgerLock object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LedgerLockMutation) OldLockState(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLockState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLockState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLockState: %w", err)
+	}
+	return oldValue.LockState, nil
+}
+
+// ClearLockState clears the value of the "lock_state" field.
+func (m *LedgerLockMutation) ClearLockState() {
+	m.lock_state = nil
+	m.clearedFields[ledgerlock.FieldLockState] = struct{}{}
+}
+
+// LockStateCleared returns if the "lock_state" field was cleared in this mutation.
+func (m *LedgerLockMutation) LockStateCleared() bool {
+	_, ok := m.clearedFields[ledgerlock.FieldLockState]
+	return ok
+}
+
+// ResetLockState resets all changes to the "lock_state" field.
+func (m *LedgerLockMutation) ResetLockState() {
+	m.lock_state = nil
+	delete(m.clearedFields, ledgerlock.FieldLockState)
+}
+
 // Where appends a list predicates to the LedgerLockMutation builder.
 func (m *LedgerLockMutation) Where(ps ...predicate.LedgerLock) {
 	m.predicates = append(m.predicates, ps...)
@@ -3808,7 +3958,7 @@ func (m *LedgerLockMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LedgerLockMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, ledgerlock.FieldCreatedAt)
 	}
@@ -3818,8 +3968,17 @@ func (m *LedgerLockMutation) Fields() []string {
 	if m.deleted_at != nil {
 		fields = append(fields, ledgerlock.FieldDeletedAt)
 	}
+	if m.ledger_id != nil {
+		fields = append(fields, ledgerlock.FieldLedgerID)
+	}
+	if m.statement_id != nil {
+		fields = append(fields, ledgerlock.FieldStatementID)
+	}
 	if m.amount != nil {
 		fields = append(fields, ledgerlock.FieldAmount)
+	}
+	if m.lock_state != nil {
+		fields = append(fields, ledgerlock.FieldLockState)
 	}
 	return fields
 }
@@ -3835,8 +3994,14 @@ func (m *LedgerLockMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case ledgerlock.FieldDeletedAt:
 		return m.DeletedAt()
+	case ledgerlock.FieldLedgerID:
+		return m.LedgerID()
+	case ledgerlock.FieldStatementID:
+		return m.StatementID()
 	case ledgerlock.FieldAmount:
 		return m.Amount()
+	case ledgerlock.FieldLockState:
+		return m.LockState()
 	}
 	return nil, false
 }
@@ -3852,8 +4017,14 @@ func (m *LedgerLockMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldUpdatedAt(ctx)
 	case ledgerlock.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
+	case ledgerlock.FieldLedgerID:
+		return m.OldLedgerID(ctx)
+	case ledgerlock.FieldStatementID:
+		return m.OldStatementID(ctx)
 	case ledgerlock.FieldAmount:
 		return m.OldAmount(ctx)
+	case ledgerlock.FieldLockState:
+		return m.OldLockState(ctx)
 	}
 	return nil, fmt.Errorf("unknown LedgerLock field %s", name)
 }
@@ -3884,12 +4055,33 @@ func (m *LedgerLockMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDeletedAt(v)
 		return nil
+	case ledgerlock.FieldLedgerID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLedgerID(v)
+		return nil
+	case ledgerlock.FieldStatementID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatementID(v)
+		return nil
 	case ledgerlock.FieldAmount:
 		v, ok := value.(decimal.Decimal)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAmount(v)
+		return nil
+	case ledgerlock.FieldLockState:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLockState(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LedgerLock field %s", name)
@@ -3972,8 +4164,17 @@ func (m *LedgerLockMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *LedgerLockMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(ledgerlock.FieldLedgerID) {
+		fields = append(fields, ledgerlock.FieldLedgerID)
+	}
+	if m.FieldCleared(ledgerlock.FieldStatementID) {
+		fields = append(fields, ledgerlock.FieldStatementID)
+	}
 	if m.FieldCleared(ledgerlock.FieldAmount) {
 		fields = append(fields, ledgerlock.FieldAmount)
+	}
+	if m.FieldCleared(ledgerlock.FieldLockState) {
+		fields = append(fields, ledgerlock.FieldLockState)
 	}
 	return fields
 }
@@ -3989,8 +4190,17 @@ func (m *LedgerLockMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *LedgerLockMutation) ClearField(name string) error {
 	switch name {
+	case ledgerlock.FieldLedgerID:
+		m.ClearLedgerID()
+		return nil
+	case ledgerlock.FieldStatementID:
+		m.ClearStatementID()
+		return nil
 	case ledgerlock.FieldAmount:
 		m.ClearAmount()
+		return nil
+	case ledgerlock.FieldLockState:
+		m.ClearLockState()
 		return nil
 	}
 	return fmt.Errorf("unknown LedgerLock nullable field %s", name)
@@ -4009,8 +4219,17 @@ func (m *LedgerLockMutation) ResetField(name string) error {
 	case ledgerlock.FieldDeletedAt:
 		m.ResetDeletedAt()
 		return nil
+	case ledgerlock.FieldLedgerID:
+		m.ResetLedgerID()
+		return nil
+	case ledgerlock.FieldStatementID:
+		m.ResetStatementID()
+		return nil
 	case ledgerlock.FieldAmount:
 		m.ResetAmount()
+		return nil
+	case ledgerlock.FieldLockState:
+		m.ResetLockState()
 		return nil
 	}
 	return fmt.Errorf("unknown LedgerLock field %s", name)

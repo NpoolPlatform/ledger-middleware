@@ -82,31 +82,24 @@ func UpdateSet(u *ent.LedgerUpdateOne, req *Req) *ent.LedgerUpdateOne {
 var ErrLedgerInconsistent = errors.New("ledger inconsistent")
 
 func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, error) {
-	incoming := decimal.NewFromInt(0)
+	incoming := info.Incoming
 	if req.Incoming != nil {
 		incoming = incoming.Add(*req.Incoming)
 	}
-	locked := decimal.NewFromInt(0)
+	locked := info.Locked
 	if req.Locked != nil {
 		locked = locked.Add(*req.Locked)
 	}
-	outcoming := decimal.NewFromInt(0)
+	outcoming := info.Outcoming
 	if req.Outcoming != nil {
 		outcoming = outcoming.Add(*req.Outcoming)
 	}
-	spendable := decimal.NewFromInt(0)
+	spendable := info.Spendable
 	if req.Spendable != nil {
 		spendable = spendable.Add(*req.Spendable)
 	}
 
-	if incoming.Add(info.Incoming).
-		Cmp(
-			locked.Add(info.Locked).
-				Add(outcoming).
-				Add(info.Outcoming).
-				Add(spendable).
-				Add(info.Spendable),
-		) != 0 {
+	if incoming.Cmp(locked.Add(outcoming).Add(spendable)) != 0 {
 		return nil, ErrLedgerInconsistent
 	}
 

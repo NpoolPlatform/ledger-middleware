@@ -18,8 +18,14 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
+	// FieldLedgerID holds the string denoting the ledger_id field in the database.
+	FieldLedgerID = "ledger_id"
+	// FieldStatementID holds the string denoting the statement_id field in the database.
+	FieldStatementID = "statement_id"
 	// FieldAmount holds the string denoting the amount field in the database.
 	FieldAmount = "amount"
+	// FieldLockState holds the string denoting the lock_state field in the database.
+	FieldLockState = "lock_state"
 	// Table holds the table name of the ledgerlock in the database.
 	Table = "ledger_locks"
 )
@@ -30,7 +36,10 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
+	FieldLedgerID,
+	FieldStatementID,
 	FieldAmount,
+	FieldLockState,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -60,6 +69,12 @@ var (
 	UpdateDefaultUpdatedAt func() uint32
 	// DefaultDeletedAt holds the default value on creation for the "deleted_at" field.
 	DefaultDeletedAt func() uint32
+	// DefaultLedgerID holds the default value on creation for the "ledger_id" field.
+	DefaultLedgerID func() uuid.UUID
+	// DefaultStatementID holds the default value on creation for the "statement_id" field.
+	DefaultStatementID func() uuid.UUID
+	// DefaultLockState holds the default value on creation for the "lock_state" field.
+	DefaultLockState string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
