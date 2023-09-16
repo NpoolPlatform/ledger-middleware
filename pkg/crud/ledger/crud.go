@@ -103,23 +103,18 @@ func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, er
 		return nil, ErrLedgerInconsistent
 	}
 
-	if locked.Add(info.Locked).Cmp(decimal.NewFromInt(0)) < 0 {
+	if locked.Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, ErrLedgerInconsistent
 	}
-	if incoming.Add(info.Incoming).Cmp(decimal.NewFromInt(0)) < 0 {
+	if incoming.Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, ErrLedgerInconsistent
 	}
-	if outcoming.Add(info.Outcoming).Cmp(decimal.NewFromInt(0)) < 0 {
+	if outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, ErrLedgerInconsistent
 	}
-	if spendable.Add(info.Spendable).Cmp(decimal.NewFromInt(0)) < 0 {
+	if spendable.Cmp(decimal.NewFromInt(0)) < 0 {
 		return nil, ErrLedgerInconsistent
 	}
-
-	incoming = incoming.Add(info.Incoming)
-	outcoming = outcoming.Add(info.Outcoming)
-	locked = locked.Add(info.Locked)
-	spendable = spendable.Add(info.Spendable)
 
 	return UpdateSet(info.Update(), &Req{
 		Incoming:  &incoming,
