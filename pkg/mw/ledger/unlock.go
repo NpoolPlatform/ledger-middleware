@@ -1,3 +1,4 @@
+//nolint:dupl
 package ledger
 
 import (
@@ -16,7 +17,7 @@ type unlockHandler struct {
 	lop *ledgeropHandler
 }
 
-func (h *unlockHandler) unlockBalance(ctx context.Context, tx *ent.Tx) error {
+func (h *unlockHandler) unlockBalance(ctx context.Context) error {
 	spendable := h.lock.Amount
 	locked := decimal.NewFromInt(0).Sub(spendable)
 	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
@@ -46,25 +47,25 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		},
 	}
 
-	if err := handler.lop.getLedger(ctx); err != nil {
-		if ent.IsNotFound(err) && h.Rollback != nil && *h.Rollback {
-			return nil, nil
-		}
-		return nil, err
-	}
 	if err := handler.getLock(ctx); err != nil {
 		if ent.IsNotFound(err) && h.Rollback != nil && *h.Rollback {
 			return nil, nil
 		}
 		return nil, err
 	}
-
 	if h.Rollback == nil || !*h.Rollback {
 		handler.state = types.LedgerLockState_LedgerLockCanceled.Enum()
 	}
+	handler.lop.ledgerID = &handler.lock.LedgerID
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.unlockBalance(ctx, tx); err != nil {
+		if err := handler.lop.getLedger(ctx, tx); err != nil {
+			if ent.IsNotFound(err) && h.Rollback != nil && *h.Rollback {
+				return nil
+			}
+			return err
+		}
+		if err := handler.unlockBalance(ctx); err != nil {
 			return err
 		}
 		if err := handler.updateLock(ctx, tx); err != nil {

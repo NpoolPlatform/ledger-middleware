@@ -50,15 +50,10 @@ func (h *lockopHandler) createLock(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *lockopHandler) updateLock(ctx context.Context, tx *ent.Tx) error {
-	req := &ledgerlockcrud.Req{
-		ID:              h.LockID,
-		LedgerLockState: h.state,
-	}
 	switch h.lock.LockState {
 	case types.LedgerLockState_LedgerLockLocked.String():
 		switch *h.state {
 		case types.LedgerLockState_LedgerLockSettle:
-			req.StatementID = h.StatementID
 		case types.LedgerLockState_LedgerLockRollback:
 		case types.LedgerLockState_LedgerLockCanceled:
 		default:
@@ -68,7 +63,14 @@ func (h *lockopHandler) updateLock(ctx context.Context, tx *ent.Tx) error {
 		return fmt.Errorf("invalid ledgerlockstate")
 	}
 
-	if _, err := ledgerlockcrud.UpdateSet(h.lock.Update(), req).Save(ctx); err != nil {
+	stm := tx.
+		LedgerLock.
+		UpdateOneID(h.lock.ID).
+		SetLockState(h.state.String())
+	if *h.state == types.LedgerLockState_LedgerLockSettle {
+		stm.SetStatementID(*h.StatementID)
+	}
+	if _, err := stm.Save(ctx); err != nil {
 		return err
 	}
 	return nil

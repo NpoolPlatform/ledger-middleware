@@ -1,3 +1,4 @@
+//nolint:dupl
 package ledger
 
 import (
@@ -16,7 +17,7 @@ type settleHandler struct {
 	lop *ledgeropHandler
 }
 
-func (h *settleHandler) settleBalance(ctx context.Context, tx *ent.Tx) error {
+func (h *settleHandler) settleBalance(ctx context.Context) error {
 	outcoming := h.lock.Amount
 	locked := decimal.NewFromInt(0).Sub(outcoming)
 	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
@@ -46,15 +47,16 @@ func (h *Handler) SettleBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		},
 	}
 
-	if err := handler.lop.getLedger(ctx); err != nil {
-		return nil, err
-	}
 	if err := handler.getLock(ctx); err != nil {
 		return nil, err
 	}
+	handler.lop.ledgerID = &handler.lock.LedgerID
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.settleBalance(ctx, tx); err != nil {
+		if err := handler.lop.getLedger(ctx, tx); err != nil {
+			return err
+		}
+		if err := handler.settleBalance(ctx); err != nil {
 			return err
 		}
 		if err := handler.updateLock(ctx, tx); err != nil {

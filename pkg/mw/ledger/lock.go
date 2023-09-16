@@ -15,7 +15,7 @@ type lockHandler struct {
 	lop *ledgeropHandler
 }
 
-func (h *lockHandler) lockBalance(ctx context.Context, tx *ent.Tx) error {
+func (h *lockHandler) lockBalance(ctx context.Context) error {
 	spendable := decimal.NewFromInt(0).Sub(*h.Locked)
 	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
 		AppID:      h.AppID,
@@ -43,12 +43,12 @@ func (h *Handler) LockBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		},
 	}
 
-	if err := handler.lop.getLedger(ctx); err != nil {
-		return nil, err
-	}
-
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.lockBalance(ctx, tx); err != nil {
+		if err := handler.lop.getLedger(ctx, tx); err != nil {
+			return err
+		}
+		h.ID = &handler.lop.ledger.ID
+		if err := handler.lockBalance(ctx); err != nil {
 			return err
 		}
 		if err := handler.createLock(ctx, tx); err != nil {

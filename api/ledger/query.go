@@ -1,3 +1,4 @@
+//nolint:dupl
 package ledger
 
 import (
