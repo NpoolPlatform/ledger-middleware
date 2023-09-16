@@ -158,7 +158,6 @@ func unlockBalance(t *testing.T) {
 }
 
 var (
-	spendable   = "10"
 	statementID = uuid.NewString()
 	lockID1     = uuid.NewString()
 )
