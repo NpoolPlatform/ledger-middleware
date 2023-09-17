@@ -21,11 +21,8 @@ func (h *unlockHandler) unlockBalance(ctx context.Context) error {
 	spendable := h.lock.Amount
 	locked := decimal.NewFromInt(0).Sub(spendable)
 	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		Locked:     &locked,
-		Spendable:  &spendable,
+		Locked:    &locked,
+		Spendable: &spendable,
 	})
 	if err != nil {
 		return err

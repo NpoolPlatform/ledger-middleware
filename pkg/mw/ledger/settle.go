@@ -22,11 +22,8 @@ func (h *settleHandler) settleBalance(ctx context.Context) error {
 	outcoming := h.lock.Amount
 	locked := decimal.NewFromInt(0).Sub(outcoming)
 	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
-		AppID:      h.AppID,
-		UserID:     h.UserID,
-		CoinTypeID: h.CoinTypeID,
-		Locked:     &locked,
-		Outcoming:  &outcoming,
+		Locked:    &locked,
+		Outcoming: &outcoming,
 	})
 	if err != nil {
 		return err
@@ -43,9 +40,9 @@ func (h *settleHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 		tx.Statement.Create(),
 		&statementcrud.Req{
 			ID:         h.StatementID,
-			AppID:      h.AppID,
-			UserID:     h.UserID,
-			CoinTypeID: h.CoinTypeID,
+			AppID:      &h.lop.ledger.AppID,
+			UserID:     &h.lop.ledger.UserID,
+			CoinTypeID: &h.lop.ledger.CoinTypeID,
 			IOType:     &ioType,
 			IOSubType:  h.IOSubType,
 			IOExtra:    h.IOExtra,
