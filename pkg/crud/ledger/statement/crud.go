@@ -78,6 +78,7 @@ type Conds struct {
 	IDs         *cruder.Cond
 	IOSubTypes  *cruder.Cond
 	CoinTypeIDs *cruder.Cond
+	UserIDs     *cruder.Cond
 }
 
 func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, error) { //nolint
@@ -243,6 +244,18 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			q.Where(entstatement.CoinTypeIDIn(ids...))
 		default:
 			return nil, fmt.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)
+		}
+	}
+	if conds.UserIDs != nil {
+		ids, ok := conds.UserIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid user ids %v", conds.UserIDs.Val)
+		}
+		switch conds.UserIDs.Op {
+		case cruder.IN:
+			q.Where(entstatement.UserIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid user ids op field %v", conds.UserIDs.Op)
 		}
 	}
 	return q, nil
