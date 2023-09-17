@@ -5,6 +5,7 @@ import (
 	"context"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
+	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -36,6 +37,26 @@ func (h *settleHandler) settleBalance(ctx context.Context) error {
 	return nil
 }
 
+func (h *settleHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
+	ioType := types.IOType_Outcoming
+	if _, err := statementcrud.CreateSet(
+		tx.Statement.Create(),
+		&statementcrud.Req{
+			ID:         h.StatementID,
+			AppID:      h.AppID,
+			UserID:     h.UserID,
+			CoinTypeID: h.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  h.IOSubType,
+			IOExtra:    h.IOExtra,
+			Amount:     &h.lock.Amount,
+		},
+	).Save(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *Handler) SettleBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	handler := &settleHandler{
 		lockopHandler: &lockopHandler{
@@ -57,6 +78,9 @@ func (h *Handler) SettleBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 			return err
 		}
 		if err := handler.settleBalance(ctx); err != nil {
+			return err
+		}
+		if err := handler.createStatement(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.updateLock(ctx, tx); err != nil {
