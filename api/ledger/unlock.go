@@ -15,6 +15,7 @@ func (s *Server) UnlockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 	handler, err := lock1.NewHandler(
 		ctx,
 		lock1.WithLockID(&in.LockID, true),
+		lock1.WithRollback(&in.Rollback, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
