@@ -11,9 +11,10 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -23,10 +24,16 @@ type createHandler struct {
 }
 
 func (h *createHandler) createOrUpdateProfit(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
-	if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
+	if *req.IOSubType != types.IOSubType_MiningBenefit {
 		return nil
 	}
-	key := fmt.Sprintf("%v:%v:%v:%v", commonpb.Prefix_PrefixCreateLedgerProfit, *req.AppID, *req.UserID, *req.CoinTypeID)
+	key := fmt.Sprintf(
+		"%v:%v:%v:%v",
+		basetypes.Prefix_PrefixCreateLedgerProfit,
+		*req.AppID,
+		*req.UserID,
+		*req.CoinTypeID,
+	)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
@@ -86,30 +93,21 @@ func (h *createHandler) createOrUpdateProfit(ctx context.Context, tx *ent.Tx, re
 }
 
 func (h *createHandler) createStatement(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
-	key := fmt.Sprintf("%v:%v:%v:%v:%v",
-		commonpb.Prefix_PrefixCreateLedgerStatement,
-		*req.AppID,
-		*req.UserID,
-		*req.CoinTypeID,
-		*req.IOExtra,
-	)
+	key := LockKey(*req.AppID, *req.UserID, *req.CoinTypeID, *req.IOExtra)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return err
 	}
 	defer func() {
 		_ = redis2.Unlock(key)
 	}()
-	stm, err := crud.SetQueryConds(
-		tx.Statement.Query(),
-		&crud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-			IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
-			IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
-			IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
-		},
-	)
+	stm, err := crud.SetQueryConds(tx.Statement.Query(), &crud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+		IOType:     &cruder.Cond{Op: cruder.EQ, Val: *req.IOType},
+		IOSubType:  &cruder.Cond{Op: cruder.EQ, Val: *req.IOSubType},
+		IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *req.IOExtra},
+	})
 	if err != nil {
 		return err
 	}
@@ -131,7 +129,7 @@ func (h *createHandler) createStatement(ctx context.Context, tx *ent.Tx, req *cr
 
 func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v",
-		commonpb.Prefix_PrefixCreateLedger,
+		basetypes.Prefix_PrefixCreateLedger,
 		*req.AppID,
 		*req.UserID,
 		*req.CoinTypeID,
@@ -143,13 +141,11 @@ func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, re
 		_ = redis2.Unlock(key)
 	}()
 
-	stm, err := ledgercrud.SetQueryConds(
-		tx.Ledger.Query(),
-		&ledgercrud.Conds{
-			AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
-			UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
-			CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
-		})
+	stm, err := ledgercrud.SetQueryConds(tx.Ledger.Query(), &ledgercrud.Conds{
+		AppID:      &cruder.Cond{Op: cruder.EQ, Val: *req.AppID},
+		UserID:     &cruder.Cond{Op: cruder.EQ, Val: *req.UserID},
+		CoinTypeID: &cruder.Cond{Op: cruder.EQ, Val: *req.CoinTypeID},
+	})
 	if err != nil {
 		return err
 	}
@@ -163,9 +159,9 @@ func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, re
 	incoming := decimal.NewFromInt(0)
 	outcoming := decimal.NewFromInt(0)
 	switch *req.IOType {
-	case basetypes.IOType_Incoming:
+	case types.IOType_Incoming:
 		incoming = decimal.RequireFromString(req.Amount.String())
-	case basetypes.IOType_Outcoming:
+	case types.IOType_Outcoming:
 		outcoming = decimal.RequireFromString(req.Amount.String())
 	default:
 		return fmt.Errorf("invalid io type %v", *req.IOType)
@@ -179,18 +175,15 @@ func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, re
 			outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
 			return fmt.Errorf("insufficient funds")
 		}
-		if _, err := ledgercrud.CreateSet(
-			tx.Ledger.Create(),
-			&ledgercrud.Req{
-				AppID:      req.AppID,
-				UserID:     req.UserID,
-				CoinTypeID: req.CoinTypeID,
-				Incoming:   &incoming,
-				Outcoming:  &outcoming,
-				Locked:     &locked,
-				Spendable:  &spendable,
-			},
-		).Save(ctx); err != nil {
+		if _, err := ledgercrud.CreateSet(tx.Ledger.Create(), &ledgercrud.Req{
+			AppID:      req.AppID,
+			UserID:     req.UserID,
+			CoinTypeID: req.CoinTypeID,
+			Incoming:   &incoming,
+			Outcoming:  &outcoming,
+			Locked:     &locked,
+			Spendable:  &spendable,
+		}).Save(ctx); err != nil {
 			return err
 		}
 		return nil
@@ -264,24 +257,24 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 
 func (h *Handler) validate() error {
 	switch *h.IOType {
-	case basetypes.IOType_Incoming:
+	case types.IOType_Incoming:
 		switch *h.IOSubType {
-		case basetypes.IOSubType_Payment:
-		case basetypes.IOSubType_MiningBenefit:
-		case basetypes.IOSubType_Commission:
-		case basetypes.IOSubType_TechniqueFeeCommission:
-		case basetypes.IOSubType_Deposit:
-		case basetypes.IOSubType_Transfer:
-		case basetypes.IOSubType_OrderRevoke:
+		case types.IOSubType_Payment:
+		case types.IOSubType_MiningBenefit:
+		case types.IOSubType_Commission:
+		case types.IOSubType_TechniqueFeeCommission:
+		case types.IOSubType_Deposit:
+		case types.IOSubType_Transfer:
+		case types.IOSubType_OrderRevoke:
 		default:
 			return fmt.Errorf("io subtype not match io type")
 		}
-	case basetypes.IOType_Outcoming:
+	case types.IOType_Outcoming:
 		switch *h.IOSubType {
-		case basetypes.IOSubType_Payment:
-		case basetypes.IOSubType_Withdrawal:
-		case basetypes.IOSubType_Transfer:
-		case basetypes.IOSubType_CommissionRevoke:
+		case types.IOSubType_Payment:
+		case types.IOSubType_Withdrawal:
+		case types.IOSubType_Transfer:
+		case types.IOSubType_CommissionRevoke:
 		default:
 			return fmt.Errorf("io subtype not match io type")
 		}

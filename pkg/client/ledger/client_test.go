@@ -13,8 +13,8 @@ import (
 	statementcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/testinit"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
-	ledgerpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
-	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
+	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+	statementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -35,7 +35,7 @@ var (
 	userID     = uuid.NewString()
 	coinTypeID = uuid.NewString()
 	lockID     = uuid.NewString()
-	deposit1   = npool.Statement{
+	deposit1   = statementmwpb.Statement{
 		ID:           uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
@@ -48,7 +48,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 
-	deposit2 = npool.Statement{
+	deposit2 = statementmwpb.Statement{
 		ID:           uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
@@ -63,7 +63,7 @@ var (
 )
 
 func setup(t *testing.T) func(*testing.T) {
-	deposits, err := statementcli.CreateStatements(context.Background(), []*npool.StatementReq{
+	deposits, err := statementcli.CreateStatements(context.Background(), []*statementmwpb.StatementReq{
 		{
 			ID:         &deposit1.ID,
 			AppID:      &appID,
@@ -88,25 +88,15 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, 2, len(deposits))
 	}
 	return func(t *testing.T) {
-		_, _ = statementcli.DeleteStatement(context.Background(), &npool.StatementReq{ID: &deposit2.ID})
+		_, _ = statementcli.DeleteStatement(context.Background(), &statementmwpb.StatementReq{ID: &deposit2.ID})
 	}
 }
 
 var (
-	locked    = "10"
-	ioSubType = basetypes.IOSubType_Withdrawal
-	ioExtra   = fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString())
-	req       = ledgerpb.LedgerReq{
-		AppID:      &appID,
-		UserID:     &userID,
-		CoinTypeID: &coinTypeID,
-		IOSubType:  &ioSubType,
-		IOExtra:    &ioExtra,
-		Spendable:  &locked,
-		LockID:     &lockID,
-	}
-
-	ledgerResult1 = ledgerpb.Ledger{
+	locked        = "10"
+	ioSubType     = basetypes.IOSubType_Withdrawal
+	ioExtra       = fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString())
+	ledgerResult1 = npool.Ledger{
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
@@ -116,7 +106,7 @@ var (
 		Spendable:  "140",
 	}
 
-	ledgerResult2 = ledgerpb.Ledger{
+	ledgerResult2 = npool.Ledger{
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
@@ -126,7 +116,7 @@ var (
 		Spendable:  "150",
 	}
 
-	spendResult = ledgerpb.Ledger{
+	spendResult = npool.Ledger{
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
@@ -138,7 +128,13 @@ var (
 )
 
 func lockBalance(t *testing.T) {
-	info, err := SubBalance(context.Background(), &req)
+	info, err := LockBalance(context.Background(), &npool.LockBalanceRequest{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Amount:     locked,
+		LockID:     lockID,
+	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult1.ID = info.ID
@@ -149,7 +145,9 @@ func lockBalance(t *testing.T) {
 }
 
 func unlockBalance(t *testing.T) {
-	info, err := AddBalance(context.Background(), &req)
+	info, err := UnlockBalance(context.Background(), &npool.UnlockBalanceRequest{
+		LockID: lockID,
+	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult2.ID = info.ID
@@ -160,51 +158,36 @@ func unlockBalance(t *testing.T) {
 }
 
 var (
-	spendable   = "10"
 	statementID = uuid.NewString()
 	lockID1     = uuid.NewString()
-	spendReq    = &ledgerpb.LedgerReq{
-		AppID:       &appID,
-		UserID:      &userID,
-		CoinTypeID:  &coinTypeID,
-		IOSubType:   &ioSubType,
-		IOExtra:     &ioExtra,
-		Locked:      &spendable,
-		StatementID: &statementID,
-		LockID:      &lockID1,
-	}
 )
 
 func spendBalance(t *testing.T) {
 	// lock
-	info, err := SubBalance(context.Background(), &ledgerpb.LedgerReq{
-		AppID:      req.AppID,
-		UserID:     req.UserID,
-		CoinTypeID: req.CoinTypeID,
-		Spendable:  req.Spendable,
-		LockID:     &lockID1,
+	info, err := LockBalance(context.Background(), &npool.LockBalanceRequest{
+		AppID:      appID,
+		UserID:     userID,
+		CoinTypeID: coinTypeID,
+		Amount:     locked,
+		LockID:     lockID1,
 	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 	}
 
 	// spend
-	info1, err := SubBalance(context.Background(), spendReq)
+	info1, err := SettleBalance(context.Background(), &npool.SettleBalanceRequest{
+		LockID:      lockID1,
+		IOSubType:   ioSubType,
+		IOExtra:     ioExtra,
+		StatementID: statementID,
+	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info1)
 		spendResult.ID = info1.ID
 		spendResult.CreatedAt = info1.CreatedAt
 		spendResult.UpdatedAt = info1.UpdatedAt
 		assert.Equal(t, &spendResult, info1)
-	}
-}
-
-func unspendBalance(t *testing.T) {
-	info, err := AddBalance(context.Background(), spendReq)
-	if assert.Nil(t, err) {
-		assert.NotNil(t, info)
-		ledgerResult1.UpdatedAt = info.UpdatedAt
-		assert.Equal(t, &ledgerResult1, info)
 	}
 }
 
@@ -218,6 +201,9 @@ func TestClient(t *testing.T) {
 	monkey.Patch(grpc2.GetGRPCConn, func(service string, tags ...string) (*grpc.ClientConn, error) {
 		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	})
+	monkey.Patch(grpc2.GetGRPCConnV1, func(service string, recvBytes int, tags ...string) (*grpc.ClientConn, error) {
+		return grpc.Dial(fmt.Sprintf("localhost:%v", gport), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	})
 
 	teardowm := setup(t)
 	defer teardowm(t)
@@ -225,5 +211,4 @@ func TestClient(t *testing.T) {
 	t.Run("lockBalance", lockBalance)
 	t.Run("unlockBalance", unlockBalance)
 	t.Run("spendBalance", spendBalance)
-	t.Run("unspendBalance", unspendBalance)
 }

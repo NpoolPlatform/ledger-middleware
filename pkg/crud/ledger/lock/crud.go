@@ -2,27 +2,43 @@ package lock
 
 import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type Req struct {
-	ID        *uuid.UUID
-	Amount    *decimal.Decimal
-	DeletedAt *uint32
+	ID              *uuid.UUID
+	LedgerID        *uuid.UUID
+	StatementID     *uuid.UUID
+	Amount          *decimal.Decimal
+	LedgerLockState *types.LedgerLockState
+	DeletedAt       *uint32
 }
 
 func CreateSet(c *ent.LedgerLockCreate, in *Req) *ent.LedgerLockCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
 	}
+	if in.LedgerID != nil {
+		c.SetLedgerID(*in.LedgerID)
+	}
+	if in.StatementID != nil {
+		c.SetStatementID(*in.StatementID)
+	}
 	if in.Amount != nil {
 		c.SetAmount(*in.Amount)
+	}
+	if in.LedgerLockState != nil {
+		c.SetLockState(in.LedgerLockState.String())
 	}
 	return c
 }
 
 func UpdateSet(u *ent.LedgerLockUpdateOne, req *Req) *ent.LedgerLockUpdateOne {
+	if req.LedgerLockState != nil {
+		u.SetLockState(req.LedgerLockState.String())
+	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}

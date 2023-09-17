@@ -99,10 +99,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "LedgerLock",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			ledgerlock.FieldCreatedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldCreatedAt},
-			ledgerlock.FieldUpdatedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldUpdatedAt},
-			ledgerlock.FieldDeletedAt: {Type: field.TypeUint32, Column: ledgerlock.FieldDeletedAt},
-			ledgerlock.FieldAmount:    {Type: field.TypeFloat64, Column: ledgerlock.FieldAmount},
+			ledgerlock.FieldCreatedAt:   {Type: field.TypeUint32, Column: ledgerlock.FieldCreatedAt},
+			ledgerlock.FieldUpdatedAt:   {Type: field.TypeUint32, Column: ledgerlock.FieldUpdatedAt},
+			ledgerlock.FieldDeletedAt:   {Type: field.TypeUint32, Column: ledgerlock.FieldDeletedAt},
+			ledgerlock.FieldLedgerID:    {Type: field.TypeUUID, Column: ledgerlock.FieldLedgerID},
+			ledgerlock.FieldStatementID: {Type: field.TypeUUID, Column: ledgerlock.FieldStatementID},
+			ledgerlock.FieldAmount:      {Type: field.TypeFloat64, Column: ledgerlock.FieldAmount},
+			ledgerlock.FieldLockState:   {Type: field.TypeString, Column: ledgerlock.FieldLockState},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
@@ -520,9 +523,24 @@ func (f *LedgerLockFilter) WhereDeletedAt(p entql.Uint32P) {
 	f.Where(p.Field(ledgerlock.FieldDeletedAt))
 }
 
+// WhereLedgerID applies the entql [16]byte predicate on the ledger_id field.
+func (f *LedgerLockFilter) WhereLedgerID(p entql.ValueP) {
+	f.Where(p.Field(ledgerlock.FieldLedgerID))
+}
+
+// WhereStatementID applies the entql [16]byte predicate on the statement_id field.
+func (f *LedgerLockFilter) WhereStatementID(p entql.ValueP) {
+	f.Where(p.Field(ledgerlock.FieldStatementID))
+}
+
 // WhereAmount applies the entql float64 predicate on the amount field.
 func (f *LedgerLockFilter) WhereAmount(p entql.Float64P) {
 	f.Where(p.Field(ledgerlock.FieldAmount))
+}
+
+// WhereLockState applies the entql string predicate on the lock_state field.
+func (f *LedgerLockFilter) WhereLockState(p entql.StringP) {
+	f.Where(p.Field(ledgerlock.FieldLockState))
 }
 
 // addPredicate implements the predicateAdder interface.

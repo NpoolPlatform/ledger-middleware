@@ -23,8 +23,14 @@ type LedgerLock struct {
 	UpdatedAt uint32 `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt uint32 `json:"deleted_at,omitempty"`
+	// LedgerID holds the value of the "ledger_id" field.
+	LedgerID uuid.UUID `json:"ledger_id,omitempty"`
+	// StatementID holds the value of the "statement_id" field.
+	StatementID uuid.UUID `json:"statement_id,omitempty"`
 	// Amount holds the value of the "amount" field.
 	Amount decimal.Decimal `json:"amount,omitempty"`
+	// LockState holds the value of the "lock_state" field.
+	LockState string `json:"lock_state,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -36,7 +42,9 @@ func (*LedgerLock) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(decimal.Decimal)
 		case ledgerlock.FieldCreatedAt, ledgerlock.FieldUpdatedAt, ledgerlock.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
-		case ledgerlock.FieldID:
+		case ledgerlock.FieldLockState:
+			values[i] = new(sql.NullString)
+		case ledgerlock.FieldID, ledgerlock.FieldLedgerID, ledgerlock.FieldStatementID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type LedgerLock", columns[i])
@@ -77,11 +85,29 @@ func (ll *LedgerLock) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				ll.DeletedAt = uint32(value.Int64)
 			}
+		case ledgerlock.FieldLedgerID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field ledger_id", values[i])
+			} else if value != nil {
+				ll.LedgerID = *value
+			}
+		case ledgerlock.FieldStatementID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field statement_id", values[i])
+			} else if value != nil {
+				ll.StatementID = *value
+			}
 		case ledgerlock.FieldAmount:
 			if value, ok := values[i].(*decimal.Decimal); !ok {
 				return fmt.Errorf("unexpected type %T for field amount", values[i])
 			} else if value != nil {
 				ll.Amount = *value
+			}
+		case ledgerlock.FieldLockState:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field lock_state", values[i])
+			} else if value.Valid {
+				ll.LockState = value.String
 			}
 		}
 	}
@@ -120,8 +146,17 @@ func (ll *LedgerLock) String() string {
 	builder.WriteString("deleted_at=")
 	builder.WriteString(fmt.Sprintf("%v", ll.DeletedAt))
 	builder.WriteString(", ")
+	builder.WriteString("ledger_id=")
+	builder.WriteString(fmt.Sprintf("%v", ll.LedgerID))
+	builder.WriteString(", ")
+	builder.WriteString("statement_id=")
+	builder.WriteString(fmt.Sprintf("%v", ll.StatementID))
+	builder.WriteString(", ")
 	builder.WriteString("amount=")
 	builder.WriteString(fmt.Sprintf("%v", ll.Amount))
+	builder.WriteString(", ")
+	builder.WriteString("lock_state=")
+	builder.WriteString(ll.LockState)
 	builder.WriteByte(')')
 	return builder.String()
 }

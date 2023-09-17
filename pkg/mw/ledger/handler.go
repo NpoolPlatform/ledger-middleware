@@ -8,22 +8,25 @@ import (
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
 	crud.Req
-	Reqs        []*crud.Req
-	Conds       *crud.Conds
-	Offset      int32
-	Limit       int32
-	IOSubType   *basetypes.IOSubType
-	IOExtra     *string
-	LockID      *uuid.UUID
-	StatementID *uuid.UUID
+	Reqs            []*crud.Req
+	Conds           *crud.Conds
+	Offset          int32
+	Limit           int32
+	IOSubType       *types.IOSubType
+	IOExtra         *string
+	LockID          *uuid.UUID
+	StatementID     *uuid.UUID
+	LedgerLockState *types.LedgerLockState
+	Rollback        *bool
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -140,7 +143,7 @@ func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
-func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, *Handler) error {
+func WithIOSubType(_type *types.IOSubType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {
 			if must {
@@ -149,9 +152,9 @@ func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, 
 			return nil
 		}
 		switch *_type {
-		case basetypes.IOSubType_Withdrawal:
-		case basetypes.IOSubType_Payment:
-		case basetypes.IOSubType_CommissionRevoke:
+		case types.IOSubType_Withdrawal:
+		case types.IOSubType_Payment:
+		case types.IOSubType_CommissionRevoke:
 		default:
 			return fmt.Errorf("invalid io sub type")
 		}
@@ -213,6 +216,33 @@ func WithSpendable(amount *string, must bool) func(context.Context, *Handler) er
 			return fmt.Errorf("amount is less than 0 %v", _amount.String())
 		}
 		h.Spendable = &_amount
+		return nil
+	}
+}
+
+func WithLedgerLockState(e *types.LedgerLockState, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if e == nil {
+			if must {
+				return fmt.Errorf("invalid ledgerlockstate")
+			}
+			return nil
+		}
+		switch *e {
+		case types.LedgerLockState_LedgerLockLocked:
+		case types.LedgerLockState_LedgerLockSettle:
+		case types.LedgerLockState_LedgerLockRollback:
+		default:
+			return fmt.Errorf("invalid ledgerlockstate")
+		}
+		h.LedgerLockState = e
+		return nil
+	}
+}
+
+func WithRollback(b *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.Rollback = b
 		return nil
 	}
 }

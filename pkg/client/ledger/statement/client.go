@@ -149,3 +149,19 @@ func DeleteStatements(ctx context.Context, in []*npool.StatementReq) ([]*npool.S
 	}
 	return infos.([]*npool.Statement), nil
 }
+
+func ExistStatementConds(ctx context.Context, conds *npool.Conds) (bool, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.ExistStatementConds(ctx, &npool.ExistStatementCondsRequest{
+			Conds: conds,
+		})
+		if err != nil {
+			return false, fmt.Errorf("fail get statements: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return false, fmt.Errorf("fail get statements: %v", err)
+	}
+	return info.(bool), nil
+}

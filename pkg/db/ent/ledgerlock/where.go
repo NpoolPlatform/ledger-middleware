@@ -101,10 +101,31 @@ func DeletedAt(v uint32) predicate.LedgerLock {
 	})
 }
 
+// LedgerID applies equality check predicate on the "ledger_id" field. It's identical to LedgerIDEQ.
+func LedgerID(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLedgerID), v))
+	})
+}
+
+// StatementID applies equality check predicate on the "statement_id" field. It's identical to StatementIDEQ.
+func StatementID(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatementID), v))
+	})
+}
+
 // Amount applies equality check predicate on the "amount" field. It's identical to AmountEQ.
 func Amount(v decimal.Decimal) predicate.LedgerLock {
 	return predicate.LedgerLock(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAmount), v))
+	})
+}
+
+// LockState applies equality check predicate on the "lock_state" field. It's identical to LockStateEQ.
+func LockState(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLockState), v))
 	})
 }
 
@@ -300,6 +321,162 @@ func DeletedAtLTE(v uint32) predicate.LedgerLock {
 	})
 }
 
+// LedgerIDEQ applies the EQ predicate on the "ledger_id" field.
+func LedgerIDEQ(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLedgerID), v))
+	})
+}
+
+// LedgerIDNEQ applies the NEQ predicate on the "ledger_id" field.
+func LedgerIDNEQ(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLedgerID), v))
+	})
+}
+
+// LedgerIDIn applies the In predicate on the "ledger_id" field.
+func LedgerIDIn(vs ...uuid.UUID) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldLedgerID), v...))
+	})
+}
+
+// LedgerIDNotIn applies the NotIn predicate on the "ledger_id" field.
+func LedgerIDNotIn(vs ...uuid.UUID) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldLedgerID), v...))
+	})
+}
+
+// LedgerIDGT applies the GT predicate on the "ledger_id" field.
+func LedgerIDGT(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLedgerID), v))
+	})
+}
+
+// LedgerIDGTE applies the GTE predicate on the "ledger_id" field.
+func LedgerIDGTE(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLedgerID), v))
+	})
+}
+
+// LedgerIDLT applies the LT predicate on the "ledger_id" field.
+func LedgerIDLT(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLedgerID), v))
+	})
+}
+
+// LedgerIDLTE applies the LTE predicate on the "ledger_id" field.
+func LedgerIDLTE(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLedgerID), v))
+	})
+}
+
+// LedgerIDIsNil applies the IsNil predicate on the "ledger_id" field.
+func LedgerIDIsNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLedgerID)))
+	})
+}
+
+// LedgerIDNotNil applies the NotNil predicate on the "ledger_id" field.
+func LedgerIDNotNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLedgerID)))
+	})
+}
+
+// StatementIDEQ applies the EQ predicate on the "statement_id" field.
+func StatementIDEQ(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDNEQ applies the NEQ predicate on the "statement_id" field.
+func StatementIDNEQ(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDIn applies the In predicate on the "statement_id" field.
+func StatementIDIn(vs ...uuid.UUID) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldStatementID), v...))
+	})
+}
+
+// StatementIDNotIn applies the NotIn predicate on the "statement_id" field.
+func StatementIDNotIn(vs ...uuid.UUID) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldStatementID), v...))
+	})
+}
+
+// StatementIDGT applies the GT predicate on the "statement_id" field.
+func StatementIDGT(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDGTE applies the GTE predicate on the "statement_id" field.
+func StatementIDGTE(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDLT applies the LT predicate on the "statement_id" field.
+func StatementIDLT(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDLTE applies the LTE predicate on the "statement_id" field.
+func StatementIDLTE(v uuid.UUID) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldStatementID), v))
+	})
+}
+
+// StatementIDIsNil applies the IsNil predicate on the "statement_id" field.
+func StatementIDIsNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStatementID)))
+	})
+}
+
+// StatementIDNotNil applies the NotNil predicate on the "statement_id" field.
+func StatementIDNotNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStatementID)))
+	})
+}
+
 // AmountEQ applies the EQ predicate on the "amount" field.
 func AmountEQ(v decimal.Decimal) predicate.LedgerLock {
 	return predicate.LedgerLock(func(s *sql.Selector) {
@@ -375,6 +552,119 @@ func AmountIsNil() predicate.LedgerLock {
 func AmountNotNil() predicate.LedgerLock {
 	return predicate.LedgerLock(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldAmount)))
+	})
+}
+
+// LockStateEQ applies the EQ predicate on the "lock_state" field.
+func LockStateEQ(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateNEQ applies the NEQ predicate on the "lock_state" field.
+func LockStateNEQ(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateIn applies the In predicate on the "lock_state" field.
+func LockStateIn(vs ...string) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldLockState), v...))
+	})
+}
+
+// LockStateNotIn applies the NotIn predicate on the "lock_state" field.
+func LockStateNotIn(vs ...string) predicate.LedgerLock {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldLockState), v...))
+	})
+}
+
+// LockStateGT applies the GT predicate on the "lock_state" field.
+func LockStateGT(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateGTE applies the GTE predicate on the "lock_state" field.
+func LockStateGTE(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateLT applies the LT predicate on the "lock_state" field.
+func LockStateLT(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateLTE applies the LTE predicate on the "lock_state" field.
+func LockStateLTE(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateContains applies the Contains predicate on the "lock_state" field.
+func LockStateContains(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateHasPrefix applies the HasPrefix predicate on the "lock_state" field.
+func LockStateHasPrefix(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateHasSuffix applies the HasSuffix predicate on the "lock_state" field.
+func LockStateHasSuffix(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateIsNil applies the IsNil predicate on the "lock_state" field.
+func LockStateIsNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLockState)))
+	})
+}
+
+// LockStateNotNil applies the NotNil predicate on the "lock_state" field.
+func LockStateNotNil() predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLockState)))
+	})
+}
+
+// LockStateEqualFold applies the EqualFold predicate on the "lock_state" field.
+func LockStateEqualFold(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldLockState), v))
+	})
+}
+
+// LockStateContainsFold applies the ContainsFold predicate on the "lock_state" field.
+func LockStateContainsFold(v string) predicate.LedgerLock {
+	return predicate.LedgerLock(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldLockState), v))
 	})
 }
 
