@@ -161,7 +161,7 @@ func ExistStatementConds(ctx context.Context, conds *npool.Conds) (bool, error) 
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail get statements: %v", err)
+		return false, fmt.Errorf("fail get statements: %v", err)
 	}
 	return info.(bool), nil
 }
