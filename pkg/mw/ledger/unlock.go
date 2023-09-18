@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"context"
+	"errors"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -56,9 +57,6 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if err := handler.lop.getLedger(ctx, tx); err != nil {
-			if ent.IsNotFound(err) && h.Rollback != nil && *h.Rollback {
-				return nil
-			}
 			return err
 		}
 		if err := handler.unlockBalance(ctx); err != nil {
@@ -70,6 +68,15 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		return nil
 	})
 	if err != nil {
+		if h.Rollback == nil || !*h.Rollback {
+			return nil, err
+		}
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		if errors.Is(err, ledgercrud.ErrLedgerInconsistent) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
