@@ -37,7 +37,7 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 	handler := &unlockHandler{
 		lockopHandler: &lockopHandler{
 			Handler: h,
-			state:   types.LedgerLockState_LedgerLockRollback.Enum(),
+			state:   types.LedgerLockState_LedgerLockCanceled.Enum(),
 		},
 		lop: &ledgeropHandler{
 			Handler: h,
@@ -50,8 +50,8 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		}
 		return nil, err
 	}
-	if h.Rollback == nil || !*h.Rollback {
-		handler.state = types.LedgerLockState_LedgerLockCanceled.Enum()
+	if h.Rollback != nil || *h.Rollback {
+		handler.state = types.LedgerLockState_LedgerLockRollback.Enum()
 	}
 	handler.lop.ledgerID = &handler.lock.LedgerID
 
