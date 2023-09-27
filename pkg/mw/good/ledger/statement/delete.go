@@ -143,7 +143,7 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		if h.Rollback != nil && *h.Rollback {
 			return nil, nil
 		}
-		if h.Rollback == nil {
+		if h.Rollback == nil || (h.Rollback != nil && !*h.Rollback) {
 			return nil, fmt.Errorf("good statement not found")
 		}
 	}
