@@ -175,6 +175,9 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		if len(h.Reqs) > 0 && h.Rollback != nil && *h.Rollback {
 			return nil, nil
 		}
+		if h.Rollback == nil {
+			return nil, fmt.Errorf("statement not found")
+		}
 	}
 
 	handler := &deleteHandler{
