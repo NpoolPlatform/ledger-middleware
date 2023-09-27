@@ -140,7 +140,7 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		return nil, err
 	}
 	if len(infos) != len(h.Reqs) {
-		if len(h.Reqs) > 0 && h.Rollback != nil && *h.Rollback {
+		if h.Rollback != nil && *h.Rollback {
 			return nil, nil
 		}
 		if h.Rollback == nil {

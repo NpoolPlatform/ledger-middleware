@@ -172,7 +172,7 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		return nil, err
 	}
 	if len(infos) != len(h.Reqs) {
-		if len(h.Reqs) > 0 && h.Rollback != nil && *h.Rollback {
+		if h.Rollback != nil && *h.Rollback {
 			return nil, nil
 		}
 		if h.Rollback == nil {
