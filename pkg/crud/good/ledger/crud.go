@@ -77,11 +77,11 @@ func UpdateSetWithValidate(info *ent.GoodLedger, req *Req) (*ent.GoodLedgerUpdat
 		toUser = toUser.Add(*req.ToUser)
 	}
 
-	if amount.Add(info.Amount).Cmp(
+	tolerance := decimal.RequireFromString("0.00000001")
+	if amount.Add(info.Amount).Sub(
 		toPlatform.Add(info.ToPlatform).
-			Add(toUser).
-			Add(info.ToUser),
-	) != 0 {
+			Add(toUser).Add(info.ToUser),
+	).Abs().Cmp(tolerance) > 0 {
 		return nil, fmt.Errorf("amount(%v + %v) != toPlatform(%v + %v) + toUser(%v + %v)",
 			amount, info.Amount, toPlatform, info.ToPlatform, toUser, info.ToUser,
 		)

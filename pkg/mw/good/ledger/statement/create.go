@@ -50,7 +50,12 @@ func (h *createHandler) createGoodStatement(ctx context.Context, tx *ent.Tx, req
 	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
 	toUser := req.TotalAmount.Sub(toPlatform)
 	if req.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
-		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount.String(), toPlatform.String(), toUser.String())
+		return fmt.Errorf(
+			"TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)",
+			req.TotalAmount.String(),
+			toPlatform.String(),
+			toUser.String(),
+		)
 	}
 	if _, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
@@ -119,12 +124,22 @@ func (h *createHandler) createOrUpdateGoodLedger(ctx context.Context, tx *ent.Tx
 	}
 
 	if req.TotalAmount.Cmp(req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)) < 0 {
-		return fmt.Errorf("unsold amount(%v) + techniqueservicefeeamount(%v) < total amount(%v)", req.TotalAmount, req.UnsoldAmount, req.TechniqueServiceFeeAmount) //nolint
+		return fmt.Errorf(
+			"unsold amount(%v) + techniqueservicefeeamount(%v) < total amount(%v)",
+			req.TotalAmount,
+			req.UnsoldAmount,
+			req.TechniqueServiceFeeAmount,
+		) //nolint
 	}
 	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
 	toUser := req.TotalAmount.Sub(toPlatform)
 	if req.TotalAmount.Cmp(toPlatform.Add(toUser)) != 0 {
-		return fmt.Errorf("TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)", req.TotalAmount, toPlatform, toUser)
+		return fmt.Errorf(
+			"TotalAmount(%v) != ToPlatform(%v) + ToUser(%v)",
+			req.TotalAmount,
+			toPlatform,
+			toUser,
+		)
 	}
 
 	if info == nil {
