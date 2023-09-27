@@ -23,6 +23,7 @@ func (s *Server) DeleteStatement(ctx context.Context, in *npool.DeleteStatementR
 	handler, err := statement1.NewHandler(
 		ctx,
 		statement1.WithID(req.ID, true),
+		statement1.WithRollback(req.Rollback, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

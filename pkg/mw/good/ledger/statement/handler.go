@@ -14,10 +14,11 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs   []*crud.Req
-	Conds  *crud.Conds
-	Limit  int32
-	Offset int32
+	Rollback *bool
+	Reqs     []*crud.Req
+	Conds    *crud.Conds
+	Limit    int32
+	Offset   int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -153,6 +154,19 @@ func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) er
 			return nil
 		}
 		h.BenefitDate = date
+		return nil
+	}
+}
+
+func WithRollback(rollback *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if rollback == nil {
+			if must {
+				return fmt.Errorf("invalid rollback")
+			}
+			return nil
+		}
+		h.Rollback = rollback
 		return nil
 	}
 }
