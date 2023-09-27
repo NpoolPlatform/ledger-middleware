@@ -16,10 +16,10 @@ import (
 
 type Handler struct {
 	crud.Req
+	Rollback *bool
 	Reqs     []*crud.Req
 	StartAt  uint32
 	EndAT    uint32
-	Rollback *bool
 	Conds    *crud.Conds
 	Offset   int32
 	Limit    int32
@@ -457,6 +457,9 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 			}
 			if req.IOSubType != nil {
 				_req.IOSubType = req.IOSubType
+			}
+			if req.Rollback != nil {
+				h.Rollback = req.Rollback
 			}
 			_reqs = append(_reqs, _req)
 		}

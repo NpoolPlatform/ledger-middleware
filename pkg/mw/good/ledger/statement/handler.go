@@ -254,6 +254,9 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 				}
 				_req.BenefitDate = req.BenefitDate
 			}
+			if req.Rollback != nil {
+				h.Rollback = req.Rollback
+			}
 
 			_reqs = append(_reqs, _req)
 		}

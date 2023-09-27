@@ -139,8 +139,10 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	if err != nil {
 		return nil, err
 	}
-	if len(infos) == 0 {
-		return nil, fmt.Errorf("good statement not found")
+	if len(infos) != len(h.Reqs) {
+		if len(h.Reqs) > 0 && h.Rollback != nil && *h.Rollback {
+			return nil, nil
+		}
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
