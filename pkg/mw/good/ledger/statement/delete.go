@@ -139,7 +139,10 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	if err != nil {
 		return nil, err
 	}
-	if len(infos) == 0 {
+	if len(infos) != len(h.Reqs) {
+		if h.Rollback != nil && *h.Rollback {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("good statement not found")
 	}
 
@@ -175,6 +178,9 @@ func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement
 		return nil, err
 	}
 	if info == nil {
+		if h.Rollback != nil && *h.Rollback {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("statement not found")
 	}
 	h.Reqs = []*goodstatementcrud.Req{&h.Req}

@@ -14,10 +14,11 @@ import (
 
 type Handler struct {
 	crud.Req
-	Reqs   []*crud.Req
-	Conds  *crud.Conds
-	Limit  int32
-	Offset int32
+	Rollback *bool
+	Reqs     []*crud.Req
+	Conds    *crud.Conds
+	Limit    int32
+	Offset   int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -157,6 +158,19 @@ func WithBenefitDate(date *uint32, must bool) func(context.Context, *Handler) er
 	}
 }
 
+func WithRollback(rollback *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if rollback == nil {
+			if must {
+				return fmt.Errorf("invalid rollback")
+			}
+			return nil
+		}
+		h.Rollback = rollback
+		return nil
+	}
+}
+
 //nolint
 func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
@@ -239,6 +253,9 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 					return fmt.Errorf("invalid benefit date 0")
 				}
 				_req.BenefitDate = req.BenefitDate
+			}
+			if req.Rollback != nil {
+				h.Rollback = req.Rollback
 			}
 
 			_reqs = append(_reqs, _req)
