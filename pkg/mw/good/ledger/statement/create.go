@@ -129,7 +129,7 @@ func (h *createHandler) createOrUpdateGoodLedger(ctx context.Context, tx *ent.Tx
 			req.TotalAmount,
 			req.UnsoldAmount,
 			req.TechniqueServiceFeeAmount,
-		) //nolint
+		)
 	}
 	toPlatform := req.UnsoldAmount.Add(*req.TechniqueServiceFeeAmount)
 	toUser := req.TotalAmount.Sub(toPlatform)
