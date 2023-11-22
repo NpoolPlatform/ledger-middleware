@@ -22,6 +22,7 @@ type queryHandler struct {
 func (h *queryHandler) selectLedger(stm *ent.LedgerQuery) {
 	h.stmSelect = stm.Select(
 		entledger.FieldID,
+		entledger.FieldEntID,
 		entledger.FieldAppID,
 		entledger.FieldUserID,
 		entledger.FieldCoinTypeID,
@@ -34,15 +35,19 @@ func (h *queryHandler) selectLedger(stm *ent.LedgerQuery) {
 	)
 }
 
-func (h *queryHandler) queryLedger(cli *ent.Client) {
-	h.selectLedger(
-		cli.Ledger.
-			Query().
-			Where(
-				entledger.ID(*h.ID),
-				entledger.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryLedger(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+	stm := cli.Ledger.Query().Where(entledger.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entledger.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entledger.EntID(*h.EntID))
+	}
+	h.selectLedger(stm)
+	return nil
 }
 
 func (h *queryHandler) queryLedgers(ctx context.Context, cli *ent.Client) error {
@@ -106,7 +111,9 @@ func (h *Handler) GetLedger(ctx context.Context) (*npool.Ledger, error) {
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryLedger(cli)
+		if err := handler.queryLedger(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {

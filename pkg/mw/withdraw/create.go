@@ -65,8 +65,8 @@ func (h *createHandler) createWithdraw(ctx context.Context, tx *ent.Tx) error {
 
 func (h *Handler) CreateWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	id := uuid.New()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 
 	handler := &createHandler{

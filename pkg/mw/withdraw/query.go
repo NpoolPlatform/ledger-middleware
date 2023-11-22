@@ -23,6 +23,7 @@ type queryHandler struct {
 func (h *queryHandler) selectWithdraw(stm *ent.WithdrawQuery) {
 	h.stmSelect = stm.Select(
 		entwithdraw.FieldID,
+		entwithdraw.FieldEntID,
 		entwithdraw.FieldAppID,
 		entwithdraw.FieldUserID,
 		entwithdraw.FieldCoinTypeID,
@@ -38,15 +39,19 @@ func (h *queryHandler) selectWithdraw(stm *ent.WithdrawQuery) {
 	)
 }
 
-func (h *queryHandler) queryWithdraw(cli *ent.Client) {
-	h.selectWithdraw(
-		cli.Withdraw.
-			Query().
-			Where(
-				entwithdraw.ID(*h.ID),
-				entwithdraw.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryWithdraw(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+	stm := cli.Withdraw.Query().Where(entwithdraw.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entwithdraw.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entwithdraw.EntID(*h.EntID))
+	}
+	h.selectWithdraw(stm)
+	return nil
 }
 
 func (h *queryHandler) queryWithdraws(ctx context.Context, cli *ent.Client) error {
@@ -85,7 +90,9 @@ func (h *Handler) GetWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryWithdraw(cli)
+		if err := handler.queryWithdraw(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {
@@ -99,7 +106,6 @@ func (h *Handler) GetWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 	}
 
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 

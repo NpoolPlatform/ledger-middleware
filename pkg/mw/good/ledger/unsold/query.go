@@ -22,6 +22,7 @@ type queryHandler struct {
 func (h *queryHandler) selectUnsoldStatement(stm *ent.UnsoldStatementQuery) {
 	h.stmSelect = stm.Select(
 		entunsoldstatement.FieldID,
+		entunsoldstatement.FieldEntID,
 		entunsoldstatement.FieldGoodID,
 		entunsoldstatement.FieldCoinTypeID,
 		entunsoldstatement.FieldAmount,
@@ -31,15 +32,20 @@ func (h *queryHandler) selectUnsoldStatement(stm *ent.UnsoldStatementQuery) {
 	)
 }
 
-func (h *queryHandler) queryUnsoldStatement(cli *ent.Client) {
-	h.selectUnsoldStatement(
-		cli.UnsoldStatement.
-			Query().
-			Where(
-				entunsoldstatement.ID(*h.ID),
-				entunsoldstatement.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryUnsoldStatement(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+
+	stm := cli.UnsoldStatement.Query().Where(entunsoldstatement.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entunsoldstatement.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entunsoldstatement.EntID(*h.EntID))
+	}
+	h.selectUnsoldStatement(stm)
+	return nil
 }
 
 func (h *queryHandler) queryUnsoldStatements(ctx context.Context, cli *ent.Client) error {
@@ -81,7 +87,9 @@ func (h *Handler) GetUnsoldStatement(ctx context.Context) (*npool.UnsoldStatemen
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryUnsoldStatement(cli)
+		if err := handler.queryUnsoldStatement(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {

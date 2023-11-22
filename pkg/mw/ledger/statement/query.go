@@ -23,6 +23,7 @@ type queryHandler struct {
 func (h *queryHandler) selectStatement(stm *ent.StatementQuery) {
 	h.stmSelect = stm.Select(
 		entstatement.FieldID,
+		entstatement.FieldEntID,
 		entstatement.FieldAppID,
 		entstatement.FieldUserID,
 		entstatement.FieldCoinTypeID,
@@ -35,15 +36,19 @@ func (h *queryHandler) selectStatement(stm *ent.StatementQuery) {
 	)
 }
 
-func (h *queryHandler) queryStatement(cli *ent.Client) {
-	h.selectStatement(
-		cli.Statement.
-			Query().
-			Where(
-				entstatement.ID(*h.ID),
-				entstatement.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryStatement(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+	stm := cli.Statement.Query().Where(entstatement.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entstatement.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entstatement.EntID(*h.EntID))
+	}
+	h.selectStatement(stm)
+	return nil
 }
 
 func (h *queryHandler) queryStatements(ctx context.Context, cli *ent.Client) error {
@@ -84,7 +89,9 @@ func (h *Handler) GetStatement(ctx context.Context) (*npool.Statement, error) {
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryStatement(cli)
+		if err := handler.queryStatement(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {

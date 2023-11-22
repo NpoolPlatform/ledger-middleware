@@ -22,6 +22,7 @@ type queryHandler struct {
 func (h *queryHandler) selectProfit(stm *ent.ProfitQuery) {
 	h.stmSelect = stm.Select(
 		entprofit.FieldID,
+		entprofit.FieldEntID,
 		entprofit.FieldAppID,
 		entprofit.FieldUserID,
 		entprofit.FieldCoinTypeID,
@@ -31,15 +32,20 @@ func (h *queryHandler) selectProfit(stm *ent.ProfitQuery) {
 	)
 }
 
-func (h *queryHandler) queryProfit(cli *ent.Client) {
-	h.selectProfit(
-		cli.Profit.
-			Query().
-			Where(
-				entprofit.ID(*h.ID),
-				entprofit.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryProfit(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+
+	stm := cli.Profit.Query().Where(entprofit.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entprofit.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entprofit.EntID(*h.EntID))
+	}
+	h.selectProfit(stm)
+	return nil
 }
 
 func (h *queryHandler) queryProfits(ctx context.Context, cli *ent.Client) error {
@@ -81,7 +87,9 @@ func (h *Handler) GetProfit(ctx context.Context) (*npool.Profit, error) {
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryProfit(cli)
+		if err := handler.queryProfit(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {
