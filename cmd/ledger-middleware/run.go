@@ -8,6 +8,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/ledger-middleware/api"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/migrator"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	cli "github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
@@ -29,6 +30,9 @@ var runCmd = &cli.Command{
 }
 
 func run(ctx context.Context) error {
+	if err := migrator.Migrate(ctx); err != nil {
+		return err
+	}
 	if err := db.Init(); err != nil {
 		return err
 	}
