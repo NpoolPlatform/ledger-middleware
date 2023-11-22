@@ -63,7 +63,7 @@ func UpdateWithdraw(ctx context.Context, in *npool.WithdrawReq) (*npool.Withdraw
 func GetWithdraw(ctx context.Context, id string) (*npool.Withdraw, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetWithdraw(ctx, &npool.GetWithdrawRequest{
-			ID: id,
+			EntID: id,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get withdraw: %v", err)
@@ -118,7 +118,7 @@ func GetWithdraws(ctx context.Context, conds *npool.Conds, offset, limit int32) 
 	return infos.([]*npool.Withdraw), total, nil
 }
 
-func DeleteWithdraw(ctx context.Context, id string) (*npool.Withdraw, error) {
+func DeleteWithdraw(ctx context.Context, id uint32) (*npool.Withdraw, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.DeleteWithdraw(ctx, &npool.DeleteWithdrawRequest{
 			Info: &npool.WithdrawReq{
