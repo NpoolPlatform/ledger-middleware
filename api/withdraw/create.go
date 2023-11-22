@@ -21,7 +21,7 @@ func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawReq
 	}
 	handler, err := withdraw1.NewHandler(
 		ctx,
-		withdraw1.WithID(req.ID, false),
+		withdraw1.WithEntID(req.EntID, false),
 		withdraw1.WithAppID(req.AppID, true),
 		withdraw1.WithUserID(req.UserID, true),
 		withdraw1.WithCoinTypeID(req.CoinTypeID, true),
