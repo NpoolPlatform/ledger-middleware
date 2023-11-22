@@ -246,7 +246,7 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 
 	ioExtra := fmt.Sprintf(
 		`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
-		h.withdraw.ID,
+		h.withdraw.EntID,
 		h.withdraw.PlatformTransactionID.String(),
 		h.withdraw.ChainTransactionID,
 		h.FeeAmount.String(),
