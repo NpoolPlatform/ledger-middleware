@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
-	"github.com/google/uuid"
 )
 
 // LedgerLockQuery is the builder for querying LedgerLock entities.
@@ -87,8 +86,8 @@ func (llq *LedgerLockQuery) FirstX(ctx context.Context) *LedgerLock {
 
 // FirstID returns the first LedgerLock ID from the query.
 // Returns a *NotFoundError when no LedgerLock ID was found.
-func (llq *LedgerLockQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (llq *LedgerLockQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = llq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (llq *LedgerLockQuery) FirstID(ctx context.Context) (id uuid.UUID, err erro
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (llq *LedgerLockQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (llq *LedgerLockQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := llq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (llq *LedgerLockQuery) OnlyX(ctx context.Context) *LedgerLock {
 // OnlyID is like Only, but returns the only LedgerLock ID in the query.
 // Returns a *NotSingularError when more than one LedgerLock ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (llq *LedgerLockQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (llq *LedgerLockQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = llq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (llq *LedgerLockQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (llq *LedgerLockQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (llq *LedgerLockQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := llq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (llq *LedgerLockQuery) AllX(ctx context.Context) []*LedgerLock {
 }
 
 // IDs executes the query and returns a list of LedgerLock IDs.
-func (llq *LedgerLockQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (llq *LedgerLockQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := llq.Select(ledgerlock.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (llq *LedgerLockQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (llq *LedgerLockQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (llq *LedgerLockQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := llq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (llq *LedgerLockQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   ledgerlock.Table,
 			Columns: ledgerlock.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledgerlock.FieldID,
 			},
 		},

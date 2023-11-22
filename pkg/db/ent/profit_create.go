@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -62,6 +61,20 @@ func (pc *ProfitCreate) SetDeletedAt(u uint32) *ProfitCreate {
 func (pc *ProfitCreate) SetNillableDeletedAt(u *uint32) *ProfitCreate {
 	if u != nil {
 		pc.SetDeletedAt(*u)
+	}
+	return pc
+}
+
+// SetEntID sets the "ent_id" field.
+func (pc *ProfitCreate) SetEntID(u uuid.UUID) *ProfitCreate {
+	pc.mutation.SetEntID(u)
+	return pc
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (pc *ProfitCreate) SetNillableEntID(u *uuid.UUID) *ProfitCreate {
+	if u != nil {
+		pc.SetEntID(*u)
 	}
 	return pc
 }
@@ -123,16 +136,8 @@ func (pc *ProfitCreate) SetNillableIncoming(d *decimal.Decimal) *ProfitCreate {
 }
 
 // SetID sets the "id" field.
-func (pc *ProfitCreate) SetID(u uuid.UUID) *ProfitCreate {
+func (pc *ProfitCreate) SetID(u uint32) *ProfitCreate {
 	pc.mutation.SetID(u)
-	return pc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (pc *ProfitCreate) SetNillableID(u *uuid.UUID) *ProfitCreate {
-	if u != nil {
-		pc.SetID(*u)
-	}
 	return pc
 }
 
@@ -236,6 +241,13 @@ func (pc *ProfitCreate) defaults() error {
 		v := profit.DefaultDeletedAt()
 		pc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := pc.mutation.EntID(); !ok {
+		if profit.DefaultEntID == nil {
+			return fmt.Errorf("ent: uninitialized profit.DefaultEntID (forgotten import ent/runtime?)")
+		}
+		v := profit.DefaultEntID()
+		pc.mutation.SetEntID(v)
+	}
 	if _, ok := pc.mutation.AppID(); !ok {
 		if profit.DefaultAppID == nil {
 			return fmt.Errorf("ent: uninitialized profit.DefaultAppID (forgotten import ent/runtime?)")
@@ -257,13 +269,6 @@ func (pc *ProfitCreate) defaults() error {
 		v := profit.DefaultCoinTypeID()
 		pc.mutation.SetCoinTypeID(v)
 	}
-	if _, ok := pc.mutation.ID(); !ok {
-		if profit.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized profit.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := profit.DefaultID()
-		pc.mutation.SetID(v)
-	}
 	return nil
 }
 
@@ -278,6 +283,9 @@ func (pc *ProfitCreate) check() error {
 	if _, ok := pc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "Profit.deleted_at"`)}
 	}
+	if _, ok := pc.mutation.EntID(); !ok {
+		return &ValidationError{Name: "ent_id", err: errors.New(`ent: missing required field "Profit.ent_id"`)}
+	}
 	return nil
 }
 
@@ -289,12 +297,9 @@ func (pc *ProfitCreate) sqlSave(ctx context.Context) (*Profit, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint32(id)
 	}
 	return _node, nil
 }
@@ -305,7 +310,7 @@ func (pc *ProfitCreate) createSpec() (*Profit, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: profit.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: profit.FieldID,
 			},
 		}
@@ -313,7 +318,7 @@ func (pc *ProfitCreate) createSpec() (*Profit, *sqlgraph.CreateSpec) {
 	_spec.OnConflict = pc.conflict
 	if id, ok := pc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -338,6 +343,14 @@ func (pc *ProfitCreate) createSpec() (*Profit, *sqlgraph.CreateSpec) {
 			Column: profit.FieldDeletedAt,
 		})
 		_node.DeletedAt = value
+	}
+	if value, ok := pc.mutation.EntID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: profit.FieldEntID,
+		})
+		_node.EntID = value
 	}
 	if value, ok := pc.mutation.AppID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -476,6 +489,18 @@ func (u *ProfitUpsert) UpdateDeletedAt() *ProfitUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *ProfitUpsert) AddDeletedAt(v uint32) *ProfitUpsert {
 	u.Add(profit.FieldDeletedAt, v)
+	return u
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *ProfitUpsert) SetEntID(v uuid.UUID) *ProfitUpsert {
+	u.Set(profit.FieldEntID, v)
+	return u
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *ProfitUpsert) UpdateEntID() *ProfitUpsert {
+	u.SetExcluded(profit.FieldEntID)
 	return u
 }
 
@@ -670,6 +695,20 @@ func (u *ProfitUpsertOne) UpdateDeletedAt() *ProfitUpsertOne {
 	})
 }
 
+// SetEntID sets the "ent_id" field.
+func (u *ProfitUpsertOne) SetEntID(v uuid.UUID) *ProfitUpsertOne {
+	return u.Update(func(s *ProfitUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *ProfitUpsertOne) UpdateEntID() *ProfitUpsertOne {
+	return u.Update(func(s *ProfitUpsert) {
+		s.UpdateEntID()
+	})
+}
+
 // SetAppID sets the "app_id" field.
 func (u *ProfitUpsertOne) SetAppID(v uuid.UUID) *ProfitUpsertOne {
 	return u.Update(func(s *ProfitUpsert) {
@@ -777,12 +816,7 @@ func (u *ProfitUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ProfitUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: ProfitUpsertOne.ID is not supported by MySQL driver. Use ProfitUpsertOne.Exec instead")
-	}
+func (u *ProfitUpsertOne) ID(ctx context.Context) (id uint32, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -791,7 +825,7 @@ func (u *ProfitUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ProfitUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *ProfitUpsertOne) IDX(ctx context.Context) uint32 {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -842,6 +876,10 @@ func (pcb *ProfitCreateBulk) Save(ctx context.Context) ([]*Profit, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = uint32(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -1037,6 +1075,20 @@ func (u *ProfitUpsertBulk) AddDeletedAt(v uint32) *ProfitUpsertBulk {
 func (u *ProfitUpsertBulk) UpdateDeletedAt() *ProfitUpsertBulk {
 	return u.Update(func(s *ProfitUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *ProfitUpsertBulk) SetEntID(v uuid.UUID) *ProfitUpsertBulk {
+	return u.Update(func(s *ProfitUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *ProfitUpsertBulk) UpdateEntID() *ProfitUpsertBulk {
+	return u.Update(func(s *ProfitUpsert) {
+		s.UpdateEntID()
 	})
 }
 

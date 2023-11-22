@@ -84,6 +84,20 @@ func (llu *LedgerLockUpdate) AddDeletedAt(u int32) *LedgerLockUpdate {
 	return llu
 }
 
+// SetEntID sets the "ent_id" field.
+func (llu *LedgerLockUpdate) SetEntID(u uuid.UUID) *LedgerLockUpdate {
+	llu.mutation.SetEntID(u)
+	return llu
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (llu *LedgerLockUpdate) SetNillableEntID(u *uuid.UUID) *LedgerLockUpdate {
+	if u != nil {
+		llu.SetEntID(*u)
+	}
+	return llu
+}
+
 // SetLedgerID sets the "ledger_id" field.
 func (llu *LedgerLockUpdate) SetLedgerID(u uuid.UUID) *LedgerLockUpdate {
 	llu.mutation.SetLedgerID(u)
@@ -251,7 +265,7 @@ func (llu *LedgerLockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   ledgerlock.Table,
 			Columns: ledgerlock.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledgerlock.FieldID,
 			},
 		},
@@ -303,6 +317,13 @@ func (llu *LedgerLockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: ledgerlock.FieldDeletedAt,
+		})
+	}
+	if value, ok := llu.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldEntID,
 		})
 	}
 	if value, ok := llu.mutation.LedgerID(); ok {
@@ -435,6 +456,20 @@ func (lluo *LedgerLockUpdateOne) SetNillableDeletedAt(u *uint32) *LedgerLockUpda
 // AddDeletedAt adds u to the "deleted_at" field.
 func (lluo *LedgerLockUpdateOne) AddDeletedAt(u int32) *LedgerLockUpdateOne {
 	lluo.mutation.AddDeletedAt(u)
+	return lluo
+}
+
+// SetEntID sets the "ent_id" field.
+func (lluo *LedgerLockUpdateOne) SetEntID(u uuid.UUID) *LedgerLockUpdateOne {
+	lluo.mutation.SetEntID(u)
+	return lluo
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (lluo *LedgerLockUpdateOne) SetNillableEntID(u *uuid.UUID) *LedgerLockUpdateOne {
+	if u != nil {
+		lluo.SetEntID(*u)
+	}
 	return lluo
 }
 
@@ -618,7 +653,7 @@ func (lluo *LedgerLockUpdateOne) sqlSave(ctx context.Context) (_node *LedgerLock
 			Table:   ledgerlock.Table,
 			Columns: ledgerlock.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledgerlock.FieldID,
 			},
 		},
@@ -687,6 +722,13 @@ func (lluo *LedgerLockUpdateOne) sqlSave(ctx context.Context) (_node *LedgerLock
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: ledgerlock.FieldDeletedAt,
+		})
+	}
+	if value, ok := lluo.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldEntID,
 		})
 	}
 	if value, ok := lluo.mutation.LedgerID(); ok {

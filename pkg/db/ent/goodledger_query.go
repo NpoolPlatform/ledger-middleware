@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
-	"github.com/google/uuid"
 )
 
 // GoodLedgerQuery is the builder for querying GoodLedger entities.
@@ -87,8 +86,8 @@ func (glq *GoodLedgerQuery) FirstX(ctx context.Context) *GoodLedger {
 
 // FirstID returns the first GoodLedger ID from the query.
 // Returns a *NotFoundError when no GoodLedger ID was found.
-func (glq *GoodLedgerQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (glq *GoodLedgerQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = glq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (glq *GoodLedgerQuery) FirstID(ctx context.Context) (id uuid.UUID, err erro
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (glq *GoodLedgerQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (glq *GoodLedgerQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := glq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (glq *GoodLedgerQuery) OnlyX(ctx context.Context) *GoodLedger {
 // OnlyID is like Only, but returns the only GoodLedger ID in the query.
 // Returns a *NotSingularError when more than one GoodLedger ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (glq *GoodLedgerQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (glq *GoodLedgerQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = glq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (glq *GoodLedgerQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (glq *GoodLedgerQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (glq *GoodLedgerQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := glq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (glq *GoodLedgerQuery) AllX(ctx context.Context) []*GoodLedger {
 }
 
 // IDs executes the query and returns a list of GoodLedger IDs.
-func (glq *GoodLedgerQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (glq *GoodLedgerQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := glq.Select(goodledger.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (glq *GoodLedgerQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (glq *GoodLedgerQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (glq *GoodLedgerQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := glq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (glq *GoodLedgerQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   goodledger.Table,
 			Columns: goodledger.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodledger.FieldID,
 			},
 		},

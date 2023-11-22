@@ -84,6 +84,20 @@ func (usu *UnsoldStatementUpdate) AddDeletedAt(u int32) *UnsoldStatementUpdate {
 	return usu
 }
 
+// SetEntID sets the "ent_id" field.
+func (usu *UnsoldStatementUpdate) SetEntID(u uuid.UUID) *UnsoldStatementUpdate {
+	usu.mutation.SetEntID(u)
+	return usu
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (usu *UnsoldStatementUpdate) SetNillableEntID(u *uuid.UUID) *UnsoldStatementUpdate {
+	if u != nil {
+		usu.SetEntID(*u)
+	}
+	return usu
+}
+
 // SetGoodID sets the "good_id" field.
 func (usu *UnsoldStatementUpdate) SetGoodID(u uuid.UUID) *UnsoldStatementUpdate {
 	usu.mutation.SetGoodID(u)
@@ -278,7 +292,7 @@ func (usu *UnsoldStatementUpdate) sqlSave(ctx context.Context) (n int, err error
 			Table:   unsoldstatement.Table,
 			Columns: unsoldstatement.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: unsoldstatement.FieldID,
 			},
 		},
@@ -330,6 +344,13 @@ func (usu *UnsoldStatementUpdate) sqlSave(ctx context.Context) (n int, err error
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: unsoldstatement.FieldDeletedAt,
+		})
+	}
+	if value, ok := usu.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: unsoldstatement.FieldEntID,
 		})
 	}
 	if value, ok := usu.mutation.GoodID(); ok {
@@ -482,6 +503,20 @@ func (usuo *UnsoldStatementUpdateOne) SetNillableDeletedAt(u *uint32) *UnsoldSta
 // AddDeletedAt adds u to the "deleted_at" field.
 func (usuo *UnsoldStatementUpdateOne) AddDeletedAt(u int32) *UnsoldStatementUpdateOne {
 	usuo.mutation.AddDeletedAt(u)
+	return usuo
+}
+
+// SetEntID sets the "ent_id" field.
+func (usuo *UnsoldStatementUpdateOne) SetEntID(u uuid.UUID) *UnsoldStatementUpdateOne {
+	usuo.mutation.SetEntID(u)
+	return usuo
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (usuo *UnsoldStatementUpdateOne) SetNillableEntID(u *uuid.UUID) *UnsoldStatementUpdateOne {
+	if u != nil {
+		usuo.SetEntID(*u)
+	}
 	return usuo
 }
 
@@ -692,7 +727,7 @@ func (usuo *UnsoldStatementUpdateOne) sqlSave(ctx context.Context) (_node *Unsol
 			Table:   unsoldstatement.Table,
 			Columns: unsoldstatement.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: unsoldstatement.FieldID,
 			},
 		},
@@ -761,6 +796,13 @@ func (usuo *UnsoldStatementUpdateOne) sqlSave(ctx context.Context) (_node *Unsol
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: unsoldstatement.FieldDeletedAt,
+		})
+	}
+	if value, ok := usuo.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: unsoldstatement.FieldEntID,
 		})
 	}
 	if value, ok := usuo.mutation.GoodID(); ok {

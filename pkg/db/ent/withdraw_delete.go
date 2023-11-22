@@ -72,7 +72,7 @@ func (wd *WithdrawDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: withdraw.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: withdraw.FieldID,
 			},
 		},

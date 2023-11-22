@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -62,6 +61,20 @@ func (usc *UnsoldStatementCreate) SetDeletedAt(u uint32) *UnsoldStatementCreate 
 func (usc *UnsoldStatementCreate) SetNillableDeletedAt(u *uint32) *UnsoldStatementCreate {
 	if u != nil {
 		usc.SetDeletedAt(*u)
+	}
+	return usc
+}
+
+// SetEntID sets the "ent_id" field.
+func (usc *UnsoldStatementCreate) SetEntID(u uuid.UUID) *UnsoldStatementCreate {
+	usc.mutation.SetEntID(u)
+	return usc
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (usc *UnsoldStatementCreate) SetNillableEntID(u *uuid.UUID) *UnsoldStatementCreate {
+	if u != nil {
+		usc.SetEntID(*u)
 	}
 	return usc
 }
@@ -137,16 +150,8 @@ func (usc *UnsoldStatementCreate) SetNillableStatementID(u *uuid.UUID) *UnsoldSt
 }
 
 // SetID sets the "id" field.
-func (usc *UnsoldStatementCreate) SetID(u uuid.UUID) *UnsoldStatementCreate {
+func (usc *UnsoldStatementCreate) SetID(u uint32) *UnsoldStatementCreate {
 	usc.mutation.SetID(u)
-	return usc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (usc *UnsoldStatementCreate) SetNillableID(u *uuid.UUID) *UnsoldStatementCreate {
-	if u != nil {
-		usc.SetID(*u)
-	}
 	return usc
 }
 
@@ -250,6 +255,13 @@ func (usc *UnsoldStatementCreate) defaults() error {
 		v := unsoldstatement.DefaultDeletedAt()
 		usc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := usc.mutation.EntID(); !ok {
+		if unsoldstatement.DefaultEntID == nil {
+			return fmt.Errorf("ent: uninitialized unsoldstatement.DefaultEntID (forgotten import ent/runtime?)")
+		}
+		v := unsoldstatement.DefaultEntID()
+		usc.mutation.SetEntID(v)
+	}
 	if _, ok := usc.mutation.GoodID(); !ok {
 		if unsoldstatement.DefaultGoodID == nil {
 			return fmt.Errorf("ent: uninitialized unsoldstatement.DefaultGoodID (forgotten import ent/runtime?)")
@@ -275,13 +287,6 @@ func (usc *UnsoldStatementCreate) defaults() error {
 		v := unsoldstatement.DefaultStatementID()
 		usc.mutation.SetStatementID(v)
 	}
-	if _, ok := usc.mutation.ID(); !ok {
-		if unsoldstatement.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized unsoldstatement.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := unsoldstatement.DefaultID()
-		usc.mutation.SetID(v)
-	}
 	return nil
 }
 
@@ -296,6 +301,9 @@ func (usc *UnsoldStatementCreate) check() error {
 	if _, ok := usc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "UnsoldStatement.deleted_at"`)}
 	}
+	if _, ok := usc.mutation.EntID(); !ok {
+		return &ValidationError{Name: "ent_id", err: errors.New(`ent: missing required field "UnsoldStatement.ent_id"`)}
+	}
 	return nil
 }
 
@@ -307,12 +315,9 @@ func (usc *UnsoldStatementCreate) sqlSave(ctx context.Context) (*UnsoldStatement
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint32(id)
 	}
 	return _node, nil
 }
@@ -323,7 +328,7 @@ func (usc *UnsoldStatementCreate) createSpec() (*UnsoldStatement, *sqlgraph.Crea
 		_spec = &sqlgraph.CreateSpec{
 			Table: unsoldstatement.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: unsoldstatement.FieldID,
 			},
 		}
@@ -331,7 +336,7 @@ func (usc *UnsoldStatementCreate) createSpec() (*UnsoldStatement, *sqlgraph.Crea
 	_spec.OnConflict = usc.conflict
 	if id, ok := usc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := usc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -356,6 +361,14 @@ func (usc *UnsoldStatementCreate) createSpec() (*UnsoldStatement, *sqlgraph.Crea
 			Column: unsoldstatement.FieldDeletedAt,
 		})
 		_node.DeletedAt = value
+	}
+	if value, ok := usc.mutation.EntID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: unsoldstatement.FieldEntID,
+		})
+		_node.EntID = value
 	}
 	if value, ok := usc.mutation.GoodID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -502,6 +515,18 @@ func (u *UnsoldStatementUpsert) UpdateDeletedAt() *UnsoldStatementUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *UnsoldStatementUpsert) AddDeletedAt(v uint32) *UnsoldStatementUpsert {
 	u.Add(unsoldstatement.FieldDeletedAt, v)
+	return u
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *UnsoldStatementUpsert) SetEntID(v uuid.UUID) *UnsoldStatementUpsert {
+	u.Set(unsoldstatement.FieldEntID, v)
+	return u
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *UnsoldStatementUpsert) UpdateEntID() *UnsoldStatementUpsert {
+	u.SetExcluded(unsoldstatement.FieldEntID)
 	return u
 }
 
@@ -720,6 +745,20 @@ func (u *UnsoldStatementUpsertOne) UpdateDeletedAt() *UnsoldStatementUpsertOne {
 	})
 }
 
+// SetEntID sets the "ent_id" field.
+func (u *UnsoldStatementUpsertOne) SetEntID(v uuid.UUID) *UnsoldStatementUpsertOne {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *UnsoldStatementUpsertOne) UpdateEntID() *UnsoldStatementUpsertOne {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.UpdateEntID()
+	})
+}
+
 // SetGoodID sets the "good_id" field.
 func (u *UnsoldStatementUpsertOne) SetGoodID(v uuid.UUID) *UnsoldStatementUpsertOne {
 	return u.Update(func(s *UnsoldStatementUpsert) {
@@ -855,12 +894,7 @@ func (u *UnsoldStatementUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *UnsoldStatementUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: UnsoldStatementUpsertOne.ID is not supported by MySQL driver. Use UnsoldStatementUpsertOne.Exec instead")
-	}
+func (u *UnsoldStatementUpsertOne) ID(ctx context.Context) (id uint32, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -869,7 +903,7 @@ func (u *UnsoldStatementUpsertOne) ID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *UnsoldStatementUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *UnsoldStatementUpsertOne) IDX(ctx context.Context) uint32 {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -920,6 +954,10 @@ func (uscb *UnsoldStatementCreateBulk) Save(ctx context.Context) ([]*UnsoldState
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = uint32(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -1115,6 +1153,20 @@ func (u *UnsoldStatementUpsertBulk) AddDeletedAt(v uint32) *UnsoldStatementUpser
 func (u *UnsoldStatementUpsertBulk) UpdateDeletedAt() *UnsoldStatementUpsertBulk {
 	return u.Update(func(s *UnsoldStatementUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *UnsoldStatementUpsertBulk) SetEntID(v uuid.UUID) *UnsoldStatementUpsertBulk {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *UnsoldStatementUpsertBulk) UpdateEntID() *UnsoldStatementUpsertBulk {
+	return u.Update(func(s *UnsoldStatementUpsert) {
+		s.UpdateEntID()
 	})
 }
 

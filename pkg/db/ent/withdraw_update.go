@@ -84,6 +84,20 @@ func (wu *WithdrawUpdate) AddDeletedAt(u int32) *WithdrawUpdate {
 	return wu
 }
 
+// SetEntID sets the "ent_id" field.
+func (wu *WithdrawUpdate) SetEntID(u uuid.UUID) *WithdrawUpdate {
+	wu.mutation.SetEntID(u)
+	return wu
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (wu *WithdrawUpdate) SetNillableEntID(u *uuid.UUID) *WithdrawUpdate {
+	if u != nil {
+		wu.SetEntID(*u)
+	}
+	return wu
+}
+
 // SetAppID sets the "app_id" field.
 func (wu *WithdrawUpdate) SetAppID(u uuid.UUID) *WithdrawUpdate {
 	wu.mutation.SetAppID(u)
@@ -371,7 +385,7 @@ func (wu *WithdrawUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   withdraw.Table,
 			Columns: withdraw.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: withdraw.FieldID,
 			},
 		},
@@ -423,6 +437,13 @@ func (wu *WithdrawUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: withdraw.FieldDeletedAt,
+		})
+	}
+	if value, ok := wu.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: withdraw.FieldEntID,
 		})
 	}
 	if value, ok := wu.mutation.AppID(); ok {
@@ -633,6 +654,20 @@ func (wuo *WithdrawUpdateOne) SetNillableDeletedAt(u *uint32) *WithdrawUpdateOne
 // AddDeletedAt adds u to the "deleted_at" field.
 func (wuo *WithdrawUpdateOne) AddDeletedAt(u int32) *WithdrawUpdateOne {
 	wuo.mutation.AddDeletedAt(u)
+	return wuo
+}
+
+// SetEntID sets the "ent_id" field.
+func (wuo *WithdrawUpdateOne) SetEntID(u uuid.UUID) *WithdrawUpdateOne {
+	wuo.mutation.SetEntID(u)
+	return wuo
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (wuo *WithdrawUpdateOne) SetNillableEntID(u *uuid.UUID) *WithdrawUpdateOne {
+	if u != nil {
+		wuo.SetEntID(*u)
+	}
 	return wuo
 }
 
@@ -936,7 +971,7 @@ func (wuo *WithdrawUpdateOne) sqlSave(ctx context.Context) (_node *Withdraw, err
 			Table:   withdraw.Table,
 			Columns: withdraw.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: withdraw.FieldID,
 			},
 		},
@@ -1005,6 +1040,13 @@ func (wuo *WithdrawUpdateOne) sqlSave(ctx context.Context) (_node *Withdraw, err
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: withdraw.FieldDeletedAt,
+		})
+	}
+	if value, ok := wuo.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: withdraw.FieldEntID,
 		})
 	}
 	if value, ok := wuo.mutation.AppID(); ok {

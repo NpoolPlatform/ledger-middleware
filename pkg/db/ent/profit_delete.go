@@ -72,7 +72,7 @@ func (pd *ProfitDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: profit.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: profit.FieldID,
 			},
 		},
