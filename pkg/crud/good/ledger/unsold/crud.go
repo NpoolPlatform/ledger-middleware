@@ -12,7 +12,8 @@ import (
 )
 
 type Req struct {
-	ID          *uuid.UUID
+	ID          *uint32
+	EntID       *uuid.UUID
 	GoodID      *uuid.UUID
 	CoinTypeID  *uuid.UUID
 	Amount      *decimal.Decimal
@@ -25,6 +26,9 @@ type Req struct {
 func CreateSet(c *ent.UnsoldStatementCreate, in *Req) *ent.UnsoldStatementCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
+	}
+	if in.EntID != nil {
+		c.SetEntID(*in.EntID)
 	}
 	if in.GoodID != nil {
 		c.SetGoodID(*in.GoodID)
@@ -52,13 +56,13 @@ func UpdateSet(u *ent.UnsoldStatementUpdateOne, req *Req) *ent.UnsoldStatementUp
 }
 
 type Conds struct {
-	ID          *cruder.Cond
+	EntID       *cruder.Cond
 	GoodID      *cruder.Cond
 	CoinTypeID  *cruder.Cond
 	StatementID *cruder.Cond
 	Amount      *cruder.Cond
 	BenefitDate *cruder.Cond
-	IDs         *cruder.Cond
+	EntIDs      *cruder.Cond
 }
 
 func SetQueryConds(q *ent.UnsoldStatementQuery, conds *Conds) (*ent.UnsoldStatementQuery, error) { //nolint
@@ -66,16 +70,16 @@ func SetQueryConds(q *ent.UnsoldStatementQuery, conds *Conds) (*ent.UnsoldStatem
 	if conds == nil {
 		return q, nil
 	}
-	if conds.ID != nil {
-		id, ok := conds.ID.Val.(uuid.UUID)
+	if conds.EntID != nil {
+		id, ok := conds.EntID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid id")
+			return nil, fmt.Errorf("invalid entid")
 		}
-		switch conds.ID.Op {
+		switch conds.EntID.Op {
 		case cruder.EQ:
-			q.Where(entunsoldstatement.ID(id))
+			q.Where(entunsoldstatement.EntID(id))
 		default:
-			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
+			return nil, fmt.Errorf("invalid entid op field %v", conds.EntID.Op)
 		}
 	}
 	if conds.GoodID != nil {
@@ -146,16 +150,16 @@ func SetQueryConds(q *ent.UnsoldStatementQuery, conds *Conds) (*ent.UnsoldStatem
 			return nil, fmt.Errorf("invalid benefit date op field %v", conds.BenefitDate.Op)
 		}
 	}
-	if conds.IDs != nil {
-		ids, ok := conds.IDs.Val.([]uuid.UUID)
+	if conds.EntIDs != nil {
+		ids, ok := conds.EntIDs.Val.([]uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid ids %v", conds.IDs.Val)
+			return nil, fmt.Errorf("invalid entids %v", conds.EntIDs.Val)
 		}
-		switch conds.IDs.Op {
+		switch conds.EntIDs.Op {
 		case cruder.IN:
-			q.Where(entunsoldstatement.IDIn(ids...))
+			q.Where(entunsoldstatement.EntIDIn(ids...))
 		default:
-			return nil, fmt.Errorf("invalid unsold statement op field %v", conds.IDs.Op)
+			return nil, fmt.Errorf("invalid unsold statement op field %v", conds.EntIDs.Op)
 		}
 	}
 	return q, nil

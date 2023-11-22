@@ -13,7 +13,8 @@ import (
 )
 
 type Req struct {
-	ID         *uuid.UUID
+	ID         *uint32
+	EntID      *uuid.UUID
 	AppID      *uuid.UUID
 	UserID     *uuid.UUID
 	CoinTypeID *uuid.UUID
@@ -25,6 +26,9 @@ type Req struct {
 func CreateSet(c *ent.ProfitCreate, in *Req) *ent.ProfitCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
+	}
+	if in.EntID != nil {
+		c.SetEntID(*in.EntID)
 	}
 	if in.AppID != nil {
 		c.SetAppID(*in.AppID)
@@ -75,7 +79,7 @@ func UpdateSetWithValidate(info *ent.Profit, req *Req) (*ent.ProfitUpdateOne, er
 }
 
 type Conds struct {
-	ID         *cruder.Cond
+	EntID      *cruder.Cond
 	AppID      *cruder.Cond
 	UserID     *cruder.Cond
 	CoinTypeID *cruder.Cond
@@ -87,16 +91,16 @@ func SetQueryConds(q *ent.ProfitQuery, conds *Conds) (*ent.ProfitQuery, error) {
 	if conds == nil {
 		return q, nil
 	}
-	if conds.ID != nil {
-		id, ok := conds.ID.Val.(uuid.UUID)
+	if conds.EntID != nil {
+		id, ok := conds.EntID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid id")
+			return nil, fmt.Errorf("invalid entid")
 		}
-		switch conds.ID.Op {
+		switch conds.EntID.Op {
 		case cruder.EQ:
-			q.Where(entprofit.ID(id))
+			q.Where(entprofit.EntID(id))
 		default:
-			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
+			return nil, fmt.Errorf("invalid entid op field %v", conds.EntID.Op)
 		}
 	}
 	if conds.AppID != nil {

@@ -8,7 +8,8 @@ import (
 )
 
 type Req struct {
-	ID              *uuid.UUID
+	ID                    *uint32
+	EntID                 *uuid.UUID
 	LedgerID        *uuid.UUID
 	StatementID     *uuid.UUID
 	Amount          *decimal.Decimal
@@ -19,6 +20,9 @@ type Req struct {
 func CreateSet(c *ent.LedgerLockCreate, in *Req) *ent.LedgerLockCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
+	}
+	if in.EntID != nil {
+		c.SetEntID(*in.EntID)
 	}
 	if in.LedgerID != nil {
 		c.SetLedgerID(*in.LedgerID)
