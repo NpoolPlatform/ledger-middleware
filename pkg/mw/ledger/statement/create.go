@@ -254,3 +254,50 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	}
 	return infos, nil
 }
+
+func (h *Handler) validate() error {
+	switch *h.IOType {
+	case types.IOType_Incoming:
+		switch *h.IOSubType {
+		case types.IOSubType_Payment:
+		case types.IOSubType_MiningBenefit:
+		case types.IOSubType_Commission:
+		case types.IOSubType_TechniqueFeeCommission:
+		case types.IOSubType_Deposit:
+		case types.IOSubType_Transfer:
+		case types.IOSubType_OrderRevoke:
+		default:
+			return fmt.Errorf("io subtype not match io type")
+		}
+	case types.IOType_Outcoming:
+		switch *h.IOSubType {
+		case types.IOSubType_Payment:
+		case types.IOSubType_Withdrawal:
+		case types.IOSubType_Transfer:
+		case types.IOSubType_CommissionRevoke:
+		default:
+			return fmt.Errorf("io subtype not match io type")
+		}
+	default:
+		return fmt.Errorf("invalid io type %v", *h.IOType)
+	}
+	return nil
+}
+
+func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
+	if err := h.validate(); err != nil {
+		return nil, err
+	}
+	h.Reqs = []*crud.Req{&h.Req}
+	infos, err := h.CreateStatements(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(infos) == 0 {
+		return nil, nil
+	}
+	if len(infos) > 1 {
+		return nil, fmt.Errorf("too many records")
+	}
+	return infos[0], nil
+}
