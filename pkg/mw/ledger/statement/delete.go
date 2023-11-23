@@ -157,14 +157,14 @@ func (h *deleteHandler) deleteStatement(req *crud.Req, ctx context.Context, tx *
 func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, error) {
 	ids := []uuid.UUID{}
 	for _, req := range h.Reqs {
-		if req.ID == nil {
+		if req.EntID == nil {
 			return nil, fmt.Errorf("invalid statement id")
 		}
-		ids = append(ids, *req.ID)
+		ids = append(ids, *req.EntID)
 	}
 
 	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
 	h.Limit = int32(len(ids))
 	infos, _, err := h.GetStatements(ctx)
@@ -218,6 +218,16 @@ func (h *Handler) DeleteStatement(ctx context.Context) (*npool.Statement, error)
 			return nil, nil
 		}
 		return nil, fmt.Errorf("statement not found")
+	}
+	if h.ID == nil {
+		h.ID = &info.ID
+	}
+	if h.EntID == nil {
+		id, err := uuid.Parse(info.EntID)
+		if err != nil {
+			return nil, err
+		}
+		h.EntID = &id
 	}
 
 	h.Reqs = []*crud.Req{&h.Req}

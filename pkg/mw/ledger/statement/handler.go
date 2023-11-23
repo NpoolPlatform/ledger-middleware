@@ -366,6 +366,9 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 		_reqs := []*crud.Req{}
 		for _, req := range reqs {
 			if must {
+				if req.EntID == nil {
+					return fmt.Errorf("invalid ent id")
+				}
 				if req.AppID == nil {
 					return fmt.Errorf("invalid app id")
 				}
@@ -415,8 +418,12 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 			}
 
 			_req := &crud.Req{}
-			if req.ID != nil {
-				_req.ID = req.ID
+			if req.EntID != nil {
+				_id, err := uuid.Parse(*req.EntID)
+				if err != nil {
+					return err
+				}
+				_req.EntID = &_id
 			}
 			if req.AppID != nil {
 				_id, err := uuid.Parse(*req.AppID)

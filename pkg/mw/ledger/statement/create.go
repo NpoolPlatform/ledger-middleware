@@ -217,8 +217,8 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 		for _, req := range h.Reqs {
 			_fn := func() error {
 				id := uuid.New()
-				if req.ID == nil {
-					req.ID = &id
+				if req.EntID == nil {
+					req.EntID = &id
 				}
 				if err := handler.createStatement(ctx, tx, req); err != nil {
 					return err
@@ -229,7 +229,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.createOrUpdateLedger(ctx, tx, req); err != nil {
 					return err
 				}
-				ids = append(ids, *req.ID)
+				ids = append(ids, *req.EntID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -243,7 +243,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	}
 
 	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
 	h.Offset = 0
 	h.Limit = int32(len(ids))
@@ -253,51 +253,4 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 		return nil, err
 	}
 	return infos, nil
-}
-
-func (h *Handler) validate() error {
-	switch *h.IOType {
-	case types.IOType_Incoming:
-		switch *h.IOSubType {
-		case types.IOSubType_Payment:
-		case types.IOSubType_MiningBenefit:
-		case types.IOSubType_Commission:
-		case types.IOSubType_TechniqueFeeCommission:
-		case types.IOSubType_Deposit:
-		case types.IOSubType_Transfer:
-		case types.IOSubType_OrderRevoke:
-		default:
-			return fmt.Errorf("io subtype not match io type")
-		}
-	case types.IOType_Outcoming:
-		switch *h.IOSubType {
-		case types.IOSubType_Payment:
-		case types.IOSubType_Withdrawal:
-		case types.IOSubType_Transfer:
-		case types.IOSubType_CommissionRevoke:
-		default:
-			return fmt.Errorf("io subtype not match io type")
-		}
-	default:
-		return fmt.Errorf("invalid io type %v", *h.IOType)
-	}
-	return nil
-}
-
-func (h *Handler) CreateStatement(ctx context.Context) (*npool.Statement, error) {
-	if err := h.validate(); err != nil {
-		return nil, err
-	}
-	h.Reqs = []*crud.Req{&h.Req}
-	infos, err := h.CreateStatements(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if len(infos) == 0 {
-		return nil, nil
-	}
-	if len(infos) > 1 {
-		return nil, fmt.Errorf("too many records")
-	}
-	return infos[0], nil
 }
