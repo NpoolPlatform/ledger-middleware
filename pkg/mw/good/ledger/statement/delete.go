@@ -102,7 +102,7 @@ func (h *deleteHandler) deleteUnsoldStatement(req *goodstatementcrud.Req, ctx co
 		UnsoldStatement.
 		Query().
 		Where(
-			unsoldstatement.StatementID(*req.ID),
+			unsoldstatement.StatementID(*req.EntID),
 			unsoldstatement.DeletedAt(0),
 		).
 		ForUpdate().
@@ -129,10 +129,10 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 
 	ids := []uuid.UUID{}
 	for _, req := range h.Reqs {
-		ids = append(ids, *req.ID)
+		ids = append(ids, *req.EntID)
 	}
 	h.Conds = &goodstatementcrud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
 	h.Limit = int32(len(ids))
 	infos, _, err := h.GetGoodStatements(ctx)
@@ -182,6 +182,16 @@ func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement
 			return nil, nil
 		}
 		return nil, fmt.Errorf("statement not found")
+	}
+	if h.ID == nil {
+		h.ID = &info.ID
+	}
+	if h.EntID == nil {
+		id, err := uuid.Parse(info.EntID)
+		if err != nil {
+			return nil, err
+		}
+		h.EntID = &id
 	}
 	h.Reqs = []*goodstatementcrud.Req{&h.Req}
 

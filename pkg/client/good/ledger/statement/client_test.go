@@ -35,7 +35,7 @@ var (
 	benefitDate  = time.Now().Unix()
 	unsoldAmount = "10"
 	ret          = npool.GoodStatement{
-		ID:                        uuid.NewString(),
+		EntID:                     uuid.NewString(),
 		GoodID:                    uuid.NewString(),
 		CoinTypeID:                uuid.NewString(),
 		Amount:                    "500",
@@ -48,7 +48,7 @@ var (
 
 func createGoodStatement(t *testing.T) {
 	info, err := CreateGoodStatement(context.Background(), &npool.GoodStatementReq{
-		ID:                        &ret.ID,
+		EntID:                     &ret.EntID,
 		GoodID:                    &ret.GoodID,
 		CoinTypeID:                &ret.CoinTypeID,
 		BenefitDate:               &ret.BenefitDate,
@@ -59,6 +59,7 @@ func createGoodStatement(t *testing.T) {
 	if assert.Nil(t, err) {
 		ret.CreatedAt = info.CreatedAt
 		ret.UpdatedAt = info.UpdatedAt
+		ret.ID = info.ID
 		assert.Equal(t, &ret, info)
 	}
 }

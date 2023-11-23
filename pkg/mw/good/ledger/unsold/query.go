@@ -77,10 +77,6 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetUnsoldStatement(ctx context.Context) (*npool.UnsoldStatement, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	handler := &queryHandler{
 		Handler: h,
 		infos:   []*npool.UnsoldStatement{},

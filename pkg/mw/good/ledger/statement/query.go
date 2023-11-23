@@ -97,10 +97,6 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	handler := &queryHandler{
 		Handler: h,
 		infos:   []*npool.GoodStatement{},

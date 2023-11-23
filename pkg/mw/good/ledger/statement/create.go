@@ -91,7 +91,7 @@ func (h *createHandler) createUnsoldStatement(ctx context.Context, tx *ent.Tx, r
 			CoinTypeID:  req.CoinTypeID,
 			Amount:      req.UnsoldAmount,
 			BenefitDate: req.BenefitDate,
-			StatementID: req.ID,
+			StatementID: req.EntID,
 		},
 	).Save(ctx); err != nil {
 		return err
@@ -186,7 +186,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 			_fn := func() error {
 				id := uuid.New()
 				if req.ID == nil {
-					req.ID = &id
+					req.EntID = &id
 				}
 				if err := handler.createGoodStatement(ctx, tx, req); err != nil {
 					return err
@@ -197,7 +197,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 				if err := handler.createOrUpdateGoodLedger(ctx, tx, req); err != nil {
 					return err
 				}
-				ids = append(ids, *req.ID)
+				ids = append(ids, *req.EntID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -211,7 +211,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	}
 
 	h.Conds = &goodstatementcrud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
 	h.Offset = 0
 	h.Limit = int32(len(ids))
