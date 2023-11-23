@@ -20,11 +20,18 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 		)
 		return &npool.CreateStatementResponse{}, status.Error(codes.InvalidArgument, "invalid info")
 	}
-
-	reqs := []*npool.StatementReq{req}
-	resp, err := s.CreateStatements(ctx, &npool.CreateStatementsRequest{
-		Infos: reqs,
-	})
+	handler, err := statement1.NewHandler(
+		ctx,
+		statement1.WithID(req.ID, false),
+		statement1.WithAppID(req.AppID, true),
+		statement1.WithUserID(req.UserID, true),
+		statement1.WithCoinTypeID(req.CoinTypeID, true),
+		statement1.WithIOType(req.IOType, true),
+		statement1.WithIOSubType(req.IOSubType, true),
+		statement1.WithAmount(req.Amount, true),
+		statement1.WithIOExtra(req.IOExtra, true),
+		statement1.WithCreatedAt(req.CreatedAt, false),
+	)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"CreateStatement",
@@ -34,20 +41,18 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 		return &npool.CreateStatementResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
-	if len(resp.Infos) == 0 {
-		return &npool.CreateStatementResponse{}, nil
-	}
-	if len(resp.Infos) > 1 {
+	info, err := handler.CreateStatement(ctx)
+	if err != nil {
 		logger.Sugar().Errorw(
 			"CreateStatement",
 			"Req", in,
-			"Error", "too many record",
+			"Error", err,
 		)
 		return &npool.CreateStatementResponse{}, status.Error(codes.Aborted, err.Error())
 	}
 
 	return &npool.CreateStatementResponse{
-		Info: resp.Infos[0],
+		Info: info,
 	}, nil
 }
 
