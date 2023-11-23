@@ -67,7 +67,7 @@ func (h *settleHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	if _, err := statementcrud.CreateSet(tx.Statement.Create(), &statementcrud.Req{
-		ID:         h.StatementID,
+		EntID:      h.StatementID,
 		AppID:      &h.lop.ledger.AppID,
 		UserID:     &h.lop.ledger.UserID,
 		CoinTypeID: &h.lop.ledger.CoinTypeID,

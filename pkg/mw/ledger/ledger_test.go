@@ -33,7 +33,7 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit = statementmwpb.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -45,7 +45,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	payment = statementmwpb.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -71,7 +71,7 @@ var (
 func setup(t *testing.T) func(*testing.T) {
 	reqs1 := []*statementmwpb.StatementReq{
 		{
-			ID:         &deposit.ID,
+			EntID:      &deposit.EntID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -99,7 +99,7 @@ func setup(t *testing.T) func(*testing.T) {
 
 	reqs2 := []*statementmwpb.StatementReq{
 		{
-			ID:         &payment.ID,
+			EntID:      &payment.EntID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -127,12 +127,12 @@ func setup(t *testing.T) func(*testing.T) {
 
 	st1, err := statement1.NewHandler(
 		context.Background(),
-		statement1.WithID(&deposit.ID, true),
+		statement1.WithEntID(&deposit.EntID, true),
 	)
 	assert.Nil(t, err)
 	st2, err := statement1.NewHandler(
 		context.Background(),
-		statement1.WithID(&payment.ID, true),
+		statement1.WithEntID(&payment.EntID, true),
 	)
 	assert.Nil(t, err)
 
@@ -158,6 +158,7 @@ func getLedgerOnly(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult.ID = info.ID
+		ledgerResult.EntID = info.EntID
 		ledgerResult.CreatedAt = info.CreatedAt
 		ledgerResult.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult, info)

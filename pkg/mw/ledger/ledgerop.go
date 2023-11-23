@@ -19,7 +19,7 @@ func (h *ledgeropHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
 	stm := tx.Ledger.Query()
 	if h.ledgerID != nil {
 		stm.Where(
-			entledger.ID(*h.ledgerID),
+			entledger.EntID(*h.ledgerID),
 			entledger.DeletedAt(0),
 		)
 	} else {
