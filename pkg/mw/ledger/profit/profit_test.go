@@ -27,7 +27,7 @@ func init() {
 
 var (
 	ret = npool.Profit{
-		ID:         uuid.NewString(),
+		EntID:      uuid.NewString(),
 		AppID:      uuid.NewString(),
 		UserID:     uuid.NewString(),
 		CoinTypeID: uuid.NewString(),
@@ -38,7 +38,7 @@ var (
 func createProfit(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID, true),
+		WithEntID(&ret.EntID, true),
 		WithAppID(&ret.AppID, true),
 		WithUserID(&ret.UserID, true),
 		WithCoinTypeID(&ret.CoinTypeID, true),
@@ -50,6 +50,7 @@ func createProfit(t *testing.T) {
 	if assert.Nil(t, err) {
 		ret.CreatedAt = info.CreatedAt
 		ret.UpdatedAt = info.UpdatedAt
+		ret.ID = info.ID
 		assert.Equal(t, &ret, info)
 	}
 }
@@ -57,7 +58,7 @@ func createProfit(t *testing.T) {
 func getProfit(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID, true),
+		WithEntID(&ret.EntID, true),
 	)
 	assert.Nil(t, err)
 
