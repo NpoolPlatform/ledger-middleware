@@ -36,7 +36,7 @@ var (
 	coinTypeID = uuid.NewString()
 	lockID     = uuid.NewString()
 	deposit1   = statementmwpb.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -49,7 +49,7 @@ var (
 	}
 
 	deposit2 = statementmwpb.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -65,7 +65,7 @@ var (
 func setup(t *testing.T) func(*testing.T) {
 	deposits, err := statementcli.CreateStatements(context.Background(), []*statementmwpb.StatementReq{
 		{
-			ID:         &deposit1.ID,
+			EntID:      &deposit1.EntID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -74,7 +74,7 @@ func setup(t *testing.T) func(*testing.T) {
 			IOSubType:  &deposit1.IOSubType,
 			IOExtra:    &deposit1.IOExtra,
 		}, {
-			ID:         &deposit2.ID,
+			EntID:      &deposit2.EntID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -88,7 +88,7 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, 2, len(deposits))
 	}
 	return func(t *testing.T) {
-		_, _ = statementcli.DeleteStatement(context.Background(), &statementmwpb.StatementReq{ID: &deposit2.ID})
+		_, _ = statementcli.DeleteStatement(context.Background(), &statementmwpb.StatementReq{EntID: &deposit2.EntID})
 	}
 }
 

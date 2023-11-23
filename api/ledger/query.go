@@ -48,7 +48,7 @@ func (s *Server) GetLedgers(ctx context.Context, in *npool.GetLedgersRequest) (
 func (s *Server) GetLedger(ctx context.Context, in *npool.GetLedgerRequest) (*npool.GetLedgerResponse, error) {
 	handler, err := ledger1.NewHandler(
 		ctx,
-		ledger1.WithID(&in.ID, true),
+		ledger1.WithEntID(&in.EntID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
