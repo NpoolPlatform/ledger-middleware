@@ -8,8 +8,8 @@ import (
 )
 
 type Req struct {
-	ID                    *uint32
-	EntID                 *uuid.UUID
+	ID              *uint32
+	EntID           *uuid.UUID
 	LedgerID        *uuid.UUID
 	StatementID     *uuid.UUID
 	Amount          *decimal.Decimal

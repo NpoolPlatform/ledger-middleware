@@ -154,7 +154,7 @@ func (h *deleteHandler) deleteStatement(req *crud.Req, ctx context.Context, tx *
 	return nil
 }
 
-func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, error) {
+func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, error) { //nolint
 	ids := []uint32{}
 	entIDs := []uuid.UUID{}
 	for _, req := range h.Reqs {

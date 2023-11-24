@@ -122,7 +122,7 @@ func (h *deleteHandler) deleteUnsoldStatement(req *goodstatementcrud.Req, ctx co
 	return nil
 }
 
-func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
+func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) { //nolint
 	handler := &deleteHandler{
 		Handler: h,
 	}
