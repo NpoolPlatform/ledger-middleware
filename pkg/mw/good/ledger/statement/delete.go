@@ -126,15 +126,25 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 	handler := &deleteHandler{
 		Handler: h,
 	}
-
-	ids := []uuid.UUID{}
+	ids := []uint32{}
+	entIDs := []uuid.UUID{}
 	for _, req := range h.Reqs {
-		ids = append(ids, *req.EntID)
+		if req.ID == nil && req.EntID == nil {
+			return nil, fmt.Errorf("need id or entid")
+		}
+		if req.ID != nil {
+			ids = append(ids, *req.ID)
+			continue
+		}
+		if req.EntID != nil {
+			entIDs = append(entIDs, *req.EntID)
+		}
 	}
 	h.Conds = &goodstatementcrud.Conds{
-		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		IDs:    &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: entIDs},
 	}
-	h.Limit = int32(len(ids))
+	h.Limit = int32(len(ids) + len(entIDs))
 	infos, _, err := h.GetGoodStatements(ctx)
 	if err != nil {
 		return nil, err
@@ -146,8 +156,33 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		return nil, fmt.Errorf("good statement not found")
 	}
 
+	goodStatementMap := map[string]*npool.GoodStatement{}
+	idMap := map[uint32]*npool.GoodStatement{}
+	for _, val := range infos {
+		goodStatementMap[val.EntID] = val
+		idMap[val.ID] = val
+	}
+
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
+			if req.ID == nil {
+				goodStatement, ok := goodStatementMap[req.EntID.String()]
+				if !ok {
+					return fmt.Errorf("good statement not found")
+				}
+				req.ID = &goodStatement.ID
+			}
+			if req.EntID == nil {
+				goodStatement, ok := idMap[*req.ID]
+				if !ok {
+					return fmt.Errorf("good statement not found")
+				}
+				id, err := uuid.Parse(goodStatement.EntID)
+				if err != nil {
+					return err
+				}
+				req.EntID = &id
+			}
 			_fn := func() error {
 				if err := handler.deleteUnsoldStatement(req, ctx, tx); err != nil {
 					return err

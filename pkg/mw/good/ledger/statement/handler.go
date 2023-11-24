@@ -213,6 +213,13 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 			if req.ID != nil {
 				_req.ID = req.ID
 			}
+			if req.EntID != nil {
+				_id, err := uuid.Parse(*req.EntID)
+				if err != nil {
+					return err
+				}
+				_req.EntID = &_id
+			}
 			if req.GoodID != nil {
 				_id, err := uuid.Parse(*req.GoodID)
 				if err != nil {
@@ -266,7 +273,6 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 			if req.Rollback != nil {
 				h.Rollback = req.Rollback
 			}
-
 			_reqs = append(_reqs, _req)
 		}
 		h.Reqs = _reqs
