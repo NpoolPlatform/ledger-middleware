@@ -155,18 +155,26 @@ func (h *deleteHandler) deleteStatement(req *crud.Req, ctx context.Context, tx *
 }
 
 func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, error) {
-	ids := []uuid.UUID{}
+	ids := []uint32{}
+	entids := []uuid.UUID{}
 	for _, req := range h.Reqs {
-		if req.EntID == nil {
-			return nil, fmt.Errorf("invalid statement id")
+		if req.EntID == nil && req.ID == nil {
+			return nil, fmt.Errorf("need id or entid")
 		}
-		ids = append(ids, *req.EntID)
+		if req.ID != nil {
+			ids = append(ids, *req.ID)
+			continue
+		}
+		if req.EntID != nil {
+			entids = append(entids, *req.EntID)
+		}
+		// TODO: Deal Req with ID and EntID
 	}
-
 	h.Conds = &crud.Conds{
-		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: entids},
+		IDs:    &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
-	h.Limit = int32(len(ids))
+	h.Limit = int32(len(entids) + len(ids))
 	infos, _, err := h.GetStatements(ctx)
 	if err != nil {
 		return nil, err
@@ -178,12 +186,24 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		return nil, fmt.Errorf("statement not found")
 	}
 
+	statementMap := map[string]*npool.Statement{}
+	for _, val := range infos {
+		statementMap[val.EntID] = val
+	}
+
 	handler := &deleteHandler{
 		Handler: h,
 	}
 
 	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
+			if req.ID == nil {
+				statement, ok := statementMap[req.EntID.String()]
+				if !ok {
+					return fmt.Errorf("statement not found")
+				}
+				req.ID = &statement.ID
+			}
 			_fn := func() error {
 				if err := handler.updateProfit(req, ctx, tx); err != nil {
 					return err
