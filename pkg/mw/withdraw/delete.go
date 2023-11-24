@@ -100,10 +100,13 @@ func (h *Handler) DeleteWithdraw(ctx context.Context) (*npool.Withdraw, error) {
 		return nil, err
 	}
 	if info == nil {
-		return nil, fmt.Errorf("withdraw not found")
+		return nil, nil
 	}
 	if info.State != types.WithdrawState_Created {
 		return nil, fmt.Errorf("permission denied")
+	}
+	if h.ID == nil {
+		h.ID = &info.ID
 	}
 
 	handler := &deleteHandler{

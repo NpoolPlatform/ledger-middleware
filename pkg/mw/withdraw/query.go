@@ -148,7 +148,6 @@ func (h *Handler) GetWithdrawOnly(ctx context.Context) (*npool.Withdraw, error) 
 			}
 			return err
 		}
-
 		if err := handler.scan(_ctx); err != nil {
 			return err
 		}
@@ -164,6 +163,5 @@ func (h *Handler) GetWithdrawOnly(ctx context.Context) (*npool.Withdraw, error) 
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("to many record")
 	}
-
 	return handler.infos[0], nil
 }

@@ -171,7 +171,6 @@ func SetQueryConds(q *ent.WithdrawQuery, conds *Conds) (*ent.WithdrawQuery, erro
 			return nil, fmt.Errorf("invalid address op field %v", conds.Address.Op)
 		}
 	}
-
 	if conds.Amount != nil {
 		Amount, ok := conds.Amount.Val.(decimal.Decimal)
 		if !ok {

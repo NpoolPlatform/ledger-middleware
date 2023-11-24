@@ -27,7 +27,6 @@ func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawReq
 		withdraw1.WithCoinTypeID(req.CoinTypeID, true),
 		withdraw1.WithAccountID(req.AccountID, true),
 		withdraw1.WithAmount(req.Amount, true),
-		withdraw1.WithPlatformTransactionID(req.PlatformTransactionID, false),
 		withdraw1.WithAddress(req.Address, true),
 	)
 	if err != nil {
