@@ -80,6 +80,6 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		return nil, err
 	}
 
-	h.ID = &handler.lop.ledger.ID
+	h.EntID = &handler.lop.ledger.EntID
 	return h.GetLedger(ctx)
 }
