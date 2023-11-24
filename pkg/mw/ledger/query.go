@@ -101,10 +101,6 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetLedger(ctx context.Context) (*npool.Ledger, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	handler := &queryHandler{
 		Handler: h,
 		infos:   []*npool.Ledger{},
@@ -125,9 +121,7 @@ func (h *Handler) GetLedger(ctx context.Context) (*npool.Ledger, error) {
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("too many records")
 	}
-
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 
