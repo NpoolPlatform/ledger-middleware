@@ -156,7 +156,6 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 		if err := handler.queryLedgers(_ctx, cli); err != nil {
 			return err
 		}
-
 		_, err := handler.stmSelect.Only(_ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -164,7 +163,6 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 			}
 			return err
 		}
-
 		if err := handler.scan(_ctx); err != nil {
 			return err
 		}
@@ -180,6 +178,5 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("to many record")
 	}
-
 	return handler.infos[0], nil
 }

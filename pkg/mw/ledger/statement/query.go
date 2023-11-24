@@ -103,9 +103,7 @@ func (h *Handler) GetStatement(ctx context.Context) (*npool.Statement, error) {
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("too many records")
 	}
-
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 
@@ -127,9 +125,7 @@ func (h *Handler) GetStatements(ctx context.Context) ([]*npool.Statement, uint32
 	if err != nil {
 		return nil, 0, err
 	}
-
 	handler.formalize()
-
 	return handler.infos, handler.total, nil
 }
 
@@ -142,7 +138,6 @@ func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error
 		if err := handler.queryStatements(_ctx, cli); err != nil {
 			return err
 		}
-
 		_, err := handler.stmSelect.Only(_ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -150,7 +145,6 @@ func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error
 			}
 			return err
 		}
-
 		if err := handler.scan(_ctx); err != nil {
 			return err
 		}
@@ -166,6 +160,5 @@ func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("to many record")
 	}
-
 	return handler.infos[0], nil
 }
