@@ -17,7 +17,7 @@ func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawReq
 			"CreateWithdraw",
 			"In", in,
 		)
-		return &npool.CreateWithdrawResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+		return &npool.CreateWithdrawResponse{}, status.Error(codes.Aborted, "invalid info")
 	}
 	handler, err := withdraw1.NewHandler(
 		ctx,
