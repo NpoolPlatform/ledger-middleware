@@ -171,7 +171,8 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		// TODO: Deal Req with ID and EntID
 	}
 	infos := []*npool.Statement{}
-	// if either EntIDs or IDs is emtpy, you cannot use EntIDs and IDs as conditional queries at the same time, ent will add 'AND FALSE' at 'Where'
+	// if either EntIDs or IDs is empty, you cannot use EntIDs and IDs as conditional queries at the same time,
+	// ent will add 'AND FALSE' at 'Where'
 	if len(ids) > 0 {
 		h.Conds = &crud.Conds{IDs: &cruder.Cond{Op: cruder.IN, Val: ids}}
 		h.Limit = int32(len(ids))

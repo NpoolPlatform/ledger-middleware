@@ -141,7 +141,8 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		}
 	}
 	infos := []*npool.GoodStatement{}
-	// if either EntIDs or IDs is emtpy, you cannot use EntIDs and IDs as conditional queries at the same time, ent will add 'AND FALSE' at 'Where'
+	// if either EntIDs or IDs is empty, you cannot use EntIDs and IDs as conditional queries at the same time,
+	// ent will add 'AND FALSE' at 'Where'
 	if len(ids) > 0 {
 		h.Conds = &goodstatementcrud.Conds{IDs: &cruder.Cond{Op: cruder.IN, Val: ids}}
 		h.Limit = int32(len(ids))
