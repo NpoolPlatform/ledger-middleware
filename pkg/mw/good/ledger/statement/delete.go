@@ -228,8 +228,8 @@ func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement
 		}
 		h.EntID = &id
 	}
-	h.Reqs = []*goodstatementcrud.Req{&h.Req}
 
+	h.Reqs = []*goodstatementcrud.Req{&h.Req}
 	if _, err := h.DeleteGoodStatements(ctx); err != nil {
 		return nil, err
 	}

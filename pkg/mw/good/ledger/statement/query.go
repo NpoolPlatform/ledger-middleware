@@ -119,7 +119,6 @@ func (h *Handler) GetGoodStatement(ctx context.Context) (*npool.GoodStatement, e
 	}
 
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 
@@ -144,6 +143,5 @@ func (h *Handler) GetGoodStatements(ctx context.Context) ([]*npool.GoodStatement
 	}
 
 	handler.formalize()
-
 	return handler.infos, handler.total, nil
 }
