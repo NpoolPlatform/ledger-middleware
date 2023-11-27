@@ -1,0 +1,122 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ledger-middleware-traefik-app-ingress
+  namespace: kube-system
+  annotations:
+    k8s.kuboard.cn/displayName: ledger-middleware-traefik-app
+    k8s.kuboard.cn/workload: ledger-middleware-traefik-app
+    kubernetes.io/ingress.class: "traefik-internet"
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares:
+      kube-system-strip-ledger-middleware-prefix@kubernetescrd,
+      kube-system-common-headers@kubernetescrd,
+      kube-system-headers-appid-to-body@kubernetescrd,
+      kube-system-headers-userid-to-body@kubernetescrd,
+      kube-system-headers-app-login-token-to-body@kubernetescrd,
+      kube-system-app-user-role-rbac-auth@kubernetescrd
+spec:
+  rules:
+    - host: api.npool.top
+      http: &http_rules
+        paths:
+          - path: /api/ledgermw/v1/statement_CreateStatement
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/statement_CreateStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/statement_DeleteStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/statement_DeleteStatement
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/statement_GetStatement
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/statement_GetStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/profit_GetProfit
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/profit_GetProfits
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/ledger_GetLedger
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/ledger_GetLedgers
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/ledger_LockBalance
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/ledger_UnlockBalance
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/ledger_SettleBalance
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/goodstatement_CreateGoodStatement
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/goodstatement_CreateGoodStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/goodstatement_DeleteGoodStatement
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/goodstatement_DeleteGoodStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/goodstatement_GetGoodStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/withdraw_CreateWithdraw
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/withdraw_UpdateWithdraw
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/withdraw_GetWithdraw
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/withdraw_GetWithdraws
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/withdraw_DeleteWithdraw
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+    - host: api.procyon.vip
+      http: *http_rules
+    - host: api.xpool.top
+      http: *http_rules
+    - host: api.ohhash.com
+      http: *http_rules
+    - host: api.development.npool.top
+      http: *http_rules
