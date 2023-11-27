@@ -44,6 +44,10 @@ spec:
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
+          - path: /api/ledgermw/v1/statement_ExistStatementConds
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
           - path: /api/ledgermw/v1/profit_GetProfit
             backend:
               serviceName: ledger-middleware
@@ -89,6 +93,10 @@ spec:
               serviceName: ledger-middleware
               servicePort: 50421
           - path: /api/ledgermw/v1/goodstatement_GetGoodStatements
+            backend:
+              serviceName: ledger-middleware
+              servicePort: 50421
+          - path: /api/ledgermw/v1/goodstatement_ExistGoodStatementConds
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
