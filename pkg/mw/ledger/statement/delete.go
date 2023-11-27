@@ -170,9 +170,13 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		}
 		// TODO: Deal Req with ID and EntID
 	}
-	h.Conds = &crud.Conds{
-		EntIDs: &cruder.Cond{Op: cruder.IN, Val: entIDs},
-		IDs:    &cruder.Cond{Op: cruder.IN, Val: ids},
+	h.Conds = &crud.Conds{}
+	// if either EntIDs or IDs is emtpy, you cannot use EntIDs and IDs as conditional queries at the same time, ent will add 'AND FALSE' at 'Where'
+	if len(ids) > 0 {
+		h.Conds.IDs = &cruder.Cond{Op: cruder.IN, Val: ids}
+	}
+	if len(entIDs) > 0 {
+		h.Conds.EntIDs = &cruder.Cond{Op: cruder.IN, Val: entIDs}
 	}
 	h.Limit = int32(len(entIDs) + len(ids))
 	infos, _, err := h.GetStatements(ctx)

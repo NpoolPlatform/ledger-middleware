@@ -140,9 +140,13 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 			entIDs = append(entIDs, *req.EntID)
 		}
 	}
-	h.Conds = &goodstatementcrud.Conds{
-		IDs:    &cruder.Cond{Op: cruder.IN, Val: ids},
-		EntIDs: &cruder.Cond{Op: cruder.IN, Val: entIDs},
+	h.Conds = &goodstatementcrud.Conds{}
+	// if either EntIDs or IDs is emtpy, you cannot use EntIDs and IDs as conditional queries at the same time, ent will add 'AND FALSE' at 'Where'
+	if len(ids) > 0 {
+		h.Conds.IDs = &cruder.Cond{Op: cruder.IN, Val: ids}
+	}
+	if len(entIDs) > 0 {
+		h.Conds.EntIDs = &cruder.Cond{Op: cruder.IN, Val: entIDs}
 	}
 	h.Limit = int32(len(ids) + len(entIDs))
 	infos, _, err := h.GetGoodStatements(ctx)
