@@ -60,7 +60,7 @@ func (h *createHandler) createGoodStatement(ctx context.Context, tx *ent.Tx, req
 	if _, err := goodstatementcrud.CreateSet(
 		tx.GoodStatement.Create(),
 		&goodstatementcrud.Req{
-			ID:                        req.ID,
+			EntID:                     req.EntID,
 			GoodID:                    req.GoodID,
 			CoinTypeID:                req.CoinTypeID,
 			BenefitDate:               req.BenefitDate,
@@ -185,7 +185,7 @@ func (h *Handler) CreateGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		for _, req := range h.Reqs {
 			_fn := func() error {
 				id := uuid.New()
-				if req.ID == nil {
+				if req.EntID == nil {
 					req.EntID = &id
 				}
 				if err := handler.createGoodStatement(ctx, tx, req); err != nil {
