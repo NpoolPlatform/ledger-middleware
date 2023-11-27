@@ -170,18 +170,25 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		}
 		// TODO: Deal Req with ID and EntID
 	}
-	h.Conds = &crud.Conds{}
+	infos := []*npool.Statement{}
 	// if either EntIDs or IDs is emtpy, you cannot use EntIDs and IDs as conditional queries at the same time, ent will add 'AND FALSE' at 'Where'
 	if len(ids) > 0 {
-		h.Conds.IDs = &cruder.Cond{Op: cruder.IN, Val: ids}
+		h.Conds = &crud.Conds{IDs: &cruder.Cond{Op: cruder.IN, Val: ids}}
+		h.Limit = int32(len(ids))
+		statements, _, err := h.GetStatements(ctx)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, statements...)
 	}
 	if len(entIDs) > 0 {
-		h.Conds.EntIDs = &cruder.Cond{Op: cruder.IN, Val: entIDs}
-	}
-	h.Limit = int32(len(entIDs) + len(ids))
-	infos, _, err := h.GetStatements(ctx)
-	if err != nil {
-		return nil, err
+		h.Conds = &crud.Conds{EntIDs: &cruder.Cond{Op: cruder.IN, Val: entIDs}}
+		h.Limit = int32(len(entIDs))
+		statements, _, err := h.GetStatements(ctx)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, statements...)
 	}
 	if len(infos) != len(h.Reqs) {
 		if h.Rollback != nil && *h.Rollback {
@@ -199,7 +206,7 @@ func (h *Handler) DeleteStatements(ctx context.Context) ([]*npool.Statement, err
 		Handler: h,
 	}
 
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			if req.ID == nil {
 				statement, ok := statementMap[req.EntID.String()]

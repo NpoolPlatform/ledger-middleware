@@ -140,18 +140,25 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 			entIDs = append(entIDs, *req.EntID)
 		}
 	}
-	h.Conds = &goodstatementcrud.Conds{}
+	infos := []*npool.GoodStatement{}
 	// if either EntIDs or IDs is emtpy, you cannot use EntIDs and IDs as conditional queries at the same time, ent will add 'AND FALSE' at 'Where'
 	if len(ids) > 0 {
-		h.Conds.IDs = &cruder.Cond{Op: cruder.IN, Val: ids}
+		h.Conds = &goodstatementcrud.Conds{IDs: &cruder.Cond{Op: cruder.IN, Val: ids}}
+		h.Limit = int32(len(ids))
+		statements, _, err := h.GetGoodStatements(ctx)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, statements...)
 	}
 	if len(entIDs) > 0 {
-		h.Conds.EntIDs = &cruder.Cond{Op: cruder.IN, Val: entIDs}
-	}
-	h.Limit = int32(len(ids) + len(entIDs))
-	infos, _, err := h.GetGoodStatements(ctx)
-	if err != nil {
-		return nil, err
+		h.Conds = &goodstatementcrud.Conds{EntIDs: &cruder.Cond{Op: cruder.IN, Val: entIDs}}
+		h.Limit = int32(len(entIDs))
+		statements, _, err := h.GetGoodStatements(ctx)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, statements...)
 	}
 	if len(infos) != len(h.Reqs) {
 		if h.Rollback != nil && *h.Rollback {
@@ -167,7 +174,7 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		idMap[val.ID] = val
 	}
 
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
 			if req.ID == nil {
 				goodStatement, ok := goodStatementMap[req.EntID.String()]
