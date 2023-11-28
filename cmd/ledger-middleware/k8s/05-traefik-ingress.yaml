@@ -20,31 +20,31 @@ spec:
     - host: api.npool.top
       http: &http_rules
         paths:
-          - path: /api/ledgermw/v1/statement_CreateStatement
+          - path: /api/ledgermw/v1/ledgerstatement_CreateStatement
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
-          - path: /api/ledgermw/v1/statement_CreateStatements
+          - path: /api/ledgermw/v1/ledgerstatement_CreateStatements
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
-          - path: /api/ledgermw/v1/statement_DeleteStatements
+          - path: /api/ledgermw/v1/ledgerstatement_DeleteStatements
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
-          - path: /api/ledgermw/v1/statement_DeleteStatement
+          - path: /api/ledgermw/v1/ledgerstatement_DeleteStatement
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
-          - path: /api/ledgermw/v1/statement_GetStatement
+          - path: /api/ledgermw/v1/ledgerstatement_GetStatement
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
-          - path: /api/ledgermw/v1/statement_GetStatements
+          - path: /api/ledgermw/v1/ledgerstatement_GetStatements
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
-          - path: /api/ledgermw/v1/statement_ExistStatementConds
+          - path: /api/ledgermw/v1/ledgerstatement_ExistStatementConds
             backend:
               serviceName: ledger-middleware
               servicePort: 50421
