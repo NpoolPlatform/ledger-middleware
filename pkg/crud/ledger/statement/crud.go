@@ -28,9 +28,6 @@ type Req struct {
 }
 
 func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
-	if in.ID != nil {
-		c.SetID(*in.ID)
-	}
 	if in.EntID != nil {
 		c.SetEntID(*in.EntID)
 	}
