@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -62,6 +61,20 @@ func (wc *WithdrawCreate) SetDeletedAt(u uint32) *WithdrawCreate {
 func (wc *WithdrawCreate) SetNillableDeletedAt(u *uint32) *WithdrawCreate {
 	if u != nil {
 		wc.SetDeletedAt(*u)
+	}
+	return wc
+}
+
+// SetEntID sets the "ent_id" field.
+func (wc *WithdrawCreate) SetEntID(u uuid.UUID) *WithdrawCreate {
+	wc.mutation.SetEntID(u)
+	return wc
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (wc *WithdrawCreate) SetNillableEntID(u *uuid.UUID) *WithdrawCreate {
+	if u != nil {
+		wc.SetEntID(*u)
 	}
 	return wc
 }
@@ -207,16 +220,8 @@ func (wc *WithdrawCreate) SetNillableReviewID(u *uuid.UUID) *WithdrawCreate {
 }
 
 // SetID sets the "id" field.
-func (wc *WithdrawCreate) SetID(u uuid.UUID) *WithdrawCreate {
+func (wc *WithdrawCreate) SetID(u uint32) *WithdrawCreate {
 	wc.mutation.SetID(u)
-	return wc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (wc *WithdrawCreate) SetNillableID(u *uuid.UUID) *WithdrawCreate {
-	if u != nil {
-		wc.SetID(*u)
-	}
 	return wc
 }
 
@@ -320,6 +325,13 @@ func (wc *WithdrawCreate) defaults() error {
 		v := withdraw.DefaultDeletedAt()
 		wc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := wc.mutation.EntID(); !ok {
+		if withdraw.DefaultEntID == nil {
+			return fmt.Errorf("ent: uninitialized withdraw.DefaultEntID (forgotten import ent/runtime?)")
+		}
+		v := withdraw.DefaultEntID()
+		wc.mutation.SetEntID(v)
+	}
 	if _, ok := wc.mutation.AppID(); !ok {
 		if withdraw.DefaultAppID == nil {
 			return fmt.Errorf("ent: uninitialized withdraw.DefaultAppID (forgotten import ent/runtime?)")
@@ -374,13 +386,6 @@ func (wc *WithdrawCreate) defaults() error {
 		v := withdraw.DefaultReviewID()
 		wc.mutation.SetReviewID(v)
 	}
-	if _, ok := wc.mutation.ID(); !ok {
-		if withdraw.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized withdraw.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := withdraw.DefaultID()
-		wc.mutation.SetID(v)
-	}
 	return nil
 }
 
@@ -395,6 +400,9 @@ func (wc *WithdrawCreate) check() error {
 	if _, ok := wc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "Withdraw.deleted_at"`)}
 	}
+	if _, ok := wc.mutation.EntID(); !ok {
+		return &ValidationError{Name: "ent_id", err: errors.New(`ent: missing required field "Withdraw.ent_id"`)}
+	}
 	return nil
 }
 
@@ -406,12 +414,9 @@ func (wc *WithdrawCreate) sqlSave(ctx context.Context) (*Withdraw, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint32(id)
 	}
 	return _node, nil
 }
@@ -422,7 +427,7 @@ func (wc *WithdrawCreate) createSpec() (*Withdraw, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: withdraw.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: withdraw.FieldID,
 			},
 		}
@@ -430,7 +435,7 @@ func (wc *WithdrawCreate) createSpec() (*Withdraw, *sqlgraph.CreateSpec) {
 	_spec.OnConflict = wc.conflict
 	if id, ok := wc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := wc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -455,6 +460,14 @@ func (wc *WithdrawCreate) createSpec() (*Withdraw, *sqlgraph.CreateSpec) {
 			Column: withdraw.FieldDeletedAt,
 		})
 		_node.DeletedAt = value
+	}
+	if value, ok := wc.mutation.EntID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: withdraw.FieldEntID,
+		})
+		_node.EntID = value
 	}
 	if value, ok := wc.mutation.AppID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -641,6 +654,18 @@ func (u *WithdrawUpsert) UpdateDeletedAt() *WithdrawUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *WithdrawUpsert) AddDeletedAt(v uint32) *WithdrawUpsert {
 	u.Add(withdraw.FieldDeletedAt, v)
+	return u
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *WithdrawUpsert) SetEntID(v uuid.UUID) *WithdrawUpsert {
+	u.Set(withdraw.FieldEntID, v)
+	return u
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *WithdrawUpsert) UpdateEntID() *WithdrawUpsert {
+	u.SetExcluded(withdraw.FieldEntID)
 	return u
 }
 
@@ -943,6 +968,20 @@ func (u *WithdrawUpsertOne) UpdateDeletedAt() *WithdrawUpsertOne {
 	})
 }
 
+// SetEntID sets the "ent_id" field.
+func (u *WithdrawUpsertOne) SetEntID(v uuid.UUID) *WithdrawUpsertOne {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *WithdrawUpsertOne) UpdateEntID() *WithdrawUpsertOne {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.UpdateEntID()
+	})
+}
+
 // SetAppID sets the "app_id" field.
 func (u *WithdrawUpsertOne) SetAppID(v uuid.UUID) *WithdrawUpsertOne {
 	return u.Update(func(s *WithdrawUpsert) {
@@ -1176,12 +1215,7 @@ func (u *WithdrawUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *WithdrawUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: WithdrawUpsertOne.ID is not supported by MySQL driver. Use WithdrawUpsertOne.Exec instead")
-	}
+func (u *WithdrawUpsertOne) ID(ctx context.Context) (id uint32, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -1190,7 +1224,7 @@ func (u *WithdrawUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *WithdrawUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *WithdrawUpsertOne) IDX(ctx context.Context) uint32 {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -1241,6 +1275,10 @@ func (wcb *WithdrawCreateBulk) Save(ctx context.Context) ([]*Withdraw, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = uint32(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -1436,6 +1474,20 @@ func (u *WithdrawUpsertBulk) AddDeletedAt(v uint32) *WithdrawUpsertBulk {
 func (u *WithdrawUpsertBulk) UpdateDeletedAt() *WithdrawUpsertBulk {
 	return u.Update(func(s *WithdrawUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *WithdrawUpsertBulk) SetEntID(v uuid.UUID) *WithdrawUpsertBulk {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *WithdrawUpsertBulk) UpdateEntID() *WithdrawUpsertBulk {
+	return u.Update(func(s *WithdrawUpsert) {
+		s.UpdateEntID()
 	})
 }
 

@@ -41,7 +41,7 @@ var (
 	coinTypeID = uuid.NewString()
 
 	deposit = npool.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -53,7 +53,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	payment = npool.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -65,7 +65,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"PaymentID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	miningBenefit = npool.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -77,7 +77,7 @@ var (
 		IOExtra:      fmt.Sprintf(`{"GoodID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
 	}
 	ledgerResult = ledgerpb.Ledger{
-		ID:         "",
+		EntID:      "",
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
@@ -90,6 +90,7 @@ var (
 
 func setup(t *testing.T) func(*testing.T) {
 	deposits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
+		EntID:      &deposit.EntID,
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -107,6 +108,7 @@ func setup(t *testing.T) func(*testing.T) {
 	}
 
 	payments, err := CreateStatements(context.Background(), []*npool.StatementReq{{
+		EntID:      &payment.EntID,
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -124,6 +126,7 @@ func setup(t *testing.T) func(*testing.T) {
 	}
 
 	benefits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
+		EntID:      &miningBenefit.EntID,
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -140,8 +143,8 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
 	return func(t *testing.T) {
-		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &payment.ID})
-		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{ID: &miningBenefit.ID})
+		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{EntID: &payment.EntID})
+		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{EntID: &miningBenefit.EntID})
 	}
 }
 
@@ -154,6 +157,7 @@ func compareLedger(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult.ID = info.ID
+		ledgerResult.EntID = info.EntID
 		ledgerResult.CreatedAt = info.CreatedAt
 		ledgerResult.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult, info)
@@ -178,11 +182,12 @@ func compareProfit(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		profit.ID = info.ID
+		profit.EntID = info.EntID
 		profit.CreatedAt = info.CreatedAt
 		profit.UpdatedAt = info.UpdatedAt
 	}
 
-	info, err = profitcli.GetProfit(context.Background(), info.ID)
+	info, err = profitcli.GetProfit(context.Background(), info.EntID)
 	assert.Nil(t, err)
 	assert.NotNil(t, info)
 
@@ -197,7 +202,7 @@ func compareProfit(t *testing.T) {
 }
 
 func getStatement(t *testing.T) {
-	info, err := GetStatement(context.Background(), deposit.ID)
+	info, err := GetStatement(context.Background(), deposit.EntID)
 	if assert.Nil(t, err) {
 		assert.Equal(t, &deposit, info)
 	}
@@ -235,7 +240,7 @@ func getStatements(t *testing.T) {
 
 var (
 	ledgerResult2 = ledgerpb.Ledger{
-		ID:         "",
+		EntID:      "",
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
@@ -248,7 +253,7 @@ var (
 
 func rollbackStatements(t *testing.T) {
 	infos, err := DeleteStatements(context.Background(), []*npool.StatementReq{{
-		ID:         &miningBenefit.ID,
+		EntID:      &miningBenefit.EntID,
 		AppID:      &appID,
 		UserID:     &userID,
 		CoinTypeID: &coinTypeID,
@@ -262,7 +267,8 @@ func rollbackStatements(t *testing.T) {
 	assert.Equal(t, &miningBenefit, infos[0])
 
 	ledgerResult2.ID = ledgerResult.ID
-	info, err := ledgercli.GetLedger(context.Background(), ledgerResult.ID)
+	ledgerResult2.EntID = ledgerResult.EntID
+	info, err := ledgercli.GetLedger(context.Background(), ledgerResult.EntID)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult2.CreatedAt = info.CreatedAt
@@ -272,7 +278,7 @@ func rollbackStatements(t *testing.T) {
 }
 
 func compareProfit1(t *testing.T) {
-	info, err := profitcli.GetProfit(context.Background(), profit.ID)
+	info, err := profitcli.GetProfit(context.Background(), profit.EntID)
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		assert.Equal(t, "0", info.Incoming)
@@ -280,7 +286,7 @@ func compareProfit1(t *testing.T) {
 }
 
 func tryGetStatement(t *testing.T) {
-	info, err := GetStatement(context.Background(), profit.ID)
+	info, err := GetStatement(context.Background(), profit.EntID)
 	assert.Nil(t, err)
 	assert.Nil(t, info)
 }

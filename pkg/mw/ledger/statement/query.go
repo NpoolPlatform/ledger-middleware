@@ -23,6 +23,7 @@ type queryHandler struct {
 func (h *queryHandler) selectStatement(stm *ent.StatementQuery) {
 	h.stmSelect = stm.Select(
 		entstatement.FieldID,
+		entstatement.FieldEntID,
 		entstatement.FieldAppID,
 		entstatement.FieldUserID,
 		entstatement.FieldCoinTypeID,
@@ -35,15 +36,19 @@ func (h *queryHandler) selectStatement(stm *ent.StatementQuery) {
 	)
 }
 
-func (h *queryHandler) queryStatement(cli *ent.Client) {
-	h.selectStatement(
-		cli.Statement.
-			Query().
-			Where(
-				entstatement.ID(*h.ID),
-				entstatement.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryStatement(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+	stm := cli.Statement.Query().Where(entstatement.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entstatement.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entstatement.EntID(*h.EntID))
+	}
+	h.selectStatement(stm)
+	return nil
 }
 
 func (h *queryHandler) queryStatements(ctx context.Context, cli *ent.Client) error {
@@ -84,7 +89,9 @@ func (h *Handler) GetStatement(ctx context.Context) (*npool.Statement, error) {
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryStatement(cli)
+		if err := handler.queryStatement(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {
@@ -96,9 +103,7 @@ func (h *Handler) GetStatement(ctx context.Context) (*npool.Statement, error) {
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("too many records")
 	}
-
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 
@@ -120,9 +125,7 @@ func (h *Handler) GetStatements(ctx context.Context) ([]*npool.Statement, uint32
 	if err != nil {
 		return nil, 0, err
 	}
-
 	handler.formalize()
-
 	return handler.infos, handler.total, nil
 }
 
@@ -135,7 +138,6 @@ func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error
 		if err := handler.queryStatements(_ctx, cli); err != nil {
 			return err
 		}
-
 		_, err := handler.stmSelect.Only(_ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -143,7 +145,6 @@ func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error
 			}
 			return err
 		}
-
 		if err := handler.scan(_ctx); err != nil {
 			return err
 		}
@@ -159,6 +160,5 @@ func (h *Handler) GetStatementOnly(ctx context.Context) (*npool.Statement, error
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("to many record")
 	}
-
 	return handler.infos[0], nil
 }

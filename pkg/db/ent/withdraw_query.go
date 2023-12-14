@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
-	"github.com/google/uuid"
 )
 
 // WithdrawQuery is the builder for querying Withdraw entities.
@@ -87,8 +86,8 @@ func (wq *WithdrawQuery) FirstX(ctx context.Context) *Withdraw {
 
 // FirstID returns the first Withdraw ID from the query.
 // Returns a *NotFoundError when no Withdraw ID was found.
-func (wq *WithdrawQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (wq *WithdrawQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = wq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (wq *WithdrawQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (wq *WithdrawQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (wq *WithdrawQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := wq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (wq *WithdrawQuery) OnlyX(ctx context.Context) *Withdraw {
 // OnlyID is like Only, but returns the only Withdraw ID in the query.
 // Returns a *NotSingularError when more than one Withdraw ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (wq *WithdrawQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (wq *WithdrawQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = wq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (wq *WithdrawQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (wq *WithdrawQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (wq *WithdrawQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := wq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (wq *WithdrawQuery) AllX(ctx context.Context) []*Withdraw {
 }
 
 // IDs executes the query and returns a list of Withdraw IDs.
-func (wq *WithdrawQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (wq *WithdrawQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := wq.Select(withdraw.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (wq *WithdrawQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (wq *WithdrawQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (wq *WithdrawQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := wq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (wq *WithdrawQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   withdraw.Table,
 			Columns: withdraw.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: withdraw.FieldID,
 			},
 		},

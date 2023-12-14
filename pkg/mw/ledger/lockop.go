@@ -23,7 +23,7 @@ func (h *lockopHandler) getLock(ctx context.Context) error {
 			LedgerLock.
 			Query().
 			Where(
-				entledgerlock.ID(*h.LockID),
+				entledgerlock.EntID(*h.LockID),
 				entledgerlock.DeletedAt(0),
 			).
 			Only(_ctx)
@@ -39,8 +39,8 @@ func (h *lockopHandler) createLock(ctx context.Context, tx *ent.Tx) error {
 	if _, err := ledgerlockcrud.CreateSet(
 		tx.LedgerLock.Create(),
 		&ledgerlockcrud.Req{
-			ID:       h.LockID,
-			LedgerID: h.ID,
+			EntID:    h.LockID,
+			LedgerID: h.EntID,
 			Amount:   h.Locked,
 		},
 	).Save(ctx); err != nil {

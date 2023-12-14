@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/mixin"
+	crudermixin "github.com/NpoolPlatform/libent-cruder/pkg/mixin"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -18,16 +19,13 @@ type LedgerLock struct {
 func (LedgerLock) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.TimeMixin{},
+		crudermixin.AutoIDMixin{},
 	}
 }
 
 // Fields of the LedgerLock.
 func (LedgerLock) Fields() []ent.Field {
 	return []ent.Field{
-		field.
-			UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Unique(),
 		field.
 			UUID("ledger_id", uuid.UUID{}).
 			Optional().

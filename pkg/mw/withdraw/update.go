@@ -199,9 +199,7 @@ func (h *updateHandler) checkWithdraw(ctx context.Context) error {
 	}
 
 	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		stm := cli.Withdraw.Query().Where(
-			entwithdraw.IDNEQ(*h.ID),
-		)
+		stm := cli.Withdraw.Query().Where(entwithdraw.IDNEQ(*h.ID))
 		if h.PlatformTransactionID != nil {
 			stm.Where(
 				entwithdraw.PlatformTransactionID(*h.PlatformTransactionID),
@@ -246,7 +244,7 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 
 	ioExtra := fmt.Sprintf(
 		`{"WithdrawID":"%v","TransactionID":"%v","CID":"%v","TransactionFee":"%v","AccountID":"%v"}`,
-		h.withdraw.ID,
+		h.withdraw.EntID,
 		h.withdraw.PlatformTransactionID.String(),
 		h.withdraw.ChainTransactionID,
 		h.FeeAmount.String(),

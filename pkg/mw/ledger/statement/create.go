@@ -217,8 +217,8 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 		for _, req := range h.Reqs {
 			_fn := func() error {
 				id := uuid.New()
-				if req.ID == nil {
-					req.ID = &id
+				if req.EntID == nil {
+					req.EntID = &id
 				}
 				if err := handler.createStatement(ctx, tx, req); err != nil {
 					return err
@@ -229,7 +229,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 				if err := handler.createOrUpdateLedger(ctx, tx, req); err != nil {
 					return err
 				}
-				ids = append(ids, *req.ID)
+				ids = append(ids, *req.EntID)
 				return nil
 			}
 			if err := _fn(); err != nil {
@@ -243,7 +243,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	}
 
 	h.Conds = &crud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+		EntIDs: &cruder.Cond{Op: cruder.IN, Val: ids},
 	}
 	h.Offset = 0
 	h.Limit = int32(len(ids))

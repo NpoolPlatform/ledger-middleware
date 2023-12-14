@@ -22,7 +22,7 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 	}
 	handler, err := statement1.NewHandler(
 		ctx,
-		statement1.WithID(req.ID, false),
+		statement1.WithEntID(req.EntID, false),
 		statement1.WithAppID(req.AppID, true),
 		statement1.WithUserID(req.UserID, true),
 		statement1.WithCoinTypeID(req.CoinTypeID, true),

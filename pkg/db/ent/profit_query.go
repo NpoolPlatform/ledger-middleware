@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
-	"github.com/google/uuid"
 )
 
 // ProfitQuery is the builder for querying Profit entities.
@@ -87,8 +86,8 @@ func (pq *ProfitQuery) FirstX(ctx context.Context) *Profit {
 
 // FirstID returns the first Profit ID from the query.
 // Returns a *NotFoundError when no Profit ID was found.
-func (pq *ProfitQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (pq *ProfitQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = pq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (pq *ProfitQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pq *ProfitQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (pq *ProfitQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := pq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (pq *ProfitQuery) OnlyX(ctx context.Context) *Profit {
 // OnlyID is like Only, but returns the only Profit ID in the query.
 // Returns a *NotSingularError when more than one Profit ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pq *ProfitQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (pq *ProfitQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = pq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (pq *ProfitQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pq *ProfitQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (pq *ProfitQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := pq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (pq *ProfitQuery) AllX(ctx context.Context) []*Profit {
 }
 
 // IDs executes the query and returns a list of Profit IDs.
-func (pq *ProfitQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (pq *ProfitQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := pq.Select(profit.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (pq *ProfitQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pq *ProfitQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (pq *ProfitQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := pq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (pq *ProfitQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   profit.Table,
 			Columns: profit.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: profit.FieldID,
 			},
 		},

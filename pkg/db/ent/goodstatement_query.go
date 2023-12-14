@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
-	"github.com/google/uuid"
 )
 
 // GoodStatementQuery is the builder for querying GoodStatement entities.
@@ -87,8 +86,8 @@ func (gsq *GoodStatementQuery) FirstX(ctx context.Context) *GoodStatement {
 
 // FirstID returns the first GoodStatement ID from the query.
 // Returns a *NotFoundError when no GoodStatement ID was found.
-func (gsq *GoodStatementQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (gsq *GoodStatementQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = gsq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (gsq *GoodStatementQuery) FirstID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (gsq *GoodStatementQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (gsq *GoodStatementQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := gsq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (gsq *GoodStatementQuery) OnlyX(ctx context.Context) *GoodStatement {
 // OnlyID is like Only, but returns the only GoodStatement ID in the query.
 // Returns a *NotSingularError when more than one GoodStatement ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (gsq *GoodStatementQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (gsq *GoodStatementQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = gsq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (gsq *GoodStatementQuery) OnlyID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (gsq *GoodStatementQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (gsq *GoodStatementQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := gsq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (gsq *GoodStatementQuery) AllX(ctx context.Context) []*GoodStatement {
 }
 
 // IDs executes the query and returns a list of GoodStatement IDs.
-func (gsq *GoodStatementQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (gsq *GoodStatementQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := gsq.Select(goodstatement.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (gsq *GoodStatementQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (gsq *GoodStatementQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (gsq *GoodStatementQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := gsq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (gsq *GoodStatementQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   goodstatement.Table,
 			Columns: goodstatement.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodstatement.FieldID,
 			},
 		},

@@ -84,6 +84,20 @@ func (glu *GoodLedgerUpdate) AddDeletedAt(u int32) *GoodLedgerUpdate {
 	return glu
 }
 
+// SetEntID sets the "ent_id" field.
+func (glu *GoodLedgerUpdate) SetEntID(u uuid.UUID) *GoodLedgerUpdate {
+	glu.mutation.SetEntID(u)
+	return glu
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (glu *GoodLedgerUpdate) SetNillableEntID(u *uuid.UUID) *GoodLedgerUpdate {
+	if u != nil {
+		glu.SetEntID(*u)
+	}
+	return glu
+}
+
 // SetGoodID sets the "good_id" field.
 func (glu *GoodLedgerUpdate) SetGoodID(u uuid.UUID) *GoodLedgerUpdate {
 	glu.mutation.SetGoodID(u)
@@ -285,7 +299,7 @@ func (glu *GoodLedgerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   goodledger.Table,
 			Columns: goodledger.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodledger.FieldID,
 			},
 		},
@@ -337,6 +351,13 @@ func (glu *GoodLedgerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: goodledger.FieldDeletedAt,
+		})
+	}
+	if value, ok := glu.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: goodledger.FieldEntID,
 		})
 	}
 	if value, ok := glu.mutation.GoodID(); ok {
@@ -496,6 +517,20 @@ func (gluo *GoodLedgerUpdateOne) SetNillableDeletedAt(u *uint32) *GoodLedgerUpda
 // AddDeletedAt adds u to the "deleted_at" field.
 func (gluo *GoodLedgerUpdateOne) AddDeletedAt(u int32) *GoodLedgerUpdateOne {
 	gluo.mutation.AddDeletedAt(u)
+	return gluo
+}
+
+// SetEntID sets the "ent_id" field.
+func (gluo *GoodLedgerUpdateOne) SetEntID(u uuid.UUID) *GoodLedgerUpdateOne {
+	gluo.mutation.SetEntID(u)
+	return gluo
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (gluo *GoodLedgerUpdateOne) SetNillableEntID(u *uuid.UUID) *GoodLedgerUpdateOne {
+	if u != nil {
+		gluo.SetEntID(*u)
+	}
 	return gluo
 }
 
@@ -713,7 +748,7 @@ func (gluo *GoodLedgerUpdateOne) sqlSave(ctx context.Context) (_node *GoodLedger
 			Table:   goodledger.Table,
 			Columns: goodledger.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodledger.FieldID,
 			},
 		},
@@ -782,6 +817,13 @@ func (gluo *GoodLedgerUpdateOne) sqlSave(ctx context.Context) (_node *GoodLedger
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: goodledger.FieldDeletedAt,
+		})
+	}
+	if value, ok := gluo.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: goodledger.FieldEntID,
 		})
 	}
 	if value, ok := gluo.mutation.GoodID(); ok {

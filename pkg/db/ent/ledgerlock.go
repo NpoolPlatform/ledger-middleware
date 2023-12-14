@@ -16,13 +16,15 @@ import (
 type LedgerLock struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID uint32 `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt uint32 `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt uint32 `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt uint32 `json:"deleted_at,omitempty"`
+	// EntID holds the value of the "ent_id" field.
+	EntID uuid.UUID `json:"ent_id,omitempty"`
 	// LedgerID holds the value of the "ledger_id" field.
 	LedgerID uuid.UUID `json:"ledger_id,omitempty"`
 	// StatementID holds the value of the "statement_id" field.
@@ -40,11 +42,11 @@ func (*LedgerLock) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case ledgerlock.FieldAmount:
 			values[i] = new(decimal.Decimal)
-		case ledgerlock.FieldCreatedAt, ledgerlock.FieldUpdatedAt, ledgerlock.FieldDeletedAt:
+		case ledgerlock.FieldID, ledgerlock.FieldCreatedAt, ledgerlock.FieldUpdatedAt, ledgerlock.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
 		case ledgerlock.FieldLockState:
 			values[i] = new(sql.NullString)
-		case ledgerlock.FieldID, ledgerlock.FieldLedgerID, ledgerlock.FieldStatementID:
+		case ledgerlock.FieldEntID, ledgerlock.FieldLedgerID, ledgerlock.FieldStatementID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type LedgerLock", columns[i])
@@ -62,11 +64,11 @@ func (ll *LedgerLock) assignValues(columns []string, values []interface{}) error
 	for i := range columns {
 		switch columns[i] {
 		case ledgerlock.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				ll.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
+			ll.ID = uint32(value.Int64)
 		case ledgerlock.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -84,6 +86,12 @@ func (ll *LedgerLock) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
 				ll.DeletedAt = uint32(value.Int64)
+			}
+		case ledgerlock.FieldEntID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field ent_id", values[i])
+			} else if value != nil {
+				ll.EntID = *value
 			}
 		case ledgerlock.FieldLedgerID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -145,6 +153,9 @@ func (ll *LedgerLock) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(fmt.Sprintf("%v", ll.DeletedAt))
+	builder.WriteString(", ")
+	builder.WriteString("ent_id=")
+	builder.WriteString(fmt.Sprintf("%v", ll.EntID))
 	builder.WriteString(", ")
 	builder.WriteString("ledger_id=")
 	builder.WriteString(fmt.Sprintf("%v", ll.LedgerID))

@@ -30,7 +30,7 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 func GetProfit(ctx context.Context, id string) (*npool.Profit, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetProfit(ctx, &npool.GetProfitRequest{
-			ID: id,
+			EntID: id,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get profit: %v", err)

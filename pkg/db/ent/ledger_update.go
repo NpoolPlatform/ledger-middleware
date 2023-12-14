@@ -84,6 +84,20 @@ func (lu *LedgerUpdate) AddDeletedAt(u int32) *LedgerUpdate {
 	return lu
 }
 
+// SetEntID sets the "ent_id" field.
+func (lu *LedgerUpdate) SetEntID(u uuid.UUID) *LedgerUpdate {
+	lu.mutation.SetEntID(u)
+	return lu
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (lu *LedgerUpdate) SetNillableEntID(u *uuid.UUID) *LedgerUpdate {
+	if u != nil {
+		lu.SetEntID(*u)
+	}
+	return lu
+}
+
 // SetAppID sets the "app_id" field.
 func (lu *LedgerUpdate) SetAppID(u uuid.UUID) *LedgerUpdate {
 	lu.mutation.SetAppID(u)
@@ -332,7 +346,7 @@ func (lu *LedgerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   ledger.Table,
 			Columns: ledger.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledger.FieldID,
 			},
 		},
@@ -384,6 +398,13 @@ func (lu *LedgerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: ledger.FieldDeletedAt,
+		})
+	}
+	if value, ok := lu.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledger.FieldEntID,
 		})
 	}
 	if value, ok := lu.mutation.AppID(); ok {
@@ -576,6 +597,20 @@ func (luo *LedgerUpdateOne) SetNillableDeletedAt(u *uint32) *LedgerUpdateOne {
 // AddDeletedAt adds u to the "deleted_at" field.
 func (luo *LedgerUpdateOne) AddDeletedAt(u int32) *LedgerUpdateOne {
 	luo.mutation.AddDeletedAt(u)
+	return luo
+}
+
+// SetEntID sets the "ent_id" field.
+func (luo *LedgerUpdateOne) SetEntID(u uuid.UUID) *LedgerUpdateOne {
+	luo.mutation.SetEntID(u)
+	return luo
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (luo *LedgerUpdateOne) SetNillableEntID(u *uuid.UUID) *LedgerUpdateOne {
+	if u != nil {
+		luo.SetEntID(*u)
+	}
 	return luo
 }
 
@@ -840,7 +875,7 @@ func (luo *LedgerUpdateOne) sqlSave(ctx context.Context) (_node *Ledger, err err
 			Table:   ledger.Table,
 			Columns: ledger.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledger.FieldID,
 			},
 		},
@@ -909,6 +944,13 @@ func (luo *LedgerUpdateOne) sqlSave(ctx context.Context) (_node *Ledger, err err
 			Type:   field.TypeUint32,
 			Value:  value,
 			Column: ledger.FieldDeletedAt,
+		})
+	}
+	if value, ok := luo.mutation.EntID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledger.FieldEntID,
 		})
 	}
 	if value, ok := luo.mutation.AppID(); ok {

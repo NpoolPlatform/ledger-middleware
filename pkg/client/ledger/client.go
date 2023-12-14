@@ -31,7 +31,7 @@ func do(ctx context.Context, fn func(_ctx context.Context, cli npool.MiddlewareC
 func GetLedger(ctx context.Context, id string) (*npool.Ledger, error) {
 	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
 		resp, err := cli.GetLedger(ctx, &npool.GetLedgerRequest{
-			ID: id,
+			EntID: id,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("fail get ledger: %v", err)

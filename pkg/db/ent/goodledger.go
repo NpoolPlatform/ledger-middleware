@@ -16,13 +16,15 @@ import (
 type GoodLedger struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID uint32 `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt uint32 `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt uint32 `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt uint32 `json:"deleted_at,omitempty"`
+	// EntID holds the value of the "ent_id" field.
+	EntID uuid.UUID `json:"ent_id,omitempty"`
 	// GoodID holds the value of the "good_id" field.
 	GoodID uuid.UUID `json:"good_id,omitempty"`
 	// CoinTypeID holds the value of the "coin_type_id" field.
@@ -42,9 +44,9 @@ func (*GoodLedger) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case goodledger.FieldAmount, goodledger.FieldToPlatform, goodledger.FieldToUser:
 			values[i] = new(decimal.Decimal)
-		case goodledger.FieldCreatedAt, goodledger.FieldUpdatedAt, goodledger.FieldDeletedAt:
+		case goodledger.FieldID, goodledger.FieldCreatedAt, goodledger.FieldUpdatedAt, goodledger.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
-		case goodledger.FieldID, goodledger.FieldGoodID, goodledger.FieldCoinTypeID:
+		case goodledger.FieldEntID, goodledger.FieldGoodID, goodledger.FieldCoinTypeID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type GoodLedger", columns[i])
@@ -62,11 +64,11 @@ func (gl *GoodLedger) assignValues(columns []string, values []interface{}) error
 	for i := range columns {
 		switch columns[i] {
 		case goodledger.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				gl.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
+			gl.ID = uint32(value.Int64)
 		case goodledger.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -84,6 +86,12 @@ func (gl *GoodLedger) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
 				gl.DeletedAt = uint32(value.Int64)
+			}
+		case goodledger.FieldEntID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field ent_id", values[i])
+			} else if value != nil {
+				gl.EntID = *value
 			}
 		case goodledger.FieldGoodID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -151,6 +159,9 @@ func (gl *GoodLedger) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(fmt.Sprintf("%v", gl.DeletedAt))
+	builder.WriteString(", ")
+	builder.WriteString("ent_id=")
+	builder.WriteString(fmt.Sprintf("%v", gl.EntID))
 	builder.WriteString(", ")
 	builder.WriteString("good_id=")
 	builder.WriteString(fmt.Sprintf("%v", gl.GoodID))

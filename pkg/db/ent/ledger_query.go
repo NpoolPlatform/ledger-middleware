@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
-	"github.com/google/uuid"
 )
 
 // LedgerQuery is the builder for querying Ledger entities.
@@ -87,8 +86,8 @@ func (lq *LedgerQuery) FirstX(ctx context.Context) *Ledger {
 
 // FirstID returns the first Ledger ID from the query.
 // Returns a *NotFoundError when no Ledger ID was found.
-func (lq *LedgerQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (lq *LedgerQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = lq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (lq *LedgerQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (lq *LedgerQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (lq *LedgerQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := lq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (lq *LedgerQuery) OnlyX(ctx context.Context) *Ledger {
 // OnlyID is like Only, but returns the only Ledger ID in the query.
 // Returns a *NotSingularError when more than one Ledger ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (lq *LedgerQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (lq *LedgerQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = lq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (lq *LedgerQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (lq *LedgerQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (lq *LedgerQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := lq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (lq *LedgerQuery) AllX(ctx context.Context) []*Ledger {
 }
 
 // IDs executes the query and returns a list of Ledger IDs.
-func (lq *LedgerQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (lq *LedgerQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := lq.Select(ledger.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (lq *LedgerQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (lq *LedgerQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (lq *LedgerQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := lq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (lq *LedgerQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   ledger.Table,
 			Columns: ledger.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledger.FieldID,
 			},
 		},

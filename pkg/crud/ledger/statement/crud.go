@@ -14,7 +14,8 @@ import (
 )
 
 type Req struct {
-	ID         *uuid.UUID
+	ID         *uint32
+	EntID      *uuid.UUID
 	AppID      *uuid.UUID
 	UserID     *uuid.UUID
 	CoinTypeID *uuid.UUID
@@ -27,8 +28,8 @@ type Req struct {
 }
 
 func CreateSet(c *ent.StatementCreate, in *Req) *ent.StatementCreate {
-	if in.ID != nil {
-		c.SetID(*in.ID)
+	if in.EntID != nil {
+		c.SetEntID(*in.EntID)
 	}
 	if in.AppID != nil {
 		c.SetAppID(*in.AppID)
@@ -65,7 +66,7 @@ func UpdateSet(u *ent.StatementUpdateOne, req *Req) *ent.StatementUpdateOne {
 }
 
 type Conds struct {
-	ID          *cruder.Cond
+	EntID       *cruder.Cond
 	AppID       *cruder.Cond
 	UserID      *cruder.Cond
 	CoinTypeID  *cruder.Cond
@@ -76,6 +77,7 @@ type Conds struct {
 	StartAt     *cruder.Cond
 	EndAt       *cruder.Cond
 	IDs         *cruder.Cond
+	EntIDs      *cruder.Cond
 	IOSubTypes  *cruder.Cond
 	CoinTypeIDs *cruder.Cond
 	UserIDs     *cruder.Cond
@@ -86,16 +88,16 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 	if conds == nil {
 		return q, nil
 	}
-	if conds.ID != nil {
-		id, ok := conds.ID.Val.(uuid.UUID)
+	if conds.EntID != nil {
+		id, ok := conds.EntID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid id")
+			return nil, fmt.Errorf("invalid entid")
 		}
-		switch conds.ID.Op {
+		switch conds.EntID.Op {
 		case cruder.EQ:
-			q.Where(entstatement.ID(id))
+			q.Where(entstatement.EntID(id))
 		default:
-			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
+			return nil, fmt.Errorf("invalid entid op field %v", conds.EntID.Op)
 		}
 	}
 	if conds.AppID != nil {
@@ -210,8 +212,20 @@ func SetQueryConds(q *ent.StatementQuery, conds *Conds) (*ent.StatementQuery, er
 			return nil, fmt.Errorf("invalid end at op field %v", conds.EndAt.Op)
 		}
 	}
+	if conds.EntIDs != nil {
+		ids, ok := conds.EntIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid entids %v", conds.EntIDs.Val)
+		}
+		switch conds.EntIDs.Op {
+		case cruder.IN:
+			q.Where(entstatement.EntIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid statement op field %v", conds.EntIDs.Op)
+		}
+	}
 	if conds.IDs != nil {
-		ids, ok := conds.IDs.Val.([]uuid.UUID)
+		ids, ok := conds.IDs.Val.([]uint32)
 		if !ok {
 			return nil, fmt.Errorf("invalid ids %v", conds.IDs.Val)
 		}

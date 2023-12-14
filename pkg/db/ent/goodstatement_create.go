@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -62,6 +61,20 @@ func (gsc *GoodStatementCreate) SetDeletedAt(u uint32) *GoodStatementCreate {
 func (gsc *GoodStatementCreate) SetNillableDeletedAt(u *uint32) *GoodStatementCreate {
 	if u != nil {
 		gsc.SetDeletedAt(*u)
+	}
+	return gsc
+}
+
+// SetEntID sets the "ent_id" field.
+func (gsc *GoodStatementCreate) SetEntID(u uuid.UUID) *GoodStatementCreate {
+	gsc.mutation.SetEntID(u)
+	return gsc
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (gsc *GoodStatementCreate) SetNillableEntID(u *uuid.UUID) *GoodStatementCreate {
+	if u != nil {
+		gsc.SetEntID(*u)
 	}
 	return gsc
 }
@@ -165,16 +178,8 @@ func (gsc *GoodStatementCreate) SetNillableBenefitDate(u *uint32) *GoodStatement
 }
 
 // SetID sets the "id" field.
-func (gsc *GoodStatementCreate) SetID(u uuid.UUID) *GoodStatementCreate {
+func (gsc *GoodStatementCreate) SetID(u uint32) *GoodStatementCreate {
 	gsc.mutation.SetID(u)
-	return gsc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (gsc *GoodStatementCreate) SetNillableID(u *uuid.UUID) *GoodStatementCreate {
-	if u != nil {
-		gsc.SetID(*u)
-	}
 	return gsc
 }
 
@@ -278,6 +283,13 @@ func (gsc *GoodStatementCreate) defaults() error {
 		v := goodstatement.DefaultDeletedAt()
 		gsc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := gsc.mutation.EntID(); !ok {
+		if goodstatement.DefaultEntID == nil {
+			return fmt.Errorf("ent: uninitialized goodstatement.DefaultEntID (forgotten import ent/runtime?)")
+		}
+		v := goodstatement.DefaultEntID()
+		gsc.mutation.SetEntID(v)
+	}
 	if _, ok := gsc.mutation.GoodID(); !ok {
 		if goodstatement.DefaultGoodID == nil {
 			return fmt.Errorf("ent: uninitialized goodstatement.DefaultGoodID (forgotten import ent/runtime?)")
@@ -296,13 +308,6 @@ func (gsc *GoodStatementCreate) defaults() error {
 		v := goodstatement.DefaultBenefitDate
 		gsc.mutation.SetBenefitDate(v)
 	}
-	if _, ok := gsc.mutation.ID(); !ok {
-		if goodstatement.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized goodstatement.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := goodstatement.DefaultID()
-		gsc.mutation.SetID(v)
-	}
 	return nil
 }
 
@@ -317,6 +322,9 @@ func (gsc *GoodStatementCreate) check() error {
 	if _, ok := gsc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "GoodStatement.deleted_at"`)}
 	}
+	if _, ok := gsc.mutation.EntID(); !ok {
+		return &ValidationError{Name: "ent_id", err: errors.New(`ent: missing required field "GoodStatement.ent_id"`)}
+	}
 	return nil
 }
 
@@ -328,12 +336,9 @@ func (gsc *GoodStatementCreate) sqlSave(ctx context.Context) (*GoodStatement, er
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint32(id)
 	}
 	return _node, nil
 }
@@ -344,7 +349,7 @@ func (gsc *GoodStatementCreate) createSpec() (*GoodStatement, *sqlgraph.CreateSp
 		_spec = &sqlgraph.CreateSpec{
 			Table: goodstatement.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodstatement.FieldID,
 			},
 		}
@@ -352,7 +357,7 @@ func (gsc *GoodStatementCreate) createSpec() (*GoodStatement, *sqlgraph.CreateSp
 	_spec.OnConflict = gsc.conflict
 	if id, ok := gsc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := gsc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -377,6 +382,14 @@ func (gsc *GoodStatementCreate) createSpec() (*GoodStatement, *sqlgraph.CreateSp
 			Column: goodstatement.FieldDeletedAt,
 		})
 		_node.DeletedAt = value
+	}
+	if value, ok := gsc.mutation.EntID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: goodstatement.FieldEntID,
+		})
+		_node.EntID = value
 	}
 	if value, ok := gsc.mutation.GoodID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -539,6 +552,18 @@ func (u *GoodStatementUpsert) UpdateDeletedAt() *GoodStatementUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *GoodStatementUpsert) AddDeletedAt(v uint32) *GoodStatementUpsert {
 	u.Add(goodstatement.FieldDeletedAt, v)
+	return u
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *GoodStatementUpsert) SetEntID(v uuid.UUID) *GoodStatementUpsert {
+	u.Set(goodstatement.FieldEntID, v)
+	return u
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *GoodStatementUpsert) UpdateEntID() *GoodStatementUpsert {
+	u.SetExcluded(goodstatement.FieldEntID)
 	return u
 }
 
@@ -811,6 +836,20 @@ func (u *GoodStatementUpsertOne) UpdateDeletedAt() *GoodStatementUpsertOne {
 	})
 }
 
+// SetEntID sets the "ent_id" field.
+func (u *GoodStatementUpsertOne) SetEntID(v uuid.UUID) *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *GoodStatementUpsertOne) UpdateEntID() *GoodStatementUpsertOne {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateEntID()
+	})
+}
+
 // SetGoodID sets the "good_id" field.
 func (u *GoodStatementUpsertOne) SetGoodID(v uuid.UUID) *GoodStatementUpsertOne {
 	return u.Update(func(s *GoodStatementUpsert) {
@@ -1009,12 +1048,7 @@ func (u *GoodStatementUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *GoodStatementUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: GoodStatementUpsertOne.ID is not supported by MySQL driver. Use GoodStatementUpsertOne.Exec instead")
-	}
+func (u *GoodStatementUpsertOne) ID(ctx context.Context) (id uint32, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -1023,7 +1057,7 @@ func (u *GoodStatementUpsertOne) ID(ctx context.Context) (id uuid.UUID, err erro
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *GoodStatementUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *GoodStatementUpsertOne) IDX(ctx context.Context) uint32 {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -1074,6 +1108,10 @@ func (gscb *GoodStatementCreateBulk) Save(ctx context.Context) ([]*GoodStatement
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = uint32(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -1269,6 +1307,20 @@ func (u *GoodStatementUpsertBulk) AddDeletedAt(v uint32) *GoodStatementUpsertBul
 func (u *GoodStatementUpsertBulk) UpdateDeletedAt() *GoodStatementUpsertBulk {
 	return u.Update(func(s *GoodStatementUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *GoodStatementUpsertBulk) SetEntID(v uuid.UUID) *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *GoodStatementUpsertBulk) UpdateEntID() *GoodStatementUpsertBulk {
+	return u.Update(func(s *GoodStatementUpsert) {
+		s.UpdateEntID()
 	})
 }
 

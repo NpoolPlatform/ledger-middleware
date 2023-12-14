@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -62,6 +61,20 @@ func (glc *GoodLedgerCreate) SetDeletedAt(u uint32) *GoodLedgerCreate {
 func (glc *GoodLedgerCreate) SetNillableDeletedAt(u *uint32) *GoodLedgerCreate {
 	if u != nil {
 		glc.SetDeletedAt(*u)
+	}
+	return glc
+}
+
+// SetEntID sets the "ent_id" field.
+func (glc *GoodLedgerCreate) SetEntID(u uuid.UUID) *GoodLedgerCreate {
+	glc.mutation.SetEntID(u)
+	return glc
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (glc *GoodLedgerCreate) SetNillableEntID(u *uuid.UUID) *GoodLedgerCreate {
+	if u != nil {
+		glc.SetEntID(*u)
 	}
 	return glc
 }
@@ -137,16 +150,8 @@ func (glc *GoodLedgerCreate) SetNillableToUser(d *decimal.Decimal) *GoodLedgerCr
 }
 
 // SetID sets the "id" field.
-func (glc *GoodLedgerCreate) SetID(u uuid.UUID) *GoodLedgerCreate {
+func (glc *GoodLedgerCreate) SetID(u uint32) *GoodLedgerCreate {
 	glc.mutation.SetID(u)
-	return glc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (glc *GoodLedgerCreate) SetNillableID(u *uuid.UUID) *GoodLedgerCreate {
-	if u != nil {
-		glc.SetID(*u)
-	}
 	return glc
 }
 
@@ -250,6 +255,13 @@ func (glc *GoodLedgerCreate) defaults() error {
 		v := goodledger.DefaultDeletedAt()
 		glc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := glc.mutation.EntID(); !ok {
+		if goodledger.DefaultEntID == nil {
+			return fmt.Errorf("ent: uninitialized goodledger.DefaultEntID (forgotten import ent/runtime?)")
+		}
+		v := goodledger.DefaultEntID()
+		glc.mutation.SetEntID(v)
+	}
 	if _, ok := glc.mutation.GoodID(); !ok {
 		if goodledger.DefaultGoodID == nil {
 			return fmt.Errorf("ent: uninitialized goodledger.DefaultGoodID (forgotten import ent/runtime?)")
@@ -263,13 +275,6 @@ func (glc *GoodLedgerCreate) defaults() error {
 		}
 		v := goodledger.DefaultCoinTypeID()
 		glc.mutation.SetCoinTypeID(v)
-	}
-	if _, ok := glc.mutation.ID(); !ok {
-		if goodledger.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized goodledger.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := goodledger.DefaultID()
-		glc.mutation.SetID(v)
 	}
 	return nil
 }
@@ -285,6 +290,9 @@ func (glc *GoodLedgerCreate) check() error {
 	if _, ok := glc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "GoodLedger.deleted_at"`)}
 	}
+	if _, ok := glc.mutation.EntID(); !ok {
+		return &ValidationError{Name: "ent_id", err: errors.New(`ent: missing required field "GoodLedger.ent_id"`)}
+	}
 	return nil
 }
 
@@ -296,12 +304,9 @@ func (glc *GoodLedgerCreate) sqlSave(ctx context.Context) (*GoodLedger, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint32(id)
 	}
 	return _node, nil
 }
@@ -312,7 +317,7 @@ func (glc *GoodLedgerCreate) createSpec() (*GoodLedger, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: goodledger.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodledger.FieldID,
 			},
 		}
@@ -320,7 +325,7 @@ func (glc *GoodLedgerCreate) createSpec() (*GoodLedger, *sqlgraph.CreateSpec) {
 	_spec.OnConflict = glc.conflict
 	if id, ok := glc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := glc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -345,6 +350,14 @@ func (glc *GoodLedgerCreate) createSpec() (*GoodLedger, *sqlgraph.CreateSpec) {
 			Column: goodledger.FieldDeletedAt,
 		})
 		_node.DeletedAt = value
+	}
+	if value, ok := glc.mutation.EntID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: goodledger.FieldEntID,
+		})
+		_node.EntID = value
 	}
 	if value, ok := glc.mutation.GoodID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -491,6 +504,18 @@ func (u *GoodLedgerUpsert) UpdateDeletedAt() *GoodLedgerUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *GoodLedgerUpsert) AddDeletedAt(v uint32) *GoodLedgerUpsert {
 	u.Add(goodledger.FieldDeletedAt, v)
+	return u
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *GoodLedgerUpsert) SetEntID(v uuid.UUID) *GoodLedgerUpsert {
+	u.Set(goodledger.FieldEntID, v)
+	return u
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *GoodLedgerUpsert) UpdateEntID() *GoodLedgerUpsert {
+	u.SetExcluded(goodledger.FieldEntID)
 	return u
 }
 
@@ -715,6 +740,20 @@ func (u *GoodLedgerUpsertOne) UpdateDeletedAt() *GoodLedgerUpsertOne {
 	})
 }
 
+// SetEntID sets the "ent_id" field.
+func (u *GoodLedgerUpsertOne) SetEntID(v uuid.UUID) *GoodLedgerUpsertOne {
+	return u.Update(func(s *GoodLedgerUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *GoodLedgerUpsertOne) UpdateEntID() *GoodLedgerUpsertOne {
+	return u.Update(func(s *GoodLedgerUpsert) {
+		s.UpdateEntID()
+	})
+}
+
 // SetGoodID sets the "good_id" field.
 func (u *GoodLedgerUpsertOne) SetGoodID(v uuid.UUID) *GoodLedgerUpsertOne {
 	return u.Update(func(s *GoodLedgerUpsert) {
@@ -857,12 +896,7 @@ func (u *GoodLedgerUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *GoodLedgerUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: GoodLedgerUpsertOne.ID is not supported by MySQL driver. Use GoodLedgerUpsertOne.Exec instead")
-	}
+func (u *GoodLedgerUpsertOne) ID(ctx context.Context) (id uint32, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -871,7 +905,7 @@ func (u *GoodLedgerUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *GoodLedgerUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *GoodLedgerUpsertOne) IDX(ctx context.Context) uint32 {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -922,6 +956,10 @@ func (glcb *GoodLedgerCreateBulk) Save(ctx context.Context) ([]*GoodLedger, erro
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = uint32(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -1117,6 +1155,20 @@ func (u *GoodLedgerUpsertBulk) AddDeletedAt(v uint32) *GoodLedgerUpsertBulk {
 func (u *GoodLedgerUpsertBulk) UpdateDeletedAt() *GoodLedgerUpsertBulk {
 	return u.Update(func(s *GoodLedgerUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *GoodLedgerUpsertBulk) SetEntID(v uuid.UUID) *GoodLedgerUpsertBulk {
+	return u.Update(func(s *GoodLedgerUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *GoodLedgerUpsertBulk) UpdateEntID() *GoodLedgerUpsertBulk {
+	return u.Update(func(s *GoodLedgerUpsert) {
+		s.UpdateEntID()
 	})
 }
 

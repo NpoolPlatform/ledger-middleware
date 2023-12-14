@@ -72,7 +72,7 @@ func (gld *GoodLedgerDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: goodledger.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: goodledger.FieldID,
 			},
 		},

@@ -23,12 +23,13 @@ func (s *Server) DeleteGoodStatement(ctx context.Context, in *npool.DeleteGoodSt
 			"DeleteGoodStatement",
 			"In", in,
 		)
-		return &npool.DeleteGoodStatementResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+		return &npool.DeleteGoodStatementResponse{}, status.Error(codes.Aborted, "invalid info")
 	}
 
 	handler, err := statement1.NewHandler(
 		ctx,
-		goodstatement1.WithID(req.ID, true),
+		goodstatement1.WithID(req.ID, false),
+		goodstatement1.WithEntID(req.EntID, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

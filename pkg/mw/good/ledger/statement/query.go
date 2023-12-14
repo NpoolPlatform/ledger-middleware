@@ -22,6 +22,7 @@ type queryHandler struct {
 func (h *queryHandler) selectGoodStatement(stm *ent.GoodStatementQuery) {
 	h.stmSelect = stm.Select(
 		entgoodstatement.FieldID,
+		entgoodstatement.FieldEntID,
 		entgoodstatement.FieldGoodID,
 		entgoodstatement.FieldCoinTypeID,
 		entgoodstatement.FieldAmount,
@@ -34,15 +35,20 @@ func (h *queryHandler) selectGoodStatement(stm *ent.GoodStatementQuery) {
 	)
 }
 
-func (h *queryHandler) queryGoodStatement(cli *ent.Client) {
-	h.selectGoodStatement(
-		cli.GoodStatement.
-			Query().
-			Where(
-				entgoodstatement.ID(*h.ID),
-				entgoodstatement.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryGoodStatement(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+
+	stm := cli.GoodStatement.Query().Where(entgoodstatement.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entgoodstatement.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entgoodstatement.EntID(*h.EntID))
+	}
+	h.selectGoodStatement(stm)
+	return nil
 }
 
 func (h *queryHandler) queryGoodStatements(ctx context.Context, cli *ent.Client) error {
@@ -91,17 +97,15 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetGoodStatement(ctx context.Context) (*npool.GoodStatement, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	handler := &queryHandler{
 		Handler: h,
 		infos:   []*npool.GoodStatement{},
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryGoodStatement(cli)
+		if err := handler.queryGoodStatement(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {
@@ -115,7 +119,6 @@ func (h *Handler) GetGoodStatement(ctx context.Context) (*npool.GoodStatement, e
 	}
 
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 
@@ -140,6 +143,5 @@ func (h *Handler) GetGoodStatements(ctx context.Context) ([]*npool.GoodStatement
 	}
 
 	handler.formalize()
-
 	return handler.infos, handler.total, nil
 }

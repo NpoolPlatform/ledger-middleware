@@ -28,8 +28,8 @@ func (h *createHandler) createProfit(ctx context.Context) error {
 
 func (h *Handler) CreateProfit(ctx context.Context) (*npool.Profit, error) {
 	id := uuid.New()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 
 	handler := &createHandler{

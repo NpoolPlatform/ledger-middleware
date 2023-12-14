@@ -12,7 +12,8 @@ import (
 )
 
 type Req struct {
-	ID                        *uuid.UUID
+	ID                        *uint32
+	EntID                     *uuid.UUID
 	GoodID                    *uuid.UUID
 	CoinTypeID                *uuid.UUID
 	TotalAmount               *decimal.Decimal
@@ -28,6 +29,9 @@ type Req struct {
 func CreateSet(c *ent.GoodStatementCreate, in *Req) *ent.GoodStatementCreate {
 	if in.ID != nil {
 		c.SetID(*in.ID)
+	}
+	if in.EntID != nil {
+		c.SetEntID(*in.EntID)
 	}
 	if in.GoodID != nil {
 		c.SetGoodID(*in.GoodID)
@@ -62,11 +66,12 @@ func UpdateSet(u *ent.GoodStatementUpdateOne, req *Req) *ent.GoodStatementUpdate
 }
 
 type Conds struct {
-	ID          *cruder.Cond
+	EntID       *cruder.Cond
 	GoodID      *cruder.Cond
 	CoinTypeID  *cruder.Cond
 	Amount      *cruder.Cond
 	BenefitDate *cruder.Cond
+	EntIDs      *cruder.Cond
 	IDs         *cruder.Cond
 }
 
@@ -75,16 +80,16 @@ func SetQueryConds(q *ent.GoodStatementQuery, conds *Conds) (*ent.GoodStatementQ
 	if conds == nil {
 		return q, nil
 	}
-	if conds.ID != nil {
-		id, ok := conds.ID.Val.(uuid.UUID)
+	if conds.EntID != nil {
+		id, ok := conds.EntID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid id")
+			return nil, fmt.Errorf("invalid entid")
 		}
-		switch conds.ID.Op {
+		switch conds.EntID.Op {
 		case cruder.EQ:
-			q.Where(entgoodstatement.ID(id))
+			q.Where(entgoodstatement.EntID(id))
 		default:
-			return nil, fmt.Errorf("invalid id op field %v", conds.ID.Op)
+			return nil, fmt.Errorf("invalid entid op field %v", conds.EntID.Op)
 		}
 	}
 	if conds.GoodID != nil {
@@ -147,8 +152,20 @@ func SetQueryConds(q *ent.GoodStatementQuery, conds *Conds) (*ent.GoodStatementQ
 			return nil, fmt.Errorf("invalid benefit date op field %v", conds.BenefitDate.Op)
 		}
 	}
+	if conds.EntIDs != nil {
+		ids, ok := conds.EntIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid entids %v", conds.EntIDs.Val)
+		}
+		switch conds.EntIDs.Op {
+		case cruder.IN:
+			q.Where(entgoodstatement.EntIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid good statement op field %v", conds.EntIDs.Op)
+		}
+	}
 	if conds.IDs != nil {
-		ids, ok := conds.IDs.Val.([]uuid.UUID)
+		ids, ok := conds.IDs.Val.([]uint32)
 		if !ok {
 			return nil, fmt.Errorf("invalid ids %v", conds.IDs.Val)
 		}
@@ -156,7 +173,7 @@ func SetQueryConds(q *ent.GoodStatementQuery, conds *Conds) (*ent.GoodStatementQ
 		case cruder.IN:
 			q.Where(entgoodstatement.IDIn(ids...))
 		default:
-			return nil, fmt.Errorf("invalid good statement op field %v", conds.IDs.Op)
+			return nil, fmt.Errorf("invalid goodstatement op field %v", conds.IDs.Op)
 		}
 	}
 	return q, nil

@@ -16,13 +16,15 @@ import (
 type UnsoldStatement struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID uint32 `json:"id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt uint32 `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt uint32 `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt uint32 `json:"deleted_at,omitempty"`
+	// EntID holds the value of the "ent_id" field.
+	EntID uuid.UUID `json:"ent_id,omitempty"`
 	// GoodID holds the value of the "good_id" field.
 	GoodID uuid.UUID `json:"good_id,omitempty"`
 	// CoinTypeID holds the value of the "coin_type_id" field.
@@ -42,9 +44,9 @@ func (*UnsoldStatement) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case unsoldstatement.FieldAmount:
 			values[i] = new(decimal.Decimal)
-		case unsoldstatement.FieldCreatedAt, unsoldstatement.FieldUpdatedAt, unsoldstatement.FieldDeletedAt, unsoldstatement.FieldBenefitDate:
+		case unsoldstatement.FieldID, unsoldstatement.FieldCreatedAt, unsoldstatement.FieldUpdatedAt, unsoldstatement.FieldDeletedAt, unsoldstatement.FieldBenefitDate:
 			values[i] = new(sql.NullInt64)
-		case unsoldstatement.FieldID, unsoldstatement.FieldGoodID, unsoldstatement.FieldCoinTypeID, unsoldstatement.FieldStatementID:
+		case unsoldstatement.FieldEntID, unsoldstatement.FieldGoodID, unsoldstatement.FieldCoinTypeID, unsoldstatement.FieldStatementID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type UnsoldStatement", columns[i])
@@ -62,11 +64,11 @@ func (us *UnsoldStatement) assignValues(columns []string, values []interface{}) 
 	for i := range columns {
 		switch columns[i] {
 		case unsoldstatement.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				us.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
+			us.ID = uint32(value.Int64)
 		case unsoldstatement.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -84,6 +86,12 @@ func (us *UnsoldStatement) assignValues(columns []string, values []interface{}) 
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
 				us.DeletedAt = uint32(value.Int64)
+			}
+		case unsoldstatement.FieldEntID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field ent_id", values[i])
+			} else if value != nil {
+				us.EntID = *value
 			}
 		case unsoldstatement.FieldGoodID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -151,6 +159,9 @@ func (us *UnsoldStatement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(fmt.Sprintf("%v", us.DeletedAt))
+	builder.WriteString(", ")
+	builder.WriteString("ent_id=")
+	builder.WriteString(fmt.Sprintf("%v", us.EntID))
 	builder.WriteString(", ")
 	builder.WriteString("good_id=")
 	builder.WriteString(fmt.Sprintf("%v", us.GoodID))

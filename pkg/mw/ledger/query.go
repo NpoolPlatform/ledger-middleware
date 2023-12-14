@@ -22,6 +22,7 @@ type queryHandler struct {
 func (h *queryHandler) selectLedger(stm *ent.LedgerQuery) {
 	h.stmSelect = stm.Select(
 		entledger.FieldID,
+		entledger.FieldEntID,
 		entledger.FieldAppID,
 		entledger.FieldUserID,
 		entledger.FieldCoinTypeID,
@@ -34,15 +35,19 @@ func (h *queryHandler) selectLedger(stm *ent.LedgerQuery) {
 	)
 }
 
-func (h *queryHandler) queryLedger(cli *ent.Client) {
-	h.selectLedger(
-		cli.Ledger.
-			Query().
-			Where(
-				entledger.ID(*h.ID),
-				entledger.DeletedAt(0),
-			),
-	)
+func (h *queryHandler) queryLedger(cli *ent.Client) error {
+	if h.ID == nil && h.EntID == nil {
+		return fmt.Errorf("invalid id")
+	}
+	stm := cli.Ledger.Query().Where(entledger.DeletedAt(0))
+	if h.ID != nil {
+		stm.Where(entledger.ID(*h.ID))
+	}
+	if h.EntID != nil {
+		stm.Where(entledger.EntID(*h.EntID))
+	}
+	h.selectLedger(stm)
+	return nil
 }
 
 func (h *queryHandler) queryLedgers(ctx context.Context, cli *ent.Client) error {
@@ -96,17 +101,15 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetLedger(ctx context.Context) (*npool.Ledger, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	handler := &queryHandler{
 		Handler: h,
 		infos:   []*npool.Ledger{},
 	}
 
 	err := db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		handler.queryLedger(cli)
+		if err := handler.queryLedger(cli); err != nil {
+			return err
+		}
 		return handler.scan(_ctx)
 	})
 	if err != nil {
@@ -118,9 +121,7 @@ func (h *Handler) GetLedger(ctx context.Context) (*npool.Ledger, error) {
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("too many records")
 	}
-
 	handler.formalize()
-
 	return handler.infos[0], nil
 }
 
@@ -155,7 +156,6 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 		if err := handler.queryLedgers(_ctx, cli); err != nil {
 			return err
 		}
-
 		_, err := handler.stmSelect.Only(_ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -163,7 +163,6 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 			}
 			return err
 		}
-
 		if err := handler.scan(_ctx); err != nil {
 			return err
 		}
@@ -179,6 +178,5 @@ func (h *Handler) GetLedgerOnly(ctx context.Context) (*npool.Ledger, error) {
 	if len(handler.infos) > 1 {
 		return nil, fmt.Errorf("to many record")
 	}
-
 	return handler.infos[0], nil
 }

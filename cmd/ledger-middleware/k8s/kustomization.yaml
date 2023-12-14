@@ -3,3 +3,4 @@ resources:
   - 02-ledger-middleware.yaml
   - 03-strip-prefix.yaml
   - 04-service-monitor.yaml
+  - 05-traefik-ingress.yaml

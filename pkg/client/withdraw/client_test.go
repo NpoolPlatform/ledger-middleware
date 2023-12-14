@@ -35,7 +35,7 @@ func init() {
 
 var (
 	ret = npool.Withdraw{
-		ID:                    uuid.NewString(),
+		EntID:                 uuid.NewString(),
 		AppID:                 uuid.NewString(),
 		UserID:                uuid.NewString(),
 		CoinTypeID:            uuid.NewString(),
@@ -73,7 +73,7 @@ func createLedger(t *testing.T) {
 
 func createWithdraw(t *testing.T) {
 	info, err := CreateWithdraw(context.Background(), &npool.WithdrawReq{
-		ID:         &ret.ID,
+		EntID:      &ret.EntID,
 		AppID:      &ret.AppID,
 		UserID:     &ret.UserID,
 		CoinTypeID: &ret.CoinTypeID,
@@ -85,6 +85,7 @@ func createWithdraw(t *testing.T) {
 	if assert.Nil(t, err) {
 		ret.CreatedAt = info.CreatedAt
 		ret.UpdatedAt = info.UpdatedAt
+		ret.ID = info.ID
 		assert.Equal(t, &ret, info)
 	}
 }
@@ -106,7 +107,7 @@ func updateWithdraw(t *testing.T) {
 }
 
 func getWithdraw(t *testing.T) {
-	info, err := GetWithdraw(context.Background(), ret.ID)
+	info, err := GetWithdraw(context.Background(), ret.EntID)
 	if assert.Nil(t, err) {
 		assert.Equal(t, &ret, info)
 	}

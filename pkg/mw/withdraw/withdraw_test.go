@@ -29,7 +29,7 @@ func init() {
 
 var (
 	ret = npool.Withdraw{
-		ID:                    uuid.NewString(),
+		EntID:                 uuid.NewString(),
 		AppID:                 uuid.NewString(),
 		UserID:                uuid.NewString(),
 		CoinTypeID:            uuid.NewString(),
@@ -68,7 +68,7 @@ func createStatement(t *testing.T) {
 func createWithdraw(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID, true),
+		WithEntID(&ret.EntID, true),
 		WithAppID(&ret.AppID, true),
 		WithUserID(&ret.UserID, true),
 		WithCoinTypeID(&ret.CoinTypeID, true),
@@ -83,6 +83,7 @@ func createWithdraw(t *testing.T) {
 	if assert.Nil(t, err) {
 		ret.CreatedAt = info.CreatedAt
 		ret.UpdatedAt = info.UpdatedAt
+		ret.ID = info.ID
 		assert.Equal(t, &ret, info)
 	}
 }
@@ -110,7 +111,7 @@ func updateWithdraw(t *testing.T) {
 func getWithdraw(t *testing.T) {
 	handler, err := NewHandler(
 		context.Background(),
-		WithID(&ret.ID, true),
+		WithEntID(&ret.EntID, true),
 	)
 	assert.Nil(t, err)
 

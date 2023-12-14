@@ -11,10 +11,11 @@ import (
 var (
 	// MiningGeneralsColumns holds the columns for the "mining_generals" table.
 	MiningGeneralsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
@@ -26,13 +27,21 @@ var (
 		Name:       "mining_generals",
 		Columns:    MiningGeneralsColumns,
 		PrimaryKey: []*schema.Column{MiningGeneralsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "goodledger_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{MiningGeneralsColumns[4]},
+			},
+		},
 	}
 	// MiningDetailsColumns holds the columns for the "mining_details" table.
 	MiningDetailsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
@@ -46,13 +55,21 @@ var (
 		Name:       "mining_details",
 		Columns:    MiningDetailsColumns,
 		PrimaryKey: []*schema.Column{MiningDetailsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "goodstatement_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{MiningDetailsColumns[4]},
+			},
+		},
 	}
 	// GeneralsColumns holds the columns for the "generals" table.
 	GeneralsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
@@ -66,13 +83,21 @@ var (
 		Name:       "generals",
 		Columns:    GeneralsColumns,
 		PrimaryKey: []*schema.Column{GeneralsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "ledger_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{GeneralsColumns[4]},
+			},
+		},
 	}
 	// LedgerLocksColumns holds the columns for the "ledger_locks" table.
 	LedgerLocksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "ledger_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "statement_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
@@ -83,13 +108,21 @@ var (
 		Name:       "ledger_locks",
 		Columns:    LedgerLocksColumns,
 		PrimaryKey: []*schema.Column{LedgerLocksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "ledgerlock_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{LedgerLocksColumns[4]},
+			},
+		},
 	}
 	// ProfitsColumns holds the columns for the "profits" table.
 	ProfitsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
@@ -100,13 +133,21 @@ var (
 		Name:       "profits",
 		Columns:    ProfitsColumns,
 		PrimaryKey: []*schema.Column{ProfitsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "profit_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{ProfitsColumns[4]},
+			},
+		},
 	}
 	// DetailsColumns holds the columns for the "details" table.
 	DetailsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
@@ -121,13 +162,21 @@ var (
 		Name:       "details",
 		Columns:    DetailsColumns,
 		PrimaryKey: []*schema.Column{DetailsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "statement_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{DetailsColumns[4]},
+			},
+		},
 	}
 	// MiningUnsoldsColumns holds the columns for the "mining_unsolds" table.
 	MiningUnsoldsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "good_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
@@ -139,13 +188,21 @@ var (
 		Name:       "mining_unsolds",
 		Columns:    MiningUnsoldsColumns,
 		PrimaryKey: []*schema.Column{MiningUnsoldsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "unsoldstatement_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{MiningUnsoldsColumns[4]},
+			},
+		},
 	}
 	// WithdrawsColumns holds the columns for the "withdraws" table.
 	WithdrawsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "created_at", Type: field.TypeUint32},
 		{Name: "updated_at", Type: field.TypeUint32},
 		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
 		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
@@ -162,6 +219,13 @@ var (
 		Name:       "withdraws",
 		Columns:    WithdrawsColumns,
 		PrimaryKey: []*schema.Column{WithdrawsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "withdraw_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{WithdrawsColumns[4]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

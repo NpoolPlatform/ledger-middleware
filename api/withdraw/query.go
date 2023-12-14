@@ -48,7 +48,7 @@ func (s *Server) GetWithdraws(ctx context.Context, in *npool.GetWithdrawsRequest
 func (s *Server) GetWithdraw(ctx context.Context, in *npool.GetWithdrawRequest) (*npool.GetWithdrawResponse, error) {
 	handler, err := withdraw1.NewHandler(
 		ctx,
-		withdraw1.WithID(&in.ID, true),
+		withdraw1.WithEntID(&in.EntID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

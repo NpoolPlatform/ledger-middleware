@@ -36,7 +36,7 @@ var (
 	coinTypeID = uuid.NewString()
 	lockID     = uuid.NewString()
 	deposit1   = statementmwpb.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -49,7 +49,7 @@ var (
 	}
 
 	deposit2 = statementmwpb.Statement{
-		ID:           uuid.NewString(),
+		EntID:        uuid.NewString(),
 		AppID:        appID,
 		UserID:       userID,
 		CoinTypeID:   coinTypeID,
@@ -65,7 +65,7 @@ var (
 func setup(t *testing.T) func(*testing.T) {
 	deposits, err := statementcli.CreateStatements(context.Background(), []*statementmwpb.StatementReq{
 		{
-			ID:         &deposit1.ID,
+			EntID:      &deposit1.EntID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -74,7 +74,7 @@ func setup(t *testing.T) func(*testing.T) {
 			IOSubType:  &deposit1.IOSubType,
 			IOExtra:    &deposit1.IOExtra,
 		}, {
-			ID:         &deposit2.ID,
+			EntID:      &deposit2.EntID,
 			AppID:      &appID,
 			UserID:     &userID,
 			CoinTypeID: &coinTypeID,
@@ -88,7 +88,7 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, 2, len(deposits))
 	}
 	return func(t *testing.T) {
-		_, _ = statementcli.DeleteStatement(context.Background(), &statementmwpb.StatementReq{ID: &deposit2.ID})
+		_, _ = statementcli.DeleteStatement(context.Background(), &statementmwpb.StatementReq{EntID: &deposit2.EntID})
 	}
 }
 
@@ -138,6 +138,7 @@ func lockBalance(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult1.ID = info.ID
+		ledgerResult1.EntID = info.EntID
 		ledgerResult1.CreatedAt = info.CreatedAt
 		ledgerResult1.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult1, info)
@@ -151,6 +152,7 @@ func unlockBalance(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
 		ledgerResult2.ID = info.ID
+		ledgerResult2.EntID = info.EntID
 		ledgerResult2.CreatedAt = info.CreatedAt
 		ledgerResult2.UpdatedAt = info.UpdatedAt
 		assert.Equal(t, &ledgerResult2, info)
@@ -185,6 +187,7 @@ func spendBalance(t *testing.T) {
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info1)
 		spendResult.ID = info1.ID
+		spendResult.EntID = info1.EntID
 		spendResult.CreatedAt = info1.CreatedAt
 		spendResult.UpdatedAt = info1.UpdatedAt
 		assert.Equal(t, &spendResult, info1)

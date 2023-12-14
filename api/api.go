@@ -34,5 +34,20 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 	if err := ledger.RegisterMiddlewareHandlerFromEndpoint(context.Background(), mux, endpoint, opts); err != nil {
 		return err
 	}
+	if err := ledger1.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := statement.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := profit.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := withdraw.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := goodstatement.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
 	return nil
 }

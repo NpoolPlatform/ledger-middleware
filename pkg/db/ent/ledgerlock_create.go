@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -62,6 +61,20 @@ func (llc *LedgerLockCreate) SetDeletedAt(u uint32) *LedgerLockCreate {
 func (llc *LedgerLockCreate) SetNillableDeletedAt(u *uint32) *LedgerLockCreate {
 	if u != nil {
 		llc.SetDeletedAt(*u)
+	}
+	return llc
+}
+
+// SetEntID sets the "ent_id" field.
+func (llc *LedgerLockCreate) SetEntID(u uuid.UUID) *LedgerLockCreate {
+	llc.mutation.SetEntID(u)
+	return llc
+}
+
+// SetNillableEntID sets the "ent_id" field if the given value is not nil.
+func (llc *LedgerLockCreate) SetNillableEntID(u *uuid.UUID) *LedgerLockCreate {
+	if u != nil {
+		llc.SetEntID(*u)
 	}
 	return llc
 }
@@ -123,16 +136,8 @@ func (llc *LedgerLockCreate) SetNillableLockState(s *string) *LedgerLockCreate {
 }
 
 // SetID sets the "id" field.
-func (llc *LedgerLockCreate) SetID(u uuid.UUID) *LedgerLockCreate {
+func (llc *LedgerLockCreate) SetID(u uint32) *LedgerLockCreate {
 	llc.mutation.SetID(u)
-	return llc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (llc *LedgerLockCreate) SetNillableID(u *uuid.UUID) *LedgerLockCreate {
-	if u != nil {
-		llc.SetID(*u)
-	}
 	return llc
 }
 
@@ -236,6 +241,13 @@ func (llc *LedgerLockCreate) defaults() error {
 		v := ledgerlock.DefaultDeletedAt()
 		llc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := llc.mutation.EntID(); !ok {
+		if ledgerlock.DefaultEntID == nil {
+			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultEntID (forgotten import ent/runtime?)")
+		}
+		v := ledgerlock.DefaultEntID()
+		llc.mutation.SetEntID(v)
+	}
 	if _, ok := llc.mutation.LedgerID(); !ok {
 		if ledgerlock.DefaultLedgerID == nil {
 			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultLedgerID (forgotten import ent/runtime?)")
@@ -254,13 +266,6 @@ func (llc *LedgerLockCreate) defaults() error {
 		v := ledgerlock.DefaultLockState
 		llc.mutation.SetLockState(v)
 	}
-	if _, ok := llc.mutation.ID(); !ok {
-		if ledgerlock.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultID (forgotten import ent/runtime?)")
-		}
-		v := ledgerlock.DefaultID()
-		llc.mutation.SetID(v)
-	}
 	return nil
 }
 
@@ -275,6 +280,9 @@ func (llc *LedgerLockCreate) check() error {
 	if _, ok := llc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "LedgerLock.deleted_at"`)}
 	}
+	if _, ok := llc.mutation.EntID(); !ok {
+		return &ValidationError{Name: "ent_id", err: errors.New(`ent: missing required field "LedgerLock.ent_id"`)}
+	}
 	return nil
 }
 
@@ -286,12 +294,9 @@ func (llc *LedgerLockCreate) sqlSave(ctx context.Context) (*LedgerLock, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint32(id)
 	}
 	return _node, nil
 }
@@ -302,7 +307,7 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: ledgerlock.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: ledgerlock.FieldID,
 			},
 		}
@@ -310,7 +315,7 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 	_spec.OnConflict = llc.conflict
 	if id, ok := llc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := llc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -335,6 +340,14 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 			Column: ledgerlock.FieldDeletedAt,
 		})
 		_node.DeletedAt = value
+	}
+	if value, ok := llc.mutation.EntID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldEntID,
+		})
+		_node.EntID = value
 	}
 	if value, ok := llc.mutation.LedgerID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -473,6 +486,18 @@ func (u *LedgerLockUpsert) UpdateDeletedAt() *LedgerLockUpsert {
 // AddDeletedAt adds v to the "deleted_at" field.
 func (u *LedgerLockUpsert) AddDeletedAt(v uint32) *LedgerLockUpsert {
 	u.Add(ledgerlock.FieldDeletedAt, v)
+	return u
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *LedgerLockUpsert) SetEntID(v uuid.UUID) *LedgerLockUpsert {
+	u.Set(ledgerlock.FieldEntID, v)
+	return u
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *LedgerLockUpsert) UpdateEntID() *LedgerLockUpsert {
+	u.SetExcluded(ledgerlock.FieldEntID)
 	return u
 }
 
@@ -667,6 +692,20 @@ func (u *LedgerLockUpsertOne) UpdateDeletedAt() *LedgerLockUpsertOne {
 	})
 }
 
+// SetEntID sets the "ent_id" field.
+func (u *LedgerLockUpsertOne) SetEntID(v uuid.UUID) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertOne) UpdateEntID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateEntID()
+	})
+}
+
 // SetLedgerID sets the "ledger_id" field.
 func (u *LedgerLockUpsertOne) SetLedgerID(v uuid.UUID) *LedgerLockUpsertOne {
 	return u.Update(func(s *LedgerLockUpsert) {
@@ -774,12 +813,7 @@ func (u *LedgerLockUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *LedgerLockUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: LedgerLockUpsertOne.ID is not supported by MySQL driver. Use LedgerLockUpsertOne.Exec instead")
-	}
+func (u *LedgerLockUpsertOne) ID(ctx context.Context) (id uint32, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -788,7 +822,7 @@ func (u *LedgerLockUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *LedgerLockUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *LedgerLockUpsertOne) IDX(ctx context.Context) uint32 {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -839,6 +873,10 @@ func (llcb *LedgerLockCreateBulk) Save(ctx context.Context) ([]*LedgerLock, erro
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = uint32(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -1034,6 +1072,20 @@ func (u *LedgerLockUpsertBulk) AddDeletedAt(v uint32) *LedgerLockUpsertBulk {
 func (u *LedgerLockUpsertBulk) UpdateDeletedAt() *LedgerLockUpsertBulk {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.UpdateDeletedAt()
+	})
+}
+
+// SetEntID sets the "ent_id" field.
+func (u *LedgerLockUpsertBulk) SetEntID(v uuid.UUID) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetEntID(v)
+	})
+}
+
+// UpdateEntID sets the "ent_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertBulk) UpdateEntID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateEntID()
 	})
 }
 

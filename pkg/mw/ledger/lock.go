@@ -47,7 +47,7 @@ func (h *Handler) LockBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		if err := handler.lop.getLedger(ctx, tx); err != nil {
 			return err
 		}
-		h.ID = &handler.lop.ledger.ID
+		h.EntID = &handler.lop.ledger.EntID
 		if err := handler.lockBalance(ctx); err != nil {
 			return err
 		}
@@ -59,7 +59,5 @@ func (h *Handler) LockBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	h.ID = &handler.lop.ledger.ID
 	return h.GetLedger(ctx)
 }

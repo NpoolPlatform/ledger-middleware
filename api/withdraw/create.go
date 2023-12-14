@@ -1,3 +1,4 @@
+//nolint
 package withdraw
 
 import (
@@ -17,17 +18,16 @@ func (s *Server) CreateWithdraw(ctx context.Context, in *npool.CreateWithdrawReq
 			"CreateWithdraw",
 			"In", in,
 		)
-		return &npool.CreateWithdrawResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+		return &npool.CreateWithdrawResponse{}, status.Error(codes.Aborted, "invalid info")
 	}
 	handler, err := withdraw1.NewHandler(
 		ctx,
-		withdraw1.WithID(req.ID, false),
+		withdraw1.WithEntID(req.EntID, false),
 		withdraw1.WithAppID(req.AppID, true),
 		withdraw1.WithUserID(req.UserID, true),
 		withdraw1.WithCoinTypeID(req.CoinTypeID, true),
 		withdraw1.WithAccountID(req.AccountID, true),
 		withdraw1.WithAmount(req.Amount, true),
-		withdraw1.WithPlatformTransactionID(req.PlatformTransactionID, false),
 		withdraw1.WithAddress(req.Address, true),
 	)
 	if err != nil {

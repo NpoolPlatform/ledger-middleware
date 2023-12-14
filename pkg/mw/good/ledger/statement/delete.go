@@ -102,7 +102,7 @@ func (h *deleteHandler) deleteUnsoldStatement(req *goodstatementcrud.Req, ctx co
 		UnsoldStatement.
 		Query().
 		Where(
-			unsoldstatement.StatementID(*req.ID),
+			unsoldstatement.StatementID(*req.EntID),
 			unsoldstatement.DeletedAt(0),
 		).
 		ForUpdate().
@@ -122,22 +122,44 @@ func (h *deleteHandler) deleteUnsoldStatement(req *goodstatementcrud.Req, ctx co
 	return nil
 }
 
-func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) {
+func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatement, error) { //nolint
 	handler := &deleteHandler{
 		Handler: h,
 	}
-
-	ids := []uuid.UUID{}
+	ids := []uint32{}
+	entIDs := []uuid.UUID{}
 	for _, req := range h.Reqs {
-		ids = append(ids, *req.ID)
+		if req.ID == nil && req.EntID == nil {
+			return nil, fmt.Errorf("need id or entid")
+		}
+		if req.ID != nil {
+			ids = append(ids, *req.ID)
+			continue
+		}
+		if req.EntID != nil {
+			entIDs = append(entIDs, *req.EntID)
+		}
 	}
-	h.Conds = &goodstatementcrud.Conds{
-		IDs: &cruder.Cond{Op: cruder.IN, Val: ids},
+	infos := []*npool.GoodStatement{}
+	// if either EntIDs or IDs is empty, you cannot use EntIDs and IDs as conditional queries at the same time,
+	// ent will add 'AND FALSE' at 'Where'
+	if len(ids) > 0 {
+		h.Conds = &goodstatementcrud.Conds{IDs: &cruder.Cond{Op: cruder.IN, Val: ids}}
+		h.Limit = int32(len(ids))
+		statements, _, err := h.GetGoodStatements(ctx)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, statements...)
 	}
-	h.Limit = int32(len(ids))
-	infos, _, err := h.GetGoodStatements(ctx)
-	if err != nil {
-		return nil, err
+	if len(entIDs) > 0 {
+		h.Conds = &goodstatementcrud.Conds{EntIDs: &cruder.Cond{Op: cruder.IN, Val: entIDs}}
+		h.Limit = int32(len(entIDs))
+		statements, _, err := h.GetGoodStatements(ctx)
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, statements...)
 	}
 	if len(infos) != len(h.Reqs) {
 		if h.Rollback != nil && *h.Rollback {
@@ -146,8 +168,33 @@ func (h *Handler) DeleteGoodStatements(ctx context.Context) ([]*npool.GoodStatem
 		return nil, fmt.Errorf("good statement not found")
 	}
 
-	err = db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	goodStatementMap := map[string]*npool.GoodStatement{}
+	idMap := map[uint32]*npool.GoodStatement{}
+	for _, val := range infos {
+		goodStatementMap[val.EntID] = val
+		idMap[val.ID] = val
+	}
+
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		for _, req := range h.Reqs {
+			if req.ID == nil {
+				goodStatement, ok := goodStatementMap[req.EntID.String()]
+				if !ok {
+					return fmt.Errorf("good statement not found")
+				}
+				req.ID = &goodStatement.ID
+			}
+			if req.EntID == nil {
+				goodStatement, ok := idMap[*req.ID]
+				if !ok {
+					return fmt.Errorf("good statement not found")
+				}
+				id, err := uuid.Parse(goodStatement.EntID)
+				if err != nil {
+					return err
+				}
+				req.EntID = &id
+			}
 			_fn := func() error {
 				if err := handler.deleteUnsoldStatement(req, ctx, tx); err != nil {
 					return err
@@ -183,8 +230,18 @@ func (h *Handler) DeleteGoodStatement(ctx context.Context) (*npool.GoodStatement
 		}
 		return nil, fmt.Errorf("statement not found")
 	}
-	h.Reqs = []*goodstatementcrud.Req{&h.Req}
+	if h.ID == nil {
+		h.ID = &info.ID
+	}
+	if h.EntID == nil {
+		id, err := uuid.Parse(info.EntID)
+		if err != nil {
+			return nil, err
+		}
+		h.EntID = &id
+	}
 
+	h.Reqs = []*goodstatementcrud.Req{&h.Req}
 	if _, err := h.DeleteGoodStatements(ctx); err != nil {
 		return nil, err
 	}

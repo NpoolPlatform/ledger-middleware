@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
-	"github.com/google/uuid"
 )
 
 // UnsoldStatementQuery is the builder for querying UnsoldStatement entities.
@@ -87,8 +86,8 @@ func (usq *UnsoldStatementQuery) FirstX(ctx context.Context) *UnsoldStatement {
 
 // FirstID returns the first UnsoldStatement ID from the query.
 // Returns a *NotFoundError when no UnsoldStatement ID was found.
-func (usq *UnsoldStatementQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (usq *UnsoldStatementQuery) FirstID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = usq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (usq *UnsoldStatementQuery) FirstID(ctx context.Context) (id uuid.UUID, err
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (usq *UnsoldStatementQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (usq *UnsoldStatementQuery) FirstIDX(ctx context.Context) uint32 {
 	id, err := usq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,8 +137,8 @@ func (usq *UnsoldStatementQuery) OnlyX(ctx context.Context) *UnsoldStatement {
 // OnlyID is like Only, but returns the only UnsoldStatement ID in the query.
 // Returns a *NotSingularError when more than one UnsoldStatement ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (usq *UnsoldStatementQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (usq *UnsoldStatementQuery) OnlyID(ctx context.Context) (id uint32, err error) {
+	var ids []uint32
 	if ids, err = usq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (usq *UnsoldStatementQuery) OnlyID(ctx context.Context) (id uuid.UUID, err 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (usq *UnsoldStatementQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (usq *UnsoldStatementQuery) OnlyIDX(ctx context.Context) uint32 {
 	id, err := usq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -181,8 +180,8 @@ func (usq *UnsoldStatementQuery) AllX(ctx context.Context) []*UnsoldStatement {
 }
 
 // IDs executes the query and returns a list of UnsoldStatement IDs.
-func (usq *UnsoldStatementQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (usq *UnsoldStatementQuery) IDs(ctx context.Context) ([]uint32, error) {
+	var ids []uint32
 	if err := usq.Select(unsoldstatement.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -190,7 +189,7 @@ func (usq *UnsoldStatementQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (usq *UnsoldStatementQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (usq *UnsoldStatementQuery) IDsX(ctx context.Context) []uint32 {
 	ids, err := usq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -377,7 +376,7 @@ func (usq *UnsoldStatementQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   unsoldstatement.Table,
 			Columns: unsoldstatement.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeUint32,
 				Column: unsoldstatement.FieldID,
 			},
 		},

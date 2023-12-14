@@ -28,7 +28,8 @@ func init() {
 }
 
 var (
-	id                        = uuid.NewString()
+	id                        = uint32(0)
+	entID                     = uuid.NewString()
 	goodID                    = uuid.NewString()
 	coinTypeID                = uuid.NewString()
 	totalAmount               = "400"
@@ -40,7 +41,7 @@ var (
 func setup(t *testing.T) func(*testing.T) {
 	reqs := []*goodstatementmwpb.GoodStatementReq{
 		{
-			ID:                        &id,
+			EntID:                     &entID,
 			GoodID:                    &goodID,
 			CoinTypeID:                &coinTypeID,
 			TotalAmount:               &totalAmount,
@@ -58,7 +59,8 @@ func setup(t *testing.T) func(*testing.T) {
 	infos, err := handler.CreateGoodStatements(context.Background())
 	if assert.Nil(t, err) {
 		assert.NotEqual(t, len(infos), 0)
-		assert.Equal(t, id, infos[0].ID)
+		assert.Equal(t, entID, infos[0].EntID)
+		id = infos[0].ID
 	}
 
 	handler1, err := goodstatement1.NewHandler(context.Background(), goodstatement1.WithID(&id, true))
@@ -73,7 +75,7 @@ func getUnsoldStatements(t *testing.T) {
 	handler, err := unsold1.NewHandler(context.Background())
 	assert.Nil(t, err)
 	handler.Conds = &unsoldstatement.Conds{
-		StatementID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(id)},
+		StatementID: &cruder.Cond{Op: cruder.EQ, Val: uuid.MustParse(entID)},
 	}
 	info, err := handler.GetUnsoldStatementOnly(context.Background())
 	if assert.Nil(t, err) {
