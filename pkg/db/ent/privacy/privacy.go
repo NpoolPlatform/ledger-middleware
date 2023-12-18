@@ -150,6 +150,30 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The CouponWithdrawQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type CouponWithdrawQueryRuleFunc func(context.Context, *ent.CouponWithdrawQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f CouponWithdrawQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.CouponWithdrawQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.CouponWithdrawQuery", q)
+}
+
+// The CouponWithdrawMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type CouponWithdrawMutationRuleFunc func(context.Context, *ent.CouponWithdrawMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f CouponWithdrawMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.CouponWithdrawMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.CouponWithdrawMutation", m)
+}
+
 // The GoodLedgerQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type GoodLedgerQueryRuleFunc func(context.Context, *ent.GoodLedgerQuery) error
@@ -377,6 +401,8 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.CouponWithdrawQuery:
+		return q.Filter(), nil
 	case *ent.GoodLedgerQuery:
 		return q.Filter(), nil
 	case *ent.GoodStatementQuery:
@@ -400,6 +426,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.CouponWithdrawMutation:
+		return m.Filter(), nil
 	case *ent.GoodLedgerMutation:
 		return m.Filter(), nil
 	case *ent.GoodStatementMutation:

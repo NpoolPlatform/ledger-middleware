@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// CouponWithdraw is the predicate function for couponwithdraw builders.
+type CouponWithdraw func(*sql.Selector)
+
 // GoodLedger is the predicate function for goodledger builders.
 type GoodLedger func(*sql.Selector)
 

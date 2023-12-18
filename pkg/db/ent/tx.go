@@ -14,6 +14,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// CouponWithdraw is the client for interacting with the CouponWithdraw builders.
+	CouponWithdraw *CouponWithdrawClient
 	// GoodLedger is the client for interacting with the GoodLedger builders.
 	GoodLedger *GoodLedgerClient
 	// GoodStatement is the client for interacting with the GoodStatement builders.
@@ -165,6 +167,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.CouponWithdraw = NewCouponWithdrawClient(tx.config)
 	tx.GoodLedger = NewGoodLedgerClient(tx.config)
 	tx.GoodStatement = NewGoodStatementClient(tx.config)
 	tx.Ledger = NewLedgerClient(tx.config)
@@ -182,7 +185,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: GoodLedger.QueryXXX(), the query will be executed
+// applies a query, for example: CouponWithdraw.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

@@ -9,6 +9,34 @@ import (
 )
 
 var (
+	// CouponWithdrawsColumns holds the columns for the "coupon_withdraws" table.
+	CouponWithdrawsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coupon_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "state", Type: field.TypeString, Nullable: true, Default: "Reviewing"},
+		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "review_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// CouponWithdrawsTable holds the schema information for the "coupon_withdraws" table.
+	CouponWithdrawsTable = &schema.Table{
+		Name:       "coupon_withdraws",
+		Columns:    CouponWithdrawsColumns,
+		PrimaryKey: []*schema.Column{CouponWithdrawsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "couponwithdraw_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{CouponWithdrawsColumns[4]},
+			},
+		},
+	}
 	// MiningGeneralsColumns holds the columns for the "mining_generals" table.
 	MiningGeneralsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
@@ -229,6 +257,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CouponWithdrawsTable,
 		MiningGeneralsTable,
 		MiningDetailsTable,
 		GeneralsTable,

@@ -28,6 +28,7 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
+	CouponWithdraw  []ent.Hook
 	GoodLedger      []ent.Hook
 	GoodStatement   []ent.Hook
 	Ledger          []ent.Hook
