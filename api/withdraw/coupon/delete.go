@@ -17,7 +17,7 @@ func (s *Server) DeleteCouponWithdraw(ctx context.Context, in *npool.DeleteCoupo
 			"DeleteCouponWithdraw",
 			"In", in,
 		)
-		return &npool.DeleteCouponWithdrawResponse{}, status.Error(codes.InvalidArgument, "invalid info")
+		return &npool.DeleteCouponWithdrawResponse{}, status.Error(codes.Aborted, "invalid info")
 	}
 	handler, err := couponwithdraw1.NewHandler(
 		ctx,
