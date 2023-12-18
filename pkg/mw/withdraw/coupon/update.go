@@ -21,7 +21,6 @@ type updateHandler struct {
 	couponwithdraw *ent.CouponWithdraw
 }
 
-//nolint
 func (h *updateHandler) checkCouponWithdraw(ctx context.Context) error {
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		info, err := cli.

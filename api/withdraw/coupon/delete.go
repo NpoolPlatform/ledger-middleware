@@ -1,3 +1,4 @@
+//nolint
 package coupon
 
 import (
@@ -10,7 +11,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) DeleteCouponWithdraw(ctx context.Context, in *npool.DeleteCouponWithdrawRequest) (*npool.DeleteCouponWithdrawResponse, error) {
+func (s *Server) DeleteCouponWithdraw(
+	ctx context.Context,
+	in *npool.DeleteCouponWithdrawRequest,
+) (*npool.DeleteCouponWithdrawResponse, error) {
 	req := in.GetInfo()
 	if req == nil {
 		logger.Sugar().Errorw(

@@ -148,7 +148,6 @@ func WithAmount(amount *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
-//nolint
 func WithState(state *basetypes.WithdrawState, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if state == nil {
