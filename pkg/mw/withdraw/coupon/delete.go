@@ -14,7 +14,7 @@ type deleteHandler struct {
 	*Handler
 }
 
-func (h *deleteHandler) deleteWithdraw(ctx context.Context) error {
+func (h *deleteHandler) deleteCouponWithdraw(ctx context.Context) error {
 	return db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
 		now := uint32(time.Now().Unix())
 		if _, err := couponwithdrawcrud.UpdateSet(
@@ -44,7 +44,7 @@ func (h *Handler) DeleteCouponWithdraw(ctx context.Context) (*npool.CouponWithdr
 	handler := &deleteHandler{
 		Handler: h,
 	}
-	if err := handler.deleteWithdraw(ctx); err != nil {
+	if err := handler.deleteCouponWithdraw(ctx); err != nil {
 		return nil, err
 	}
 	return info, nil
