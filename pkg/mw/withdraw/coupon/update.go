@@ -40,15 +40,6 @@ func (h *updateHandler) checkCouponWithdraw(ctx context.Context) error {
 }
 
 func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
-	switch {
-	case h.State == nil:
-		fallthrough //nolint
-	case h.State.String() == h.couponwithdraw.State:
-		fallthrough //nolint
-	case *h.State != types.WithdrawState_Approved:
-		return nil
-	}
-
 	info, err := tx.
 		Ledger.
 		Query().
@@ -91,17 +82,8 @@ func (h *updateHandler) updateCouponWithdraw(ctx context.Context, tx *ent.Tx) er
 }
 
 func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
-	if h.State == nil {
-		return nil
-	}
-	if h.State.String() != types.WithdrawState_Approved.String() {
-		return nil
-	}
-
 	ioExtra := fmt.Sprintf(
-		`{"AppID":"%v","UserID":"%v","CouponWithdrawID":"%v","CouponID":"%v"}`,
-		h.couponwithdraw.AppID,
-		h.couponwithdraw.UserID,
+		`{"CouponWithdrawID":"%v","CouponID":"%v"}`,
 		h.couponwithdraw.EntID,
 		h.couponwithdraw.CouponID.String(),
 	)
@@ -130,6 +112,14 @@ func (h *Handler) UpdateCouponWithdraw(ctx context.Context) (*npool.CouponWithdr
 	}
 	if err := handler.checkCouponWithdraw(ctx); err != nil {
 		return nil, err
+	}
+	switch {
+	case h.State == nil:
+		fallthrough //nolint
+	case h.State.String() == handler.couponwithdraw.State:
+		fallthrough //nolint
+	case *h.State != types.WithdrawState_Approved:
+		return nil, nil
 	}
 	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 		if err := handler.updateCouponWithdraw(ctx, tx); err != nil {
