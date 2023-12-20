@@ -60,7 +60,7 @@ type CouponWithdrawMutation struct {
 	app_id        *uuid.UUID
 	user_id       *uuid.UUID
 	coin_type_id  *uuid.UUID
-	coupon_id     *uuid.UUID
+	allocated_id  *uuid.UUID
 	state         *string
 	amount        *decimal.Decimal
 	addamount     *decimal.Decimal
@@ -526,53 +526,53 @@ func (m *CouponWithdrawMutation) ResetCoinTypeID() {
 	delete(m.clearedFields, couponwithdraw.FieldCoinTypeID)
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (m *CouponWithdrawMutation) SetCouponID(u uuid.UUID) {
-	m.coupon_id = &u
+// SetAllocatedID sets the "allocated_id" field.
+func (m *CouponWithdrawMutation) SetAllocatedID(u uuid.UUID) {
+	m.allocated_id = &u
 }
 
-// CouponID returns the value of the "coupon_id" field in the mutation.
-func (m *CouponWithdrawMutation) CouponID() (r uuid.UUID, exists bool) {
-	v := m.coupon_id
+// AllocatedID returns the value of the "allocated_id" field in the mutation.
+func (m *CouponWithdrawMutation) AllocatedID() (r uuid.UUID, exists bool) {
+	v := m.allocated_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCouponID returns the old "coupon_id" field's value of the CouponWithdraw entity.
+// OldAllocatedID returns the old "allocated_id" field's value of the CouponWithdraw entity.
 // If the CouponWithdraw object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CouponWithdrawMutation) OldCouponID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *CouponWithdrawMutation) OldAllocatedID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCouponID is only allowed on UpdateOne operations")
+		return v, errors.New("OldAllocatedID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCouponID requires an ID field in the mutation")
+		return v, errors.New("OldAllocatedID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCouponID: %w", err)
+		return v, fmt.Errorf("querying old value for OldAllocatedID: %w", err)
 	}
-	return oldValue.CouponID, nil
+	return oldValue.AllocatedID, nil
 }
 
-// ClearCouponID clears the value of the "coupon_id" field.
-func (m *CouponWithdrawMutation) ClearCouponID() {
-	m.coupon_id = nil
-	m.clearedFields[couponwithdraw.FieldCouponID] = struct{}{}
+// ClearAllocatedID clears the value of the "allocated_id" field.
+func (m *CouponWithdrawMutation) ClearAllocatedID() {
+	m.allocated_id = nil
+	m.clearedFields[couponwithdraw.FieldAllocatedID] = struct{}{}
 }
 
-// CouponIDCleared returns if the "coupon_id" field was cleared in this mutation.
-func (m *CouponWithdrawMutation) CouponIDCleared() bool {
-	_, ok := m.clearedFields[couponwithdraw.FieldCouponID]
+// AllocatedIDCleared returns if the "allocated_id" field was cleared in this mutation.
+func (m *CouponWithdrawMutation) AllocatedIDCleared() bool {
+	_, ok := m.clearedFields[couponwithdraw.FieldAllocatedID]
 	return ok
 }
 
-// ResetCouponID resets all changes to the "coupon_id" field.
-func (m *CouponWithdrawMutation) ResetCouponID() {
-	m.coupon_id = nil
-	delete(m.clearedFields, couponwithdraw.FieldCouponID)
+// ResetAllocatedID resets all changes to the "allocated_id" field.
+func (m *CouponWithdrawMutation) ResetAllocatedID() {
+	m.allocated_id = nil
+	delete(m.clearedFields, couponwithdraw.FieldAllocatedID)
 }
 
 // SetState sets the "state" field.
@@ -784,8 +784,8 @@ func (m *CouponWithdrawMutation) Fields() []string {
 	if m.coin_type_id != nil {
 		fields = append(fields, couponwithdraw.FieldCoinTypeID)
 	}
-	if m.coupon_id != nil {
-		fields = append(fields, couponwithdraw.FieldCouponID)
+	if m.allocated_id != nil {
+		fields = append(fields, couponwithdraw.FieldAllocatedID)
 	}
 	if m.state != nil {
 		fields = append(fields, couponwithdraw.FieldState)
@@ -818,8 +818,8 @@ func (m *CouponWithdrawMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case couponwithdraw.FieldCoinTypeID:
 		return m.CoinTypeID()
-	case couponwithdraw.FieldCouponID:
-		return m.CouponID()
+	case couponwithdraw.FieldAllocatedID:
+		return m.AllocatedID()
 	case couponwithdraw.FieldState:
 		return m.State()
 	case couponwithdraw.FieldAmount:
@@ -849,8 +849,8 @@ func (m *CouponWithdrawMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldUserID(ctx)
 	case couponwithdraw.FieldCoinTypeID:
 		return m.OldCoinTypeID(ctx)
-	case couponwithdraw.FieldCouponID:
-		return m.OldCouponID(ctx)
+	case couponwithdraw.FieldAllocatedID:
+		return m.OldAllocatedID(ctx)
 	case couponwithdraw.FieldState:
 		return m.OldState(ctx)
 	case couponwithdraw.FieldAmount:
@@ -915,12 +915,12 @@ func (m *CouponWithdrawMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCoinTypeID(v)
 		return nil
-	case couponwithdraw.FieldCouponID:
+	case couponwithdraw.FieldAllocatedID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCouponID(v)
+		m.SetAllocatedID(v)
 		return nil
 	case couponwithdraw.FieldState:
 		v, ok := value.(string)
@@ -1033,8 +1033,8 @@ func (m *CouponWithdrawMutation) ClearedFields() []string {
 	if m.FieldCleared(couponwithdraw.FieldCoinTypeID) {
 		fields = append(fields, couponwithdraw.FieldCoinTypeID)
 	}
-	if m.FieldCleared(couponwithdraw.FieldCouponID) {
-		fields = append(fields, couponwithdraw.FieldCouponID)
+	if m.FieldCleared(couponwithdraw.FieldAllocatedID) {
+		fields = append(fields, couponwithdraw.FieldAllocatedID)
 	}
 	if m.FieldCleared(couponwithdraw.FieldState) {
 		fields = append(fields, couponwithdraw.FieldState)
@@ -1068,8 +1068,8 @@ func (m *CouponWithdrawMutation) ClearField(name string) error {
 	case couponwithdraw.FieldCoinTypeID:
 		m.ClearCoinTypeID()
 		return nil
-	case couponwithdraw.FieldCouponID:
-		m.ClearCouponID()
+	case couponwithdraw.FieldAllocatedID:
+		m.ClearAllocatedID()
 		return nil
 	case couponwithdraw.FieldState:
 		m.ClearState()
@@ -1109,8 +1109,8 @@ func (m *CouponWithdrawMutation) ResetField(name string) error {
 	case couponwithdraw.FieldCoinTypeID:
 		m.ResetCoinTypeID()
 		return nil
-	case couponwithdraw.FieldCouponID:
-		m.ResetCouponID()
+	case couponwithdraw.FieldAllocatedID:
+		m.ResetAllocatedID()
 		return nil
 	case couponwithdraw.FieldState:
 		m.ResetState()

@@ -13,17 +13,17 @@ import (
 )
 
 type Req struct {
-	ID         *uint32
-	EntID      *uuid.UUID
-	AppID      *uuid.UUID
-	UserID     *uuid.UUID
-	CoinTypeID *uuid.UUID
-	Amount     *decimal.Decimal
-	CouponID   *uuid.UUID
-	ReviewID   *uuid.UUID
-	State      *basetypes.WithdrawState
-	CreatedAt  *uint32
-	DeletedAt  *uint32
+	ID          *uint32
+	EntID       *uuid.UUID
+	AppID       *uuid.UUID
+	UserID      *uuid.UUID
+	CoinTypeID  *uuid.UUID
+	Amount      *decimal.Decimal
+	AllocatedID *uuid.UUID
+	ReviewID    *uuid.UUID
+	State       *basetypes.WithdrawState
+	CreatedAt   *uint32
+	DeletedAt   *uint32
 }
 
 func CreateSet(c *ent.CouponWithdrawCreate, in *Req) *ent.CouponWithdrawCreate {
@@ -42,8 +42,8 @@ func CreateSet(c *ent.CouponWithdrawCreate, in *Req) *ent.CouponWithdrawCreate {
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
 	}
-	if in.CouponID != nil {
-		c.SetCouponID(*in.CouponID)
+	if in.AllocatedID != nil {
+		c.SetAllocatedID(*in.AllocatedID)
 	}
 	if in.ReviewID != nil {
 		c.SetReviewID(*in.ReviewID)
@@ -69,15 +69,15 @@ func UpdateSet(u *ent.CouponWithdrawUpdateOne, req *Req) *ent.CouponWithdrawUpda
 }
 
 type Conds struct {
-	EntID      *cruder.Cond
-	AppID      *cruder.Cond
-	UserID     *cruder.Cond
-	CoinTypeID *cruder.Cond
-	State      *cruder.Cond
-	Amount     *cruder.Cond
-	ReviewID   *cruder.Cond
-	CouponID   *cruder.Cond
-	CreatedAt  *cruder.Cond
+	EntID       *cruder.Cond
+	AppID       *cruder.Cond
+	UserID      *cruder.Cond
+	CoinTypeID  *cruder.Cond
+	State       *cruder.Cond
+	Amount      *cruder.Cond
+	ReviewID    *cruder.Cond
+	AllocatedID *cruder.Cond
+	CreatedAt   *cruder.Cond
 }
 
 func SetQueryConds(q *ent.CouponWithdrawQuery, conds *Conds) (*ent.CouponWithdrawQuery, error) { //nolint
@@ -177,16 +177,16 @@ func SetQueryConds(q *ent.CouponWithdrawQuery, conds *Conds) (*ent.CouponWithdra
 			return nil, fmt.Errorf("invalid reviewid op field")
 		}
 	}
-	if conds.CouponID != nil {
-		couponID, ok := conds.CouponID.Val.(uuid.UUID)
+	if conds.AllocatedID != nil {
+		allocatedID, ok := conds.AllocatedID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid couponid")
+			return nil, fmt.Errorf("invalid allocatedid")
 		}
-		switch conds.CouponID.Op {
+		switch conds.AllocatedID.Op {
 		case cruder.EQ:
-			q.Where(entcouponwithdraw.CouponID(couponID))
+			q.Where(entcouponwithdraw.AllocatedID(allocatedID))
 		default:
-			return nil, fmt.Errorf("invalid couponid op field")
+			return nil, fmt.Errorf("invalid allocatedid op field")
 		}
 	}
 	return q, nil

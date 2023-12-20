@@ -31,8 +31,8 @@ type CouponWithdraw struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// CoinTypeID holds the value of the "coin_type_id" field.
 	CoinTypeID uuid.UUID `json:"coin_type_id,omitempty"`
-	// CouponID holds the value of the "coupon_id" field.
-	CouponID uuid.UUID `json:"coupon_id,omitempty"`
+	// AllocatedID holds the value of the "allocated_id" field.
+	AllocatedID uuid.UUID `json:"allocated_id,omitempty"`
 	// State holds the value of the "state" field.
 	State string `json:"state,omitempty"`
 	// Amount holds the value of the "amount" field.
@@ -52,7 +52,7 @@ func (*CouponWithdraw) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case couponwithdraw.FieldState:
 			values[i] = new(sql.NullString)
-		case couponwithdraw.FieldEntID, couponwithdraw.FieldAppID, couponwithdraw.FieldUserID, couponwithdraw.FieldCoinTypeID, couponwithdraw.FieldCouponID, couponwithdraw.FieldReviewID:
+		case couponwithdraw.FieldEntID, couponwithdraw.FieldAppID, couponwithdraw.FieldUserID, couponwithdraw.FieldCoinTypeID, couponwithdraw.FieldAllocatedID, couponwithdraw.FieldReviewID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type CouponWithdraw", columns[i])
@@ -117,11 +117,11 @@ func (cw *CouponWithdraw) assignValues(columns []string, values []interface{}) e
 			} else if value != nil {
 				cw.CoinTypeID = *value
 			}
-		case couponwithdraw.FieldCouponID:
+		case couponwithdraw.FieldAllocatedID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field coupon_id", values[i])
+				return fmt.Errorf("unexpected type %T for field allocated_id", values[i])
 			} else if value != nil {
-				cw.CouponID = *value
+				cw.AllocatedID = *value
 			}
 		case couponwithdraw.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -190,8 +190,8 @@ func (cw *CouponWithdraw) String() string {
 	builder.WriteString("coin_type_id=")
 	builder.WriteString(fmt.Sprintf("%v", cw.CoinTypeID))
 	builder.WriteString(", ")
-	builder.WriteString("coupon_id=")
-	builder.WriteString(fmt.Sprintf("%v", cw.CouponID))
+	builder.WriteString("allocated_id=")
+	builder.WriteString(fmt.Sprintf("%v", cw.AllocatedID))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(cw.State)

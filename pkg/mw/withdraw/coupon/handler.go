@@ -111,11 +111,11 @@ func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error
 	}
 }
 
-func WithCouponID(id *string, must bool) func(context.Context, *Handler) error {
+func WithAllocatedID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid coupon id")
+				return fmt.Errorf("invalid allocated id")
 			}
 			return nil
 		}
@@ -123,7 +123,7 @@ func WithCouponID(id *string, must bool) func(context.Context, *Handler) error {
 		if err != nil {
 			return err
 		}
-		h.CouponID = &_id
+		h.AllocatedID = &_id
 		return nil
 	}
 }
@@ -219,12 +219,12 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			}
 			h.Conds.ReviewID = &cruder.Cond{Op: conds.GetReviewID().GetOp(), Val: id}
 		}
-		if conds.CouponID != nil {
-			id, err := uuid.Parse(conds.GetCouponID().GetValue())
+		if conds.AllocatedID != nil {
+			id, err := uuid.Parse(conds.GetAllocatedID().GetValue())
 			if err != nil {
 				return err
 			}
-			h.Conds.CouponID = &cruder.Cond{Op: conds.GetCouponID().GetOp(), Val: id}
+			h.Conds.AllocatedID = &cruder.Cond{Op: conds.GetAllocatedID().GetOp(), Val: id}
 		}
 		if conds.State != nil {
 			state := conds.GetState().GetValue()
