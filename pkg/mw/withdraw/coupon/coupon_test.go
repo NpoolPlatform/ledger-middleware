@@ -28,15 +28,15 @@ func init() {
 
 var (
 	ret = npool.CouponWithdraw{
-		EntID:      uuid.NewString(),
-		AppID:      uuid.NewString(),
-		UserID:     uuid.NewString(),
-		CoinTypeID: uuid.NewString(),
-		CouponID:   uuid.NewString(),
-		Amount:     "999.999999999",
-		State:      types.WithdrawState_Reviewing,
-		StateStr:   types.WithdrawState_Reviewing.String(),
-		ReviewID:   uuid.NewString(),
+		EntID:       uuid.NewString(),
+		AppID:       uuid.NewString(),
+		UserID:      uuid.NewString(),
+		CoinTypeID:  uuid.NewString(),
+		AllocatedID: uuid.NewString(),
+		Amount:      "999.999999999",
+		State:       types.WithdrawState_Reviewing,
+		StateStr:    types.WithdrawState_Reviewing.String(),
+		ReviewID:    uuid.NewString(),
 	}
 )
 
@@ -47,7 +47,7 @@ func createCouponWithdraw(t *testing.T) {
 		WithAppID(&ret.AppID, true),
 		WithUserID(&ret.UserID, true),
 		WithCoinTypeID(&ret.CoinTypeID, true),
-		WithCouponID(&ret.CouponID, true),
+		WithAllocatedID(&ret.AllocatedID, true),
 		WithAmount(&ret.Amount, true),
 		WithReviewID(&ret.ReviewID, true),
 	)
@@ -95,12 +95,12 @@ func getCouponWithdraw(t *testing.T) {
 
 func getCouponWithdraws(t *testing.T) {
 	conds := &npool.Conds{
-		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: ret.AppID},
-		UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: ret.UserID},
-		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
-		CouponID:   &basetypes.StringVal{Op: cruder.EQ, Value: ret.CouponID},
-		ReviewID:   &basetypes.StringVal{Op: cruder.EQ, Value: ret.ReviewID},
-		State:      &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
+		AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: ret.AppID},
+		UserID:      &basetypes.StringVal{Op: cruder.EQ, Value: ret.UserID},
+		CoinTypeID:  &basetypes.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
+		AllocatedID: &basetypes.StringVal{Op: cruder.EQ, Value: ret.AllocatedID},
+		ReviewID:    &basetypes.StringVal{Op: cruder.EQ, Value: ret.ReviewID},
+		State:       &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
 	}
 	handler, err := NewHandler(
 		context.Background(),

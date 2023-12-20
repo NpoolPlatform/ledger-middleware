@@ -115,9 +115,9 @@ func (h *updateHandler) updateCouponWithdraw(ctx context.Context, tx *ent.Tx) er
 
 func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 	ioExtra := fmt.Sprintf(
-		`{"CouponWithdrawID":"%v","CouponID":"%v"}`,
+		`{"CouponWithdrawID":"%v","AllocatedID":"%v"}`,
 		h.couponwithdraw.EntID,
-		h.couponwithdraw.CouponID.String(),
+		h.couponwithdraw.AllocatedID.String(),
 	)
 
 	sha := sha256.Sum224([]byte(ioExtra))

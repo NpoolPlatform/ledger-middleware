@@ -129,10 +129,10 @@ func CoinTypeID(v uuid.UUID) predicate.CouponWithdraw {
 	})
 }
 
-// CouponID applies equality check predicate on the "coupon_id" field. It's identical to CouponIDEQ.
-func CouponID(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedID applies equality check predicate on the "allocated_id" field. It's identical to AllocatedIDEQ.
+func AllocatedID(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCouponID), v))
+		s.Where(sql.EQ(s.C(FieldAllocatedID), v))
 	})
 }
 
@@ -647,81 +647,81 @@ func CoinTypeIDNotNil() predicate.CouponWithdraw {
 	})
 }
 
-// CouponIDEQ applies the EQ predicate on the "coupon_id" field.
-func CouponIDEQ(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDEQ applies the EQ predicate on the "allocated_id" field.
+func AllocatedIDEQ(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCouponID), v))
+		s.Where(sql.EQ(s.C(FieldAllocatedID), v))
 	})
 }
 
-// CouponIDNEQ applies the NEQ predicate on the "coupon_id" field.
-func CouponIDNEQ(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDNEQ applies the NEQ predicate on the "allocated_id" field.
+func AllocatedIDNEQ(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCouponID), v))
+		s.Where(sql.NEQ(s.C(FieldAllocatedID), v))
 	})
 }
 
-// CouponIDIn applies the In predicate on the "coupon_id" field.
-func CouponIDIn(vs ...uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDIn applies the In predicate on the "allocated_id" field.
+func AllocatedIDIn(vs ...uuid.UUID) predicate.CouponWithdraw {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldCouponID), v...))
+		s.Where(sql.In(s.C(FieldAllocatedID), v...))
 	})
 }
 
-// CouponIDNotIn applies the NotIn predicate on the "coupon_id" field.
-func CouponIDNotIn(vs ...uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDNotIn applies the NotIn predicate on the "allocated_id" field.
+func AllocatedIDNotIn(vs ...uuid.UUID) predicate.CouponWithdraw {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldCouponID), v...))
+		s.Where(sql.NotIn(s.C(FieldAllocatedID), v...))
 	})
 }
 
-// CouponIDGT applies the GT predicate on the "coupon_id" field.
-func CouponIDGT(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDGT applies the GT predicate on the "allocated_id" field.
+func AllocatedIDGT(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCouponID), v))
+		s.Where(sql.GT(s.C(FieldAllocatedID), v))
 	})
 }
 
-// CouponIDGTE applies the GTE predicate on the "coupon_id" field.
-func CouponIDGTE(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDGTE applies the GTE predicate on the "allocated_id" field.
+func AllocatedIDGTE(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCouponID), v))
+		s.Where(sql.GTE(s.C(FieldAllocatedID), v))
 	})
 }
 
-// CouponIDLT applies the LT predicate on the "coupon_id" field.
-func CouponIDLT(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDLT applies the LT predicate on the "allocated_id" field.
+func AllocatedIDLT(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCouponID), v))
+		s.Where(sql.LT(s.C(FieldAllocatedID), v))
 	})
 }
 
-// CouponIDLTE applies the LTE predicate on the "coupon_id" field.
-func CouponIDLTE(v uuid.UUID) predicate.CouponWithdraw {
+// AllocatedIDLTE applies the LTE predicate on the "allocated_id" field.
+func AllocatedIDLTE(v uuid.UUID) predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCouponID), v))
+		s.Where(sql.LTE(s.C(FieldAllocatedID), v))
 	})
 }
 
-// CouponIDIsNil applies the IsNil predicate on the "coupon_id" field.
-func CouponIDIsNil() predicate.CouponWithdraw {
+// AllocatedIDIsNil applies the IsNil predicate on the "allocated_id" field.
+func AllocatedIDIsNil() predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldCouponID)))
+		s.Where(sql.IsNull(s.C(FieldAllocatedID)))
 	})
 }
 
-// CouponIDNotNil applies the NotNil predicate on the "coupon_id" field.
-func CouponIDNotNil() predicate.CouponWithdraw {
+// AllocatedIDNotNil applies the NotNil predicate on the "allocated_id" field.
+func AllocatedIDNotNil() predicate.CouponWithdraw {
 	return predicate.CouponWithdraw(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldCouponID)))
+		s.Where(sql.NotNull(s.C(FieldAllocatedID)))
 	})
 }
 

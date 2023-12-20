@@ -26,7 +26,7 @@ func (s *Server) CreateCouponWithdraw(ctx context.Context, in *npool.CreateCoupo
 		couponwithdraw1.WithAppID(req.AppID, true),
 		couponwithdraw1.WithUserID(req.UserID, true),
 		couponwithdraw1.WithCoinTypeID(req.CoinTypeID, true),
-		couponwithdraw1.WithCouponID(req.CouponID, true),
+		couponwithdraw1.WithAllocatedID(req.AllocatedID, true),
 		couponwithdraw1.WithAmount(req.Amount, true),
 		couponwithdraw1.WithReviewID(req.ReviewID, true),
 	)

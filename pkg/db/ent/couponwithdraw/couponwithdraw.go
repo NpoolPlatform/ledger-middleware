@@ -26,8 +26,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldCoinTypeID holds the string denoting the coin_type_id field in the database.
 	FieldCoinTypeID = "coin_type_id"
-	// FieldCouponID holds the string denoting the coupon_id field in the database.
-	FieldCouponID = "coupon_id"
+	// FieldAllocatedID holds the string denoting the allocated_id field in the database.
+	FieldAllocatedID = "allocated_id"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// FieldAmount holds the string denoting the amount field in the database.
@@ -48,7 +48,7 @@ var Columns = []string{
 	FieldAppID,
 	FieldUserID,
 	FieldCoinTypeID,
-	FieldCouponID,
+	FieldAllocatedID,
 	FieldState,
 	FieldAmount,
 	FieldReviewID,
@@ -89,8 +89,8 @@ var (
 	DefaultUserID func() uuid.UUID
 	// DefaultCoinTypeID holds the default value on creation for the "coin_type_id" field.
 	DefaultCoinTypeID func() uuid.UUID
-	// DefaultCouponID holds the default value on creation for the "coupon_id" field.
-	DefaultCouponID func() uuid.UUID
+	// DefaultAllocatedID holds the default value on creation for the "allocated_id" field.
+	DefaultAllocatedID func() uuid.UUID
 	// DefaultState holds the default value on creation for the "state" field.
 	DefaultState string
 	// DefaultReviewID holds the default value on creation for the "review_id" field.

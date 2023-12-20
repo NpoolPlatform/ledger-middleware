@@ -46,7 +46,7 @@ func (CouponWithdraw) Fields() []ent.Field {
 				return uuid.UUID{}
 			}),
 		field.
-			UUID("coupon_id", uuid.UUID{}).
+			UUID("allocated_id", uuid.UUID{}).
 			Optional().
 			Default(func() uuid.UUID {
 				return uuid.UUID{}

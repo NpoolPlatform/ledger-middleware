@@ -158,23 +158,23 @@ func (cwu *CouponWithdrawUpdate) ClearCoinTypeID() *CouponWithdrawUpdate {
 	return cwu
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (cwu *CouponWithdrawUpdate) SetCouponID(u uuid.UUID) *CouponWithdrawUpdate {
-	cwu.mutation.SetCouponID(u)
+// SetAllocatedID sets the "allocated_id" field.
+func (cwu *CouponWithdrawUpdate) SetAllocatedID(u uuid.UUID) *CouponWithdrawUpdate {
+	cwu.mutation.SetAllocatedID(u)
 	return cwu
 }
 
-// SetNillableCouponID sets the "coupon_id" field if the given value is not nil.
-func (cwu *CouponWithdrawUpdate) SetNillableCouponID(u *uuid.UUID) *CouponWithdrawUpdate {
+// SetNillableAllocatedID sets the "allocated_id" field if the given value is not nil.
+func (cwu *CouponWithdrawUpdate) SetNillableAllocatedID(u *uuid.UUID) *CouponWithdrawUpdate {
 	if u != nil {
-		cwu.SetCouponID(*u)
+		cwu.SetAllocatedID(*u)
 	}
 	return cwu
 }
 
-// ClearCouponID clears the value of the "coupon_id" field.
-func (cwu *CouponWithdrawUpdate) ClearCouponID() *CouponWithdrawUpdate {
-	cwu.mutation.ClearCouponID()
+// ClearAllocatedID clears the value of the "allocated_id" field.
+func (cwu *CouponWithdrawUpdate) ClearAllocatedID() *CouponWithdrawUpdate {
+	cwu.mutation.ClearAllocatedID()
 	return cwu
 }
 
@@ -425,17 +425,17 @@ func (cwu *CouponWithdrawUpdate) sqlSave(ctx context.Context) (n int, err error)
 			Column: couponwithdraw.FieldCoinTypeID,
 		})
 	}
-	if value, ok := cwu.mutation.CouponID(); ok {
+	if value, ok := cwu.mutation.AllocatedID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeUUID,
 			Value:  value,
-			Column: couponwithdraw.FieldCouponID,
+			Column: couponwithdraw.FieldAllocatedID,
 		})
 	}
-	if cwu.mutation.CouponIDCleared() {
+	if cwu.mutation.AllocatedIDCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeUUID,
-			Column: couponwithdraw.FieldCouponID,
+			Column: couponwithdraw.FieldAllocatedID,
 		})
 	}
 	if value, ok := cwu.mutation.State(); ok {
@@ -632,23 +632,23 @@ func (cwuo *CouponWithdrawUpdateOne) ClearCoinTypeID() *CouponWithdrawUpdateOne 
 	return cwuo
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (cwuo *CouponWithdrawUpdateOne) SetCouponID(u uuid.UUID) *CouponWithdrawUpdateOne {
-	cwuo.mutation.SetCouponID(u)
+// SetAllocatedID sets the "allocated_id" field.
+func (cwuo *CouponWithdrawUpdateOne) SetAllocatedID(u uuid.UUID) *CouponWithdrawUpdateOne {
+	cwuo.mutation.SetAllocatedID(u)
 	return cwuo
 }
 
-// SetNillableCouponID sets the "coupon_id" field if the given value is not nil.
-func (cwuo *CouponWithdrawUpdateOne) SetNillableCouponID(u *uuid.UUID) *CouponWithdrawUpdateOne {
+// SetNillableAllocatedID sets the "allocated_id" field if the given value is not nil.
+func (cwuo *CouponWithdrawUpdateOne) SetNillableAllocatedID(u *uuid.UUID) *CouponWithdrawUpdateOne {
 	if u != nil {
-		cwuo.SetCouponID(*u)
+		cwuo.SetAllocatedID(*u)
 	}
 	return cwuo
 }
 
-// ClearCouponID clears the value of the "coupon_id" field.
-func (cwuo *CouponWithdrawUpdateOne) ClearCouponID() *CouponWithdrawUpdateOne {
-	cwuo.mutation.ClearCouponID()
+// ClearAllocatedID clears the value of the "allocated_id" field.
+func (cwuo *CouponWithdrawUpdateOne) ClearAllocatedID() *CouponWithdrawUpdateOne {
+	cwuo.mutation.ClearAllocatedID()
 	return cwuo
 }
 
@@ -929,17 +929,17 @@ func (cwuo *CouponWithdrawUpdateOne) sqlSave(ctx context.Context) (_node *Coupon
 			Column: couponwithdraw.FieldCoinTypeID,
 		})
 	}
-	if value, ok := cwuo.mutation.CouponID(); ok {
+	if value, ok := cwuo.mutation.AllocatedID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeUUID,
 			Value:  value,
-			Column: couponwithdraw.FieldCouponID,
+			Column: couponwithdraw.FieldAllocatedID,
 		})
 	}
-	if cwuo.mutation.CouponIDCleared() {
+	if cwuo.mutation.AllocatedIDCleared() {
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeUUID,
-			Column: couponwithdraw.FieldCouponID,
+			Column: couponwithdraw.FieldAllocatedID,
 		})
 	}
 	if value, ok := cwuo.mutation.State(); ok {

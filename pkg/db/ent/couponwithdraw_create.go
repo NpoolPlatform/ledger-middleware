@@ -121,16 +121,16 @@ func (cwc *CouponWithdrawCreate) SetNillableCoinTypeID(u *uuid.UUID) *CouponWith
 	return cwc
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (cwc *CouponWithdrawCreate) SetCouponID(u uuid.UUID) *CouponWithdrawCreate {
-	cwc.mutation.SetCouponID(u)
+// SetAllocatedID sets the "allocated_id" field.
+func (cwc *CouponWithdrawCreate) SetAllocatedID(u uuid.UUID) *CouponWithdrawCreate {
+	cwc.mutation.SetAllocatedID(u)
 	return cwc
 }
 
-// SetNillableCouponID sets the "coupon_id" field if the given value is not nil.
-func (cwc *CouponWithdrawCreate) SetNillableCouponID(u *uuid.UUID) *CouponWithdrawCreate {
+// SetNillableAllocatedID sets the "allocated_id" field if the given value is not nil.
+func (cwc *CouponWithdrawCreate) SetNillableAllocatedID(u *uuid.UUID) *CouponWithdrawCreate {
 	if u != nil {
-		cwc.SetCouponID(*u)
+		cwc.SetAllocatedID(*u)
 	}
 	return cwc
 }
@@ -311,12 +311,12 @@ func (cwc *CouponWithdrawCreate) defaults() error {
 		v := couponwithdraw.DefaultCoinTypeID()
 		cwc.mutation.SetCoinTypeID(v)
 	}
-	if _, ok := cwc.mutation.CouponID(); !ok {
-		if couponwithdraw.DefaultCouponID == nil {
-			return fmt.Errorf("ent: uninitialized couponwithdraw.DefaultCouponID (forgotten import ent/runtime?)")
+	if _, ok := cwc.mutation.AllocatedID(); !ok {
+		if couponwithdraw.DefaultAllocatedID == nil {
+			return fmt.Errorf("ent: uninitialized couponwithdraw.DefaultAllocatedID (forgotten import ent/runtime?)")
 		}
-		v := couponwithdraw.DefaultCouponID()
-		cwc.mutation.SetCouponID(v)
+		v := couponwithdraw.DefaultAllocatedID()
+		cwc.mutation.SetAllocatedID(v)
 	}
 	if _, ok := cwc.mutation.State(); !ok {
 		v := couponwithdraw.DefaultState
@@ -436,13 +436,13 @@ func (cwc *CouponWithdrawCreate) createSpec() (*CouponWithdraw, *sqlgraph.Create
 		})
 		_node.CoinTypeID = value
 	}
-	if value, ok := cwc.mutation.CouponID(); ok {
+	if value, ok := cwc.mutation.AllocatedID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeUUID,
 			Value:  value,
-			Column: couponwithdraw.FieldCouponID,
+			Column: couponwithdraw.FieldAllocatedID,
 		})
-		_node.CouponID = value
+		_node.AllocatedID = value
 	}
 	if value, ok := cwc.mutation.State(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -642,21 +642,21 @@ func (u *CouponWithdrawUpsert) ClearCoinTypeID() *CouponWithdrawUpsert {
 	return u
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (u *CouponWithdrawUpsert) SetCouponID(v uuid.UUID) *CouponWithdrawUpsert {
-	u.Set(couponwithdraw.FieldCouponID, v)
+// SetAllocatedID sets the "allocated_id" field.
+func (u *CouponWithdrawUpsert) SetAllocatedID(v uuid.UUID) *CouponWithdrawUpsert {
+	u.Set(couponwithdraw.FieldAllocatedID, v)
 	return u
 }
 
-// UpdateCouponID sets the "coupon_id" field to the value that was provided on create.
-func (u *CouponWithdrawUpsert) UpdateCouponID() *CouponWithdrawUpsert {
-	u.SetExcluded(couponwithdraw.FieldCouponID)
+// UpdateAllocatedID sets the "allocated_id" field to the value that was provided on create.
+func (u *CouponWithdrawUpsert) UpdateAllocatedID() *CouponWithdrawUpsert {
+	u.SetExcluded(couponwithdraw.FieldAllocatedID)
 	return u
 }
 
-// ClearCouponID clears the value of the "coupon_id" field.
-func (u *CouponWithdrawUpsert) ClearCouponID() *CouponWithdrawUpsert {
-	u.SetNull(couponwithdraw.FieldCouponID)
+// ClearAllocatedID clears the value of the "allocated_id" field.
+func (u *CouponWithdrawUpsert) ClearAllocatedID() *CouponWithdrawUpsert {
+	u.SetNull(couponwithdraw.FieldAllocatedID)
 	return u
 }
 
@@ -910,24 +910,24 @@ func (u *CouponWithdrawUpsertOne) ClearCoinTypeID() *CouponWithdrawUpsertOne {
 	})
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (u *CouponWithdrawUpsertOne) SetCouponID(v uuid.UUID) *CouponWithdrawUpsertOne {
+// SetAllocatedID sets the "allocated_id" field.
+func (u *CouponWithdrawUpsertOne) SetAllocatedID(v uuid.UUID) *CouponWithdrawUpsertOne {
 	return u.Update(func(s *CouponWithdrawUpsert) {
-		s.SetCouponID(v)
+		s.SetAllocatedID(v)
 	})
 }
 
-// UpdateCouponID sets the "coupon_id" field to the value that was provided on create.
-func (u *CouponWithdrawUpsertOne) UpdateCouponID() *CouponWithdrawUpsertOne {
+// UpdateAllocatedID sets the "allocated_id" field to the value that was provided on create.
+func (u *CouponWithdrawUpsertOne) UpdateAllocatedID() *CouponWithdrawUpsertOne {
 	return u.Update(func(s *CouponWithdrawUpsert) {
-		s.UpdateCouponID()
+		s.UpdateAllocatedID()
 	})
 }
 
-// ClearCouponID clears the value of the "coupon_id" field.
-func (u *CouponWithdrawUpsertOne) ClearCouponID() *CouponWithdrawUpsertOne {
+// ClearAllocatedID clears the value of the "allocated_id" field.
+func (u *CouponWithdrawUpsertOne) ClearAllocatedID() *CouponWithdrawUpsertOne {
 	return u.Update(func(s *CouponWithdrawUpsert) {
-		s.ClearCouponID()
+		s.ClearAllocatedID()
 	})
 }
 
@@ -1356,24 +1356,24 @@ func (u *CouponWithdrawUpsertBulk) ClearCoinTypeID() *CouponWithdrawUpsertBulk {
 	})
 }
 
-// SetCouponID sets the "coupon_id" field.
-func (u *CouponWithdrawUpsertBulk) SetCouponID(v uuid.UUID) *CouponWithdrawUpsertBulk {
+// SetAllocatedID sets the "allocated_id" field.
+func (u *CouponWithdrawUpsertBulk) SetAllocatedID(v uuid.UUID) *CouponWithdrawUpsertBulk {
 	return u.Update(func(s *CouponWithdrawUpsert) {
-		s.SetCouponID(v)
+		s.SetAllocatedID(v)
 	})
 }
 
-// UpdateCouponID sets the "coupon_id" field to the value that was provided on create.
-func (u *CouponWithdrawUpsertBulk) UpdateCouponID() *CouponWithdrawUpsertBulk {
+// UpdateAllocatedID sets the "allocated_id" field to the value that was provided on create.
+func (u *CouponWithdrawUpsertBulk) UpdateAllocatedID() *CouponWithdrawUpsertBulk {
 	return u.Update(func(s *CouponWithdrawUpsert) {
-		s.UpdateCouponID()
+		s.UpdateAllocatedID()
 	})
 }
 
-// ClearCouponID clears the value of the "coupon_id" field.
-func (u *CouponWithdrawUpsertBulk) ClearCouponID() *CouponWithdrawUpsertBulk {
+// ClearAllocatedID clears the value of the "allocated_id" field.
+func (u *CouponWithdrawUpsertBulk) ClearAllocatedID() *CouponWithdrawUpsertBulk {
 	return u.Update(func(s *CouponWithdrawUpsert) {
-		s.ClearCouponID()
+		s.ClearAllocatedID()
 	})
 }
 

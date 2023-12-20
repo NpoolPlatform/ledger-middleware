@@ -27,7 +27,7 @@ func (h *queryHandler) selectCouponWithdraw(stm *ent.CouponWithdrawQuery) {
 		entcouponwithdraw.FieldAppID,
 		entcouponwithdraw.FieldUserID,
 		entcouponwithdraw.FieldCoinTypeID,
-		entcouponwithdraw.FieldCouponID,
+		entcouponwithdraw.FieldAllocatedID,
 		entcouponwithdraw.FieldReviewID,
 		entcouponwithdraw.FieldState,
 		entcouponwithdraw.FieldAmount,

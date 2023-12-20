@@ -71,10 +71,10 @@ func init() {
 	couponwithdrawDescCoinTypeID := couponwithdrawFields[2].Descriptor()
 	// couponwithdraw.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
 	couponwithdraw.DefaultCoinTypeID = couponwithdrawDescCoinTypeID.Default.(func() uuid.UUID)
-	// couponwithdrawDescCouponID is the schema descriptor for coupon_id field.
-	couponwithdrawDescCouponID := couponwithdrawFields[3].Descriptor()
-	// couponwithdraw.DefaultCouponID holds the default value on creation for the coupon_id field.
-	couponwithdraw.DefaultCouponID = couponwithdrawDescCouponID.Default.(func() uuid.UUID)
+	// couponwithdrawDescAllocatedID is the schema descriptor for allocated_id field.
+	couponwithdrawDescAllocatedID := couponwithdrawFields[3].Descriptor()
+	// couponwithdraw.DefaultAllocatedID holds the default value on creation for the allocated_id field.
+	couponwithdraw.DefaultAllocatedID = couponwithdrawDescAllocatedID.Default.(func() uuid.UUID)
 	// couponwithdrawDescState is the schema descriptor for state field.
 	couponwithdrawDescState := couponwithdrawFields[4].Descriptor()
 	// couponwithdraw.DefaultState holds the default value on creation for the state field.

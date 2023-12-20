@@ -15,10 +15,10 @@ import (
 
 func (h *Handler) CreateCouponWithdraw(ctx context.Context) (*npool.CouponWithdraw, error) {
 	h.Conds = &crud.Conds{
-		AppID:    &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
-		UserID:   &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
-		CouponID: &cruder.Cond{Op: cruder.EQ, Val: *h.CouponID},
-		State:    &cruder.Cond{Op: cruder.EQ, Val: ledgertypes.WithdrawState_Reviewing},
+		AppID:       &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
+		UserID:      &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
+		AllocatedID: &cruder.Cond{Op: cruder.EQ, Val: *h.AllocatedID},
+		State:       &cruder.Cond{Op: cruder.EQ, Val: ledgertypes.WithdrawState_Reviewing},
 	}
 	exist, err := h.ExistCouponWithdrawConds(ctx)
 	if err != nil {

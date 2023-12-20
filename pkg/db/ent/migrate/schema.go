@@ -19,7 +19,7 @@ var (
 		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "coupon_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "allocated_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "state", Type: field.TypeString, Nullable: true, Default: "Reviewing"},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
 		{Name: "review_id", Type: field.TypeUUID, Nullable: true},

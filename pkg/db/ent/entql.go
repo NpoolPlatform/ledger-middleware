@@ -33,17 +33,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "CouponWithdraw",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			couponwithdraw.FieldCreatedAt:  {Type: field.TypeUint32, Column: couponwithdraw.FieldCreatedAt},
-			couponwithdraw.FieldUpdatedAt:  {Type: field.TypeUint32, Column: couponwithdraw.FieldUpdatedAt},
-			couponwithdraw.FieldDeletedAt:  {Type: field.TypeUint32, Column: couponwithdraw.FieldDeletedAt},
-			couponwithdraw.FieldEntID:      {Type: field.TypeUUID, Column: couponwithdraw.FieldEntID},
-			couponwithdraw.FieldAppID:      {Type: field.TypeUUID, Column: couponwithdraw.FieldAppID},
-			couponwithdraw.FieldUserID:     {Type: field.TypeUUID, Column: couponwithdraw.FieldUserID},
-			couponwithdraw.FieldCoinTypeID: {Type: field.TypeUUID, Column: couponwithdraw.FieldCoinTypeID},
-			couponwithdraw.FieldCouponID:   {Type: field.TypeUUID, Column: couponwithdraw.FieldCouponID},
-			couponwithdraw.FieldState:      {Type: field.TypeString, Column: couponwithdraw.FieldState},
-			couponwithdraw.FieldAmount:     {Type: field.TypeFloat64, Column: couponwithdraw.FieldAmount},
-			couponwithdraw.FieldReviewID:   {Type: field.TypeUUID, Column: couponwithdraw.FieldReviewID},
+			couponwithdraw.FieldCreatedAt:   {Type: field.TypeUint32, Column: couponwithdraw.FieldCreatedAt},
+			couponwithdraw.FieldUpdatedAt:   {Type: field.TypeUint32, Column: couponwithdraw.FieldUpdatedAt},
+			couponwithdraw.FieldDeletedAt:   {Type: field.TypeUint32, Column: couponwithdraw.FieldDeletedAt},
+			couponwithdraw.FieldEntID:       {Type: field.TypeUUID, Column: couponwithdraw.FieldEntID},
+			couponwithdraw.FieldAppID:       {Type: field.TypeUUID, Column: couponwithdraw.FieldAppID},
+			couponwithdraw.FieldUserID:      {Type: field.TypeUUID, Column: couponwithdraw.FieldUserID},
+			couponwithdraw.FieldCoinTypeID:  {Type: field.TypeUUID, Column: couponwithdraw.FieldCoinTypeID},
+			couponwithdraw.FieldAllocatedID: {Type: field.TypeUUID, Column: couponwithdraw.FieldAllocatedID},
+			couponwithdraw.FieldState:       {Type: field.TypeString, Column: couponwithdraw.FieldState},
+			couponwithdraw.FieldAmount:      {Type: field.TypeFloat64, Column: couponwithdraw.FieldAmount},
+			couponwithdraw.FieldReviewID:    {Type: field.TypeUUID, Column: couponwithdraw.FieldReviewID},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -316,9 +316,9 @@ func (f *CouponWithdrawFilter) WhereCoinTypeID(p entql.ValueP) {
 	f.Where(p.Field(couponwithdraw.FieldCoinTypeID))
 }
 
-// WhereCouponID applies the entql [16]byte predicate on the coupon_id field.
-func (f *CouponWithdrawFilter) WhereCouponID(p entql.ValueP) {
-	f.Where(p.Field(couponwithdraw.FieldCouponID))
+// WhereAllocatedID applies the entql [16]byte predicate on the allocated_id field.
+func (f *CouponWithdrawFilter) WhereAllocatedID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldAllocatedID))
 }
 
 // WhereState applies the entql string predicate on the state field.
