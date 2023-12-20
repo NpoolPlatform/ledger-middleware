@@ -33,27 +33,27 @@ func init() {
 
 var (
 	ret = npool.CouponWithdraw{
-		EntID:      uuid.NewString(),
-		AppID:      uuid.NewString(),
-		UserID:     uuid.NewString(),
-		CoinTypeID: uuid.NewString(),
-		CouponID:   uuid.Nil.String(),
-		Amount:     "999.999999999",
-		State:      types.WithdrawState_Reviewing,
-		StateStr:   types.WithdrawState_Reviewing.String(),
-		ReviewID:   uuid.NewString(),
+		EntID:       uuid.NewString(),
+		AppID:       uuid.NewString(),
+		UserID:      uuid.NewString(),
+		CoinTypeID:  uuid.NewString(),
+		AllocatedID: uuid.Nil.String(),
+		Amount:      "999.999999999",
+		State:       types.WithdrawState_Reviewing,
+		StateStr:    types.WithdrawState_Reviewing.String(),
+		ReviewID:    uuid.NewString(),
 	}
 )
 
 func createCouponWithdraw(t *testing.T) {
 	info, err := CreateCouponWithdraw(context.Background(), &npool.CouponWithdrawReq{
-		EntID:      &ret.EntID,
-		AppID:      &ret.AppID,
-		UserID:     &ret.UserID,
-		CoinTypeID: &ret.CoinTypeID,
-		CouponID:   &ret.CouponID,
-		Amount:     &ret.Amount,
-		ReviewID:   &ret.ReviewID,
+		EntID:       &ret.EntID,
+		AppID:       &ret.AppID,
+		UserID:      &ret.UserID,
+		CoinTypeID:  &ret.CoinTypeID,
+		AllocatedID: &ret.AllocatedID,
+		Amount:      &ret.Amount,
+		ReviewID:    &ret.ReviewID,
 	})
 	if assert.Nil(t, err) {
 		ret.CreatedAt = info.CreatedAt
@@ -86,12 +86,12 @@ func getCouponWithdraw(t *testing.T) {
 
 func getCouponWithdraws(t *testing.T) {
 	infos, _, err := GetCouponWithdraws(context.Background(), &npool.Conds{
-		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: ret.AppID},
-		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: ret.UserID},
-		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
-		ReviewID:   &commonpb.StringVal{Op: cruder.EQ, Value: ret.ReviewID},
-		CouponID:   &commonpb.StringVal{Op: cruder.EQ, Value: ret.CouponID},
-		State:      &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
+		AppID:       &commonpb.StringVal{Op: cruder.EQ, Value: ret.AppID},
+		UserID:      &commonpb.StringVal{Op: cruder.EQ, Value: ret.UserID},
+		CoinTypeID:  &commonpb.StringVal{Op: cruder.EQ, Value: ret.CoinTypeID},
+		ReviewID:    &commonpb.StringVal{Op: cruder.EQ, Value: ret.ReviewID},
+		AllocatedID: &commonpb.StringVal{Op: cruder.EQ, Value: ret.AllocatedID},
+		State:       &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(ret.State)},
 	}, 0, 1)
 	if assert.Nil(t, err) {
 		assert.NotEqual(t, len(infos), 0)

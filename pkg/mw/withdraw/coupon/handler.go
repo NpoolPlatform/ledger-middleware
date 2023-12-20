@@ -115,7 +115,7 @@ func WithAllocatedID(id *string, must bool) func(context.Context, *Handler) erro
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid allocated id")
+				return fmt.Errorf("invalid allocatedid")
 			}
 			return nil
 		}
