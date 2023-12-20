@@ -36,7 +36,7 @@ var (
 		Amount:     "999.999999999",
 		State:      types.WithdrawState_Reviewing,
 		StateStr:   types.WithdrawState_Reviewing.String(),
-		ReviewID:   uuid.Nil.String(),
+		ReviewID:   uuid.NewString(),
 	}
 )
 
@@ -65,7 +65,6 @@ func createCouponWithdraw(t *testing.T) {
 func updateCouponWithdraw(t *testing.T) {
 	ret.State = types.WithdrawState_Approved
 	ret.StateStr = types.WithdrawState_Approved.String()
-	ret.ReviewID = uuid.NewString()
 
 	handler, err := NewHandler(
 		context.Background(),
@@ -125,8 +124,8 @@ func deleteCouponWithdraw(t *testing.T) {
 	assert.Nil(t, err)
 
 	info, err := handler.DeleteCouponWithdraw(context.Background())
-	assert.NotNil(t, err)
-	assert.Nil(t, info)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
 }
 
 func TestCouponWithdraw(t *testing.T) {

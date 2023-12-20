@@ -10,32 +10,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type createHandler struct {
-	*Handler
-}
-
-func (h *createHandler) createCouponWithdraw(ctx context.Context, tx *ent.Tx) error {
-	if _, err := crud.CreateSet(
-		tx.CouponWithdraw.Create(),
-		&h.Req,
-	).Save(ctx); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (h *Handler) CreateCouponWithdraw(ctx context.Context) (*npool.CouponWithdraw, error) {
 	id := uuid.New()
 	if h.EntID == nil {
 		h.EntID = &id
 	}
 
-	handler := &createHandler{
-		Handler: h,
-	}
-
-	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.createCouponWithdraw(ctx, tx); err != nil {
+	err := db.WithClient(ctx, func(ctx context.Context, cli *ent.Client) error {
+		if _, err := crud.CreateSet(
+			cli.CouponWithdraw.Create(),
+			&h.Req,
+		).Save(ctx); err != nil {
 			return err
 		}
 		return nil
