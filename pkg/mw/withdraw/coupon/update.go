@@ -76,13 +76,12 @@ func (h *updateHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx) er
 		}
 	}
 	if info == nil {
-		info, err = ledgercrud.CreateSet(tx.Ledger.Create(), &ledgercrud.Req{
+		if _, err = ledgercrud.CreateSet(tx.Ledger.Create(), &ledgercrud.Req{
 			AppID:      &h.couponwithdraw.AppID,
 			UserID:     &h.couponwithdraw.UserID,
 			CoinTypeID: &h.couponwithdraw.CoinTypeID,
 			Incoming:   &h.couponwithdraw.Amount,
-		}).Save(ctx)
-		if err != nil {
+		}).Save(ctx); err != nil {
 			return err
 		}
 		return nil
