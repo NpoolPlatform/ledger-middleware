@@ -100,8 +100,8 @@ func getCouponWithdraws(t *testing.T) {
 
 func deleteCouponWithdraw(t *testing.T) {
 	info, err := DeleteCouponWithdraw(context.Background(), &npool.CouponWithdrawReq{EntID: &ret.EntID})
-	assert.NotNil(t, err)
-	assert.Nil(t, info)
+	assert.Nil(t, err)
+	assert.NotNil(t, info)
 }
 
 func TestClient(t *testing.T) {

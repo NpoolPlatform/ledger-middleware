@@ -2,7 +2,12 @@ package coupon
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+
 	"fmt"
+
+	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 
@@ -13,6 +18,7 @@ import (
 	entcouponwithdraw "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/couponwithdraw"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/withdraw/coupon"
 )
 
@@ -39,7 +45,20 @@ func (h *updateHandler) checkCouponWithdraw(ctx context.Context) error {
 	})
 }
 
-func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
+func (h *updateHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx) error {
+	key := fmt.Sprintf("%v:%v:%v:%v",
+		basetypes.Prefix_PrefixCreateLedger,
+		h.couponwithdraw.AppID,
+		h.couponwithdraw.UserID,
+		h.couponwithdraw.CoinTypeID,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	info, err := tx.
 		Ledger.
 		Query().
@@ -52,7 +71,20 @@ func (h *updateHandler) updateLedger(ctx context.Context, tx *ent.Tx) error {
 		ForUpdate().
 		Only(ctx)
 	if err != nil {
-		return err
+		if !ent.IsNotFound(err) {
+			return err
+		}
+	}
+	if info == nil {
+		if _, err = ledgercrud.CreateSet(tx.Ledger.Create(), &ledgercrud.Req{
+			AppID:      &h.couponwithdraw.AppID,
+			UserID:     &h.couponwithdraw.UserID,
+			CoinTypeID: &h.couponwithdraw.CoinTypeID,
+			Incoming:   &h.couponwithdraw.Amount,
+		}).Save(ctx); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	incoming := h.couponwithdraw.Amount
@@ -87,6 +119,22 @@ func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
 		h.couponwithdraw.EntID,
 		h.couponwithdraw.CouponID.String(),
 	)
+
+	sha := sha256.Sum224([]byte(ioExtra))
+	key := fmt.Sprintf("%v:%v:%v:%v:%v",
+		basetypes.Prefix_PrefixCreateLedgerStatement,
+		h.couponwithdraw.AppID,
+		h.couponwithdraw.UserID,
+		h.couponwithdraw.CoinTypeID,
+		hex.EncodeToString(sha[:]),
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
+
 	ioType := types.IOType_Incoming
 	ioSubType := types.IOSubType_RandomCouponCash
 	if _, err := statementcrud.CreateSet(
@@ -119,16 +167,16 @@ func (h *Handler) UpdateCouponWithdraw(ctx context.Context) (*npool.CouponWithdr
 	case h.State.String() == handler.couponwithdraw.State:
 		fallthrough //nolint
 	case *h.State != types.WithdrawState_Approved:
-		return nil, nil
+		return h.GetCouponWithdraw(ctx)
 	}
 	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 		if err := handler.updateCouponWithdraw(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.updateLedger(ctx, tx); err != nil {
+		if err := handler.createStatement(ctx, tx); err != nil {
 			return err
 		}
-		if err := handler.createStatement(ctx, tx); err != nil {
+		if err := handler.createOrUpdateLedger(ctx, tx); err != nil {
 			return err
 		}
 		return nil

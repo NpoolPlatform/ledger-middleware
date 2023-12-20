@@ -9,6 +9,7 @@ import (
 	profit "github.com/NpoolPlatform/ledger-middleware/api/ledger/profit"
 	statement "github.com/NpoolPlatform/ledger-middleware/api/ledger/statement"
 	withdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw"
+	couponwithdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw/coupon"
 
 	ledger "github.com/NpoolPlatform/message/npool/ledger/mw/v2"
 
@@ -27,6 +28,7 @@ func Register(server grpc.ServiceRegistrar) {
 	statement.Register(server)
 	profit.Register(server)
 	withdraw.Register(server)
+	couponwithdraw.Register(server)
 	goodstatement.Register(server)
 }
 
