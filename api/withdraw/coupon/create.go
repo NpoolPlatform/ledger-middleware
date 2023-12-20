@@ -1,4 +1,4 @@
-:w:wq//nolint
+//nolint
 package coupon
 
 import (
