@@ -34,12 +34,12 @@ func CreateCouponWithdraw(ctx context.Context, in *npool.CouponWithdrawReq) (*np
 			Info: in,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail create withdraw: %v", err)
+			return nil, fmt.Errorf("fail create couponwithdraw: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail create withdraw: %v", err)
+		return nil, fmt.Errorf("fail create couponwithdraw: %v", err)
 	}
 	return info.(*npool.CouponWithdraw), nil
 }
@@ -50,7 +50,7 @@ func UpdateCouponWithdraw(ctx context.Context, in *npool.CouponWithdrawReq) (*np
 			Info: in,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail update withdraw: %v", err)
+			return nil, fmt.Errorf("fail update couponwithdraw: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
@@ -66,7 +66,7 @@ func GetCouponWithdraw(ctx context.Context, id string) (*npool.CouponWithdraw, e
 			EntID: id,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get withdraw: %v", err)
+			return nil, fmt.Errorf("fail get couponwithdraw: %v", err)
 		}
 		return resp.GetInfo(), nil
 	})
@@ -82,12 +82,12 @@ func GetCouponWithdrawOnly(ctx context.Context, conds *npool.Conds) (*npool.Coup
 			Conds: conds,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get withdraw only: %v", err)
+			return nil, fmt.Errorf("fail get couponwithdraw only: %v", err)
 		}
 		return resp.GetInfos(), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fail get withdraw only: %v", err)
+		return nil, fmt.Errorf("fail get couponwithdraw only: %v", err)
 	}
 	if len(infos.([]*npool.CouponWithdraw)) == 0 {
 		return nil, nil
@@ -107,13 +107,13 @@ func GetCouponWithdraws(ctx context.Context, conds *npool.Conds, offset, limit i
 			Limit:  limit,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail get withdraws: %v", err)
+			return nil, fmt.Errorf("fail get couponwithdraws: %v", err)
 		}
 		total = resp.GetTotal()
 		return resp.GetInfos(), nil
 	})
 	if err != nil {
-		return nil, 0, fmt.Errorf("fail get withdraws: %v", err)
+		return nil, 0, fmt.Errorf("fail get couponwithdraws: %v", err)
 	}
 	return infos.([]*npool.CouponWithdraw), total, nil
 }

@@ -46,6 +46,9 @@ func (h *updateHandler) checkCouponWithdraw(ctx context.Context) error {
 }
 
 func (h *updateHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx) error {
+	if *h.State != types.WithdrawState_Approved {
+		return nil
+	}
 	key := fmt.Sprintf("%v:%v:%v:%v",
 		basetypes.Prefix_PrefixCreateLedger,
 		h.couponwithdraw.AppID,
@@ -114,6 +117,9 @@ func (h *updateHandler) updateCouponWithdraw(ctx context.Context, tx *ent.Tx) er
 }
 
 func (h *updateHandler) createStatement(ctx context.Context, tx *ent.Tx) error {
+	if *h.State != types.WithdrawState_Approved {
+		return nil
+	}
 	ioExtra := fmt.Sprintf(
 		`{"CouponWithdrawID":"%v","AllocatedID":"%v"}`,
 		h.couponwithdraw.EntID,
@@ -166,7 +172,9 @@ func (h *Handler) UpdateCouponWithdraw(ctx context.Context) (*npool.CouponWithdr
 		fallthrough //nolint
 	case h.State.String() == handler.couponwithdraw.State:
 		fallthrough //nolint
-	case *h.State != types.WithdrawState_Approved:
+	case handler.couponwithdraw.State == types.WithdrawState_Approved.String():
+		fallthrough //nolint
+	case handler.couponwithdraw.State == types.WithdrawState_Rejected.String():
 		return h.GetCouponWithdraw(ctx)
 	}
 	err := db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
