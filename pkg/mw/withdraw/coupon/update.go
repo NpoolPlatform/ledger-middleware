@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	"github.com/shopspring/decimal"
 
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 
@@ -79,11 +80,15 @@ func (h *updateHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx) er
 		}
 	}
 	if info == nil {
+		zero := decimal.NewFromInt(0)
 		if _, err = ledgercrud.CreateSet(tx.Ledger.Create(), &ledgercrud.Req{
 			AppID:      &h.couponwithdraw.AppID,
 			UserID:     &h.couponwithdraw.UserID,
 			CoinTypeID: &h.couponwithdraw.CoinTypeID,
 			Incoming:   &h.couponwithdraw.Amount,
+			Spendable:  &h.couponwithdraw.Amount,
+			Outcoming:  &zero,
+			Locked:     &zero,
 		}).Save(ctx); err != nil {
 			return err
 		}
