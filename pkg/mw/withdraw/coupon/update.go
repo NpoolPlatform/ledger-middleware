@@ -99,7 +99,8 @@ func (h *updateHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx) er
 	stm, err := ledgercrud.UpdateSetWithValidate(
 		info,
 		&ledgercrud.Req{
-			Incoming: &incoming,
+			Incoming:  &incoming,
+			Spendable: &incoming,
 		},
 	)
 	if err != nil {
