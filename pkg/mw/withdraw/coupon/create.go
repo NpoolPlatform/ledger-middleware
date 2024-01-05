@@ -18,7 +18,7 @@ func (h *Handler) CreateCouponWithdraw(ctx context.Context) (*npool.CouponWithdr
 		AppID:       &cruder.Cond{Op: cruder.EQ, Val: *h.AppID},
 		UserID:      &cruder.Cond{Op: cruder.EQ, Val: *h.UserID},
 		AllocatedID: &cruder.Cond{Op: cruder.EQ, Val: *h.AllocatedID},
-		State:       &cruder.Cond{Op: cruder.EQ, Val: ledgertypes.WithdrawState_Reviewing},
+		States:      &cruder.Cond{Op: cruder.IN, Val: []ledgertypes.WithdrawState{ledgertypes.WithdrawState_Approved, ledgertypes.WithdrawState_Reviewing}},
 	}
 	exist, err := h.ExistCouponWithdrawConds(ctx)
 	if err != nil {

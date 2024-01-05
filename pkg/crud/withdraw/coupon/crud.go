@@ -74,6 +74,7 @@ type Conds struct {
 	UserID      *cruder.Cond
 	CoinTypeID  *cruder.Cond
 	State       *cruder.Cond
+	States      *cruder.Cond
 	Amount      *cruder.Cond
 	ReviewID    *cruder.Cond
 	AllocatedID *cruder.Cond
@@ -143,6 +144,22 @@ func SetQueryConds(q *ent.CouponWithdrawQuery, conds *Conds) (*ent.CouponWithdra
 			q.Where(entcouponwithdraw.State(state.String()))
 		default:
 			return nil, fmt.Errorf("invalid state op field")
+		}
+	}
+	if conds.States != nil {
+		states, ok := conds.States.Val.([]basetypes.WithdrawState)
+		if !ok {
+			return nil, fmt.Errorf("invalid states")
+		}
+		stateStr := []string{}
+		for _, state := range states {
+			stateStr = append(stateStr, state.String())
+		}
+		switch conds.State.Op {
+		case cruder.IN:
+			q.Where(entcouponwithdraw.StateIn(stateStr...))
+		default:
+			return nil, fmt.Errorf("invalid states op field")
 		}
 	}
 	if conds.CreatedAt != nil {
