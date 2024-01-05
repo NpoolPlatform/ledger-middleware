@@ -151,13 +151,13 @@ func SetQueryConds(q *ent.CouponWithdrawQuery, conds *Conds) (*ent.CouponWithdra
 		if !ok {
 			return nil, fmt.Errorf("invalid states")
 		}
-		stateStr := []string{}
+		_states := []string{}
 		for _, state := range states {
-			stateStr = append(stateStr, state.String())
+			_states = append(_states, state.String())
 		}
-		switch conds.State.Op {
+		switch conds.States.Op {
 		case cruder.IN:
-			q.Where(entcouponwithdraw.StateIn(stateStr...))
+			q.Where(entcouponwithdraw.StateIn(_states...))
 		default:
 			return nil, fmt.Errorf("invalid states op field")
 		}
