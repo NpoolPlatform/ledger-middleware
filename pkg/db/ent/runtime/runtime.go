@@ -5,6 +5,7 @@ package runtime
 import (
 	"context"
 
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/couponwithdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
@@ -24,6 +25,64 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	couponwithdrawMixin := schema.CouponWithdraw{}.Mixin()
+	couponwithdraw.Policy = privacy.NewPolicies(couponwithdrawMixin[0], schema.CouponWithdraw{})
+	couponwithdraw.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := couponwithdraw.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	couponwithdrawMixinFields0 := couponwithdrawMixin[0].Fields()
+	_ = couponwithdrawMixinFields0
+	couponwithdrawMixinFields1 := couponwithdrawMixin[1].Fields()
+	_ = couponwithdrawMixinFields1
+	couponwithdrawFields := schema.CouponWithdraw{}.Fields()
+	_ = couponwithdrawFields
+	// couponwithdrawDescCreatedAt is the schema descriptor for created_at field.
+	couponwithdrawDescCreatedAt := couponwithdrawMixinFields0[0].Descriptor()
+	// couponwithdraw.DefaultCreatedAt holds the default value on creation for the created_at field.
+	couponwithdraw.DefaultCreatedAt = couponwithdrawDescCreatedAt.Default.(func() uint32)
+	// couponwithdrawDescUpdatedAt is the schema descriptor for updated_at field.
+	couponwithdrawDescUpdatedAt := couponwithdrawMixinFields0[1].Descriptor()
+	// couponwithdraw.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	couponwithdraw.DefaultUpdatedAt = couponwithdrawDescUpdatedAt.Default.(func() uint32)
+	// couponwithdraw.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	couponwithdraw.UpdateDefaultUpdatedAt = couponwithdrawDescUpdatedAt.UpdateDefault.(func() uint32)
+	// couponwithdrawDescDeletedAt is the schema descriptor for deleted_at field.
+	couponwithdrawDescDeletedAt := couponwithdrawMixinFields0[2].Descriptor()
+	// couponwithdraw.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	couponwithdraw.DefaultDeletedAt = couponwithdrawDescDeletedAt.Default.(func() uint32)
+	// couponwithdrawDescEntID is the schema descriptor for ent_id field.
+	couponwithdrawDescEntID := couponwithdrawMixinFields1[1].Descriptor()
+	// couponwithdraw.DefaultEntID holds the default value on creation for the ent_id field.
+	couponwithdraw.DefaultEntID = couponwithdrawDescEntID.Default.(func() uuid.UUID)
+	// couponwithdrawDescAppID is the schema descriptor for app_id field.
+	couponwithdrawDescAppID := couponwithdrawFields[0].Descriptor()
+	// couponwithdraw.DefaultAppID holds the default value on creation for the app_id field.
+	couponwithdraw.DefaultAppID = couponwithdrawDescAppID.Default.(func() uuid.UUID)
+	// couponwithdrawDescUserID is the schema descriptor for user_id field.
+	couponwithdrawDescUserID := couponwithdrawFields[1].Descriptor()
+	// couponwithdraw.DefaultUserID holds the default value on creation for the user_id field.
+	couponwithdraw.DefaultUserID = couponwithdrawDescUserID.Default.(func() uuid.UUID)
+	// couponwithdrawDescCoinTypeID is the schema descriptor for coin_type_id field.
+	couponwithdrawDescCoinTypeID := couponwithdrawFields[2].Descriptor()
+	// couponwithdraw.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	couponwithdraw.DefaultCoinTypeID = couponwithdrawDescCoinTypeID.Default.(func() uuid.UUID)
+	// couponwithdrawDescAllocatedID is the schema descriptor for allocated_id field.
+	couponwithdrawDescAllocatedID := couponwithdrawFields[3].Descriptor()
+	// couponwithdraw.DefaultAllocatedID holds the default value on creation for the allocated_id field.
+	couponwithdraw.DefaultAllocatedID = couponwithdrawDescAllocatedID.Default.(func() uuid.UUID)
+	// couponwithdrawDescState is the schema descriptor for state field.
+	couponwithdrawDescState := couponwithdrawFields[4].Descriptor()
+	// couponwithdraw.DefaultState holds the default value on creation for the state field.
+	couponwithdraw.DefaultState = couponwithdrawDescState.Default.(string)
+	// couponwithdrawDescReviewID is the schema descriptor for review_id field.
+	couponwithdrawDescReviewID := couponwithdrawFields[6].Descriptor()
+	// couponwithdraw.DefaultReviewID holds the default value on creation for the review_id field.
+	couponwithdraw.DefaultReviewID = couponwithdrawDescReviewID.Default.(func() uuid.UUID)
 	goodledgerMixin := schema.GoodLedger{}.Mixin()
 	goodledger.Policy = privacy.NewPolicies(goodledgerMixin[0], schema.GoodLedger{})
 	goodledger.Hooks[0] = func(next ent.Mutator) ent.Mutator {

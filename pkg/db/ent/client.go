@@ -10,6 +10,7 @@ import (
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/migrate"
 
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/couponwithdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
@@ -28,6 +29,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// CouponWithdraw is the client for interacting with the CouponWithdraw builders.
+	CouponWithdraw *CouponWithdrawClient
 	// GoodLedger is the client for interacting with the GoodLedger builders.
 	GoodLedger *GoodLedgerClient
 	// GoodStatement is the client for interacting with the GoodStatement builders.
@@ -57,6 +60,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.CouponWithdraw = NewCouponWithdrawClient(c.config)
 	c.GoodLedger = NewGoodLedgerClient(c.config)
 	c.GoodStatement = NewGoodStatementClient(c.config)
 	c.Ledger = NewLedgerClient(c.config)
@@ -98,6 +102,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		CouponWithdraw:  NewCouponWithdrawClient(cfg),
 		GoodLedger:      NewGoodLedgerClient(cfg),
 		GoodStatement:   NewGoodStatementClient(cfg),
 		Ledger:          NewLedgerClient(cfg),
@@ -125,6 +130,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		CouponWithdraw:  NewCouponWithdrawClient(cfg),
 		GoodLedger:      NewGoodLedgerClient(cfg),
 		GoodStatement:   NewGoodStatementClient(cfg),
 		Ledger:          NewLedgerClient(cfg),
@@ -139,7 +145,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		GoodLedger.
+//		CouponWithdraw.
 //		Query().
 //		Count(ctx)
 //
@@ -162,6 +168,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.CouponWithdraw.Use(hooks...)
 	c.GoodLedger.Use(hooks...)
 	c.GoodStatement.Use(hooks...)
 	c.Ledger.Use(hooks...)
@@ -170,6 +177,97 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Statement.Use(hooks...)
 	c.UnsoldStatement.Use(hooks...)
 	c.Withdraw.Use(hooks...)
+}
+
+// CouponWithdrawClient is a client for the CouponWithdraw schema.
+type CouponWithdrawClient struct {
+	config
+}
+
+// NewCouponWithdrawClient returns a client for the CouponWithdraw from the given config.
+func NewCouponWithdrawClient(c config) *CouponWithdrawClient {
+	return &CouponWithdrawClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `couponwithdraw.Hooks(f(g(h())))`.
+func (c *CouponWithdrawClient) Use(hooks ...Hook) {
+	c.hooks.CouponWithdraw = append(c.hooks.CouponWithdraw, hooks...)
+}
+
+// Create returns a builder for creating a CouponWithdraw entity.
+func (c *CouponWithdrawClient) Create() *CouponWithdrawCreate {
+	mutation := newCouponWithdrawMutation(c.config, OpCreate)
+	return &CouponWithdrawCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CouponWithdraw entities.
+func (c *CouponWithdrawClient) CreateBulk(builders ...*CouponWithdrawCreate) *CouponWithdrawCreateBulk {
+	return &CouponWithdrawCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CouponWithdraw.
+func (c *CouponWithdrawClient) Update() *CouponWithdrawUpdate {
+	mutation := newCouponWithdrawMutation(c.config, OpUpdate)
+	return &CouponWithdrawUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CouponWithdrawClient) UpdateOne(cw *CouponWithdraw) *CouponWithdrawUpdateOne {
+	mutation := newCouponWithdrawMutation(c.config, OpUpdateOne, withCouponWithdraw(cw))
+	return &CouponWithdrawUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CouponWithdrawClient) UpdateOneID(id uint32) *CouponWithdrawUpdateOne {
+	mutation := newCouponWithdrawMutation(c.config, OpUpdateOne, withCouponWithdrawID(id))
+	return &CouponWithdrawUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CouponWithdraw.
+func (c *CouponWithdrawClient) Delete() *CouponWithdrawDelete {
+	mutation := newCouponWithdrawMutation(c.config, OpDelete)
+	return &CouponWithdrawDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CouponWithdrawClient) DeleteOne(cw *CouponWithdraw) *CouponWithdrawDeleteOne {
+	return c.DeleteOneID(cw.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *CouponWithdrawClient) DeleteOneID(id uint32) *CouponWithdrawDeleteOne {
+	builder := c.Delete().Where(couponwithdraw.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CouponWithdrawDeleteOne{builder}
+}
+
+// Query returns a query builder for CouponWithdraw.
+func (c *CouponWithdrawClient) Query() *CouponWithdrawQuery {
+	return &CouponWithdrawQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a CouponWithdraw entity by its id.
+func (c *CouponWithdrawClient) Get(ctx context.Context, id uint32) (*CouponWithdraw, error) {
+	return c.Query().Where(couponwithdraw.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CouponWithdrawClient) GetX(ctx context.Context, id uint32) *CouponWithdraw {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CouponWithdrawClient) Hooks() []Hook {
+	hooks := c.hooks.CouponWithdraw
+	return append(hooks[:len(hooks):len(hooks)], couponwithdraw.Hooks[:]...)
 }
 
 // GoodLedgerClient is a client for the GoodLedger schema.

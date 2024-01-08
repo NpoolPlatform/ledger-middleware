@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/couponwithdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
@@ -38,6 +39,7 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		couponwithdraw.Table:  couponwithdraw.ValidColumn,
 		goodledger.Table:      goodledger.ValidColumn,
 		goodstatement.Table:   goodstatement.ValidColumn,
 		ledger.Table:          ledger.ValidColumn,

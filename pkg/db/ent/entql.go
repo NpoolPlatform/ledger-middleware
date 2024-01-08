@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/couponwithdraw"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/goodstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
@@ -20,8 +21,32 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 8)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 9)}
 	graph.Nodes[0] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   couponwithdraw.Table,
+			Columns: couponwithdraw.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: couponwithdraw.FieldID,
+			},
+		},
+		Type: "CouponWithdraw",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			couponwithdraw.FieldCreatedAt:   {Type: field.TypeUint32, Column: couponwithdraw.FieldCreatedAt},
+			couponwithdraw.FieldUpdatedAt:   {Type: field.TypeUint32, Column: couponwithdraw.FieldUpdatedAt},
+			couponwithdraw.FieldDeletedAt:   {Type: field.TypeUint32, Column: couponwithdraw.FieldDeletedAt},
+			couponwithdraw.FieldEntID:       {Type: field.TypeUUID, Column: couponwithdraw.FieldEntID},
+			couponwithdraw.FieldAppID:       {Type: field.TypeUUID, Column: couponwithdraw.FieldAppID},
+			couponwithdraw.FieldUserID:      {Type: field.TypeUUID, Column: couponwithdraw.FieldUserID},
+			couponwithdraw.FieldCoinTypeID:  {Type: field.TypeUUID, Column: couponwithdraw.FieldCoinTypeID},
+			couponwithdraw.FieldAllocatedID: {Type: field.TypeUUID, Column: couponwithdraw.FieldAllocatedID},
+			couponwithdraw.FieldState:       {Type: field.TypeString, Column: couponwithdraw.FieldState},
+			couponwithdraw.FieldAmount:      {Type: field.TypeFloat64, Column: couponwithdraw.FieldAmount},
+			couponwithdraw.FieldReviewID:    {Type: field.TypeUUID, Column: couponwithdraw.FieldReviewID},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   goodledger.Table,
 			Columns: goodledger.Columns,
@@ -43,7 +68,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			goodledger.FieldToUser:     {Type: field.TypeFloat64, Column: goodledger.FieldToUser},
 		},
 	}
-	graph.Nodes[1] = &sqlgraph.Node{
+	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   goodstatement.Table,
 			Columns: goodstatement.Columns,
@@ -67,7 +92,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			goodstatement.FieldBenefitDate:               {Type: field.TypeUint32, Column: goodstatement.FieldBenefitDate},
 		},
 	}
-	graph.Nodes[2] = &sqlgraph.Node{
+	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   ledger.Table,
 			Columns: ledger.Columns,
@@ -91,7 +116,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ledger.FieldSpendable:  {Type: field.TypeFloat64, Column: ledger.FieldSpendable},
 		},
 	}
-	graph.Nodes[3] = &sqlgraph.Node{
+	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   ledgerlock.Table,
 			Columns: ledgerlock.Columns,
@@ -112,7 +137,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ledgerlock.FieldLockState:   {Type: field.TypeString, Column: ledgerlock.FieldLockState},
 		},
 	}
-	graph.Nodes[4] = &sqlgraph.Node{
+	graph.Nodes[5] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profit.Table,
 			Columns: profit.Columns,
@@ -133,7 +158,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profit.FieldIncoming:   {Type: field.TypeFloat64, Column: profit.FieldIncoming},
 		},
 	}
-	graph.Nodes[5] = &sqlgraph.Node{
+	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   statement.Table,
 			Columns: statement.Columns,
@@ -158,7 +183,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			statement.FieldIoExtraV1:  {Type: field.TypeString, Column: statement.FieldIoExtraV1},
 		},
 	}
-	graph.Nodes[6] = &sqlgraph.Node{
+	graph.Nodes[7] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   unsoldstatement.Table,
 			Columns: unsoldstatement.Columns,
@@ -180,7 +205,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			unsoldstatement.FieldStatementID: {Type: field.TypeUUID, Column: unsoldstatement.FieldStatementID},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[8] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   withdraw.Table,
 			Columns: withdraw.Columns,
@@ -217,6 +242,101 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (cwq *CouponWithdrawQuery) addPredicate(pred func(s *sql.Selector)) {
+	cwq.predicates = append(cwq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the CouponWithdrawQuery builder.
+func (cwq *CouponWithdrawQuery) Filter() *CouponWithdrawFilter {
+	return &CouponWithdrawFilter{config: cwq.config, predicateAdder: cwq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *CouponWithdrawMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the CouponWithdrawMutation builder.
+func (m *CouponWithdrawMutation) Filter() *CouponWithdrawFilter {
+	return &CouponWithdrawFilter{config: m.config, predicateAdder: m}
+}
+
+// CouponWithdrawFilter provides a generic filtering capability at runtime for CouponWithdrawQuery.
+type CouponWithdrawFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *CouponWithdrawFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *CouponWithdrawFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(couponwithdraw.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *CouponWithdrawFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(couponwithdraw.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *CouponWithdrawFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(couponwithdraw.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *CouponWithdrawFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(couponwithdraw.FieldDeletedAt))
+}
+
+// WhereEntID applies the entql [16]byte predicate on the ent_id field.
+func (f *CouponWithdrawFilter) WhereEntID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldEntID))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *CouponWithdrawFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldAppID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *CouponWithdrawFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldUserID))
+}
+
+// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
+func (f *CouponWithdrawFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldCoinTypeID))
+}
+
+// WhereAllocatedID applies the entql [16]byte predicate on the allocated_id field.
+func (f *CouponWithdrawFilter) WhereAllocatedID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldAllocatedID))
+}
+
+// WhereState applies the entql string predicate on the state field.
+func (f *CouponWithdrawFilter) WhereState(p entql.StringP) {
+	f.Where(p.Field(couponwithdraw.FieldState))
+}
+
+// WhereAmount applies the entql float64 predicate on the amount field.
+func (f *CouponWithdrawFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(couponwithdraw.FieldAmount))
+}
+
+// WhereReviewID applies the entql [16]byte predicate on the review_id field.
+func (f *CouponWithdrawFilter) WhereReviewID(p entql.ValueP) {
+	f.Where(p.Field(couponwithdraw.FieldReviewID))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (glq *GoodLedgerQuery) addPredicate(pred func(s *sql.Selector)) {
 	glq.predicates = append(glq.predicates, pred)
 }
@@ -245,7 +365,7 @@ type GoodLedgerFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *GoodLedgerFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -330,7 +450,7 @@ type GoodStatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *GoodStatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -425,7 +545,7 @@ type LedgerFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *LedgerFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -520,7 +640,7 @@ type LedgerLockFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *LedgerLockFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -600,7 +720,7 @@ type ProfitFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfitFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -680,7 +800,7 @@ type StatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *StatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -780,7 +900,7 @@ type UnsoldStatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UnsoldStatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -865,7 +985,7 @@ type WithdrawFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WithdrawFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
