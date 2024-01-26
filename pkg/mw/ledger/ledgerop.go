@@ -52,3 +52,12 @@ func (h *ledgeropHandler) getLedgers(ctx context.Context, tx *ent.Tx) error {
 	h.ledgers = ledgers
 	return nil
 }
+
+func (h *ledgeropHandler) coinLedger(coinTypeID uuid.UUID) *ent.Ledger {
+	for _, ledger := range h.ledgers {
+		if ledger.CoinTypeID == coinTypeID {
+			return ledger
+		}
+	}
+	return nil
+}
