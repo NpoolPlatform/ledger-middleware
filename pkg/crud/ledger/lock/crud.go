@@ -14,6 +14,7 @@ type Req struct {
 	StatementID     *uuid.UUID
 	Amount          *decimal.Decimal
 	LedgerLockState *types.LedgerLockState
+	ExLockID        *uuid.UUID
 	DeletedAt       *uint32
 }
 
@@ -35,6 +36,9 @@ func CreateSet(c *ent.LedgerLockCreate, in *Req) *ent.LedgerLockCreate {
 	}
 	if in.LedgerLockState != nil {
 		c.SetLockState(in.LedgerLockState.String())
+	}
+	if in.ExLockID != nil {
+		c.SetExLockID(*in.ExLockID)
 	}
 	return c
 }

@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
@@ -11,15 +12,26 @@ import (
 
 type ledgeropHandler struct {
 	*Handler
-	ledger   *ent.Ledger
-	ledgerID *uuid.UUID
+	ledgers   []*ent.Ledger
+	ledgerIDs []uuid.UUID
 }
 
-func (h *ledgeropHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
+func (h *ledgeropHandler) getLedgers(ctx context.Context, tx *ent.Tx) error {
 	stm := tx.Ledger.Query()
-	if h.ledgerID != nil {
+	if len(h.ledgerIDs) > 0 {
 		stm.Where(
-			entledger.EntID(*h.ledgerID),
+			entledger.EntIDIn(h.ledgerIDs...),
+			entledger.DeletedAt(0),
+		)
+	} else if len(h.Balances) > 0 {
+		coinTypeIDs := []uuid.UUID{}
+		for _, balance := range h.Balances {
+			coinTypeIDs = append(coinTypeIDs, balance.CoinTypeID)
+		}
+		stm.Where(
+			entledger.AppID(*h.AppID),
+			entledger.UserID(*h.UserID),
+			entledger.CoinTypeIDIn(coinTypeIDs...),
 			entledger.DeletedAt(0),
 		)
 	} else {
@@ -30,10 +42,13 @@ func (h *ledgeropHandler) getLedger(ctx context.Context, tx *ent.Tx) error {
 			entledger.DeletedAt(0),
 		)
 	}
-	ledger, err := stm.ForUpdate().Only(ctx)
+	ledgers, err := stm.ForUpdate().All(ctx)
 	if err != nil {
 		return err
 	}
-	h.ledger = ledger
+	if len(ledgers) == 0 {
+		return fmt.Errorf("invalid ledgers")
+	}
+	h.ledgers = ledgers
 	return nil
 }

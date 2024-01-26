@@ -135,6 +135,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ledgerlock.FieldStatementID: {Type: field.TypeUUID, Column: ledgerlock.FieldStatementID},
 			ledgerlock.FieldAmount:      {Type: field.TypeFloat64, Column: ledgerlock.FieldAmount},
 			ledgerlock.FieldLockState:   {Type: field.TypeString, Column: ledgerlock.FieldLockState},
+			ledgerlock.FieldExLockID:    {Type: field.TypeUUID, Column: ledgerlock.FieldExLockID},
 		},
 	}
 	graph.Nodes[5] = &sqlgraph.Node{
@@ -689,6 +690,11 @@ func (f *LedgerLockFilter) WhereAmount(p entql.Float64P) {
 // WhereLockState applies the entql string predicate on the lock_state field.
 func (f *LedgerLockFilter) WhereLockState(p entql.StringP) {
 	f.Where(p.Field(ledgerlock.FieldLockState))
+}
+
+// WhereExLockID applies the entql [16]byte predicate on the ex_lock_id field.
+func (f *LedgerLockFilter) WhereExLockID(p entql.ValueP) {
+	f.Where(p.Field(ledgerlock.FieldExLockID))
 }
 
 // addPredicate implements the predicateAdder interface.

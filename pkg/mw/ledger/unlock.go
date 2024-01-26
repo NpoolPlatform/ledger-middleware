@@ -9,6 +9,8 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -18,9 +20,9 @@ type unlockHandler struct {
 }
 
 func (h *unlockHandler) unlockBalance(ctx context.Context) error {
-	spendable := h.lock.Amount
+	spendable := h.locks[0].Amount
 	locked := decimal.NewFromInt(0).Sub(spendable)
-	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
+	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledgers[0], &ledgercrud.Req{
 		Locked:    &locked,
 		Spendable: &spendable,
 	})
@@ -44,7 +46,7 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		},
 	}
 
-	if err := handler.getLock(ctx); err != nil {
+	if err := handler.getLocks(ctx); err != nil {
 		if ent.IsNotFound(err) && h.Rollback != nil && *h.Rollback {
 			return nil, nil
 		}
@@ -53,16 +55,16 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 	if h.Rollback != nil || *h.Rollback {
 		handler.state = types.LedgerLockState_LedgerLockRollback.Enum()
 	}
-	handler.lop.ledgerID = &handler.lock.LedgerID
+	handler.lop.ledgerIDs = []uuid.UUID{handler.locks[0].LedgerID}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.lop.getLedger(ctx, tx); err != nil {
+		if err := handler.lop.getLedgers(ctx, tx); err != nil {
 			return err
 		}
 		if err := handler.unlockBalance(ctx); err != nil {
 			return err
 		}
-		if err := handler.updateLock(ctx, tx); err != nil {
+		if err := handler.updateLocks(ctx, tx); err != nil {
 			return err
 		}
 		return nil
@@ -80,6 +82,6 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		return nil, err
 	}
 
-	h.EntID = &handler.lop.ledger.EntID
+	h.EntID = &handler.lop.ledgers[0].EntID
 	return h.GetLedger(ctx)
 }

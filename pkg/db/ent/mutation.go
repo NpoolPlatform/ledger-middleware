@@ -4738,6 +4738,7 @@ type LedgerLockMutation struct {
 	amount        *decimal.Decimal
 	addamount     *decimal.Decimal
 	lock_state    *string
+	ex_lock_id    *uuid.UUID
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*LedgerLock, error)
@@ -5269,6 +5270,55 @@ func (m *LedgerLockMutation) ResetLockState() {
 	delete(m.clearedFields, ledgerlock.FieldLockState)
 }
 
+// SetExLockID sets the "ex_lock_id" field.
+func (m *LedgerLockMutation) SetExLockID(u uuid.UUID) {
+	m.ex_lock_id = &u
+}
+
+// ExLockID returns the value of the "ex_lock_id" field in the mutation.
+func (m *LedgerLockMutation) ExLockID() (r uuid.UUID, exists bool) {
+	v := m.ex_lock_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExLockID returns the old "ex_lock_id" field's value of the LedgerLock entity.
+// If the LedgerLock object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LedgerLockMutation) OldExLockID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExLockID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExLockID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExLockID: %w", err)
+	}
+	return oldValue.ExLockID, nil
+}
+
+// ClearExLockID clears the value of the "ex_lock_id" field.
+func (m *LedgerLockMutation) ClearExLockID() {
+	m.ex_lock_id = nil
+	m.clearedFields[ledgerlock.FieldExLockID] = struct{}{}
+}
+
+// ExLockIDCleared returns if the "ex_lock_id" field was cleared in this mutation.
+func (m *LedgerLockMutation) ExLockIDCleared() bool {
+	_, ok := m.clearedFields[ledgerlock.FieldExLockID]
+	return ok
+}
+
+// ResetExLockID resets all changes to the "ex_lock_id" field.
+func (m *LedgerLockMutation) ResetExLockID() {
+	m.ex_lock_id = nil
+	delete(m.clearedFields, ledgerlock.FieldExLockID)
+}
+
 // Where appends a list predicates to the LedgerLockMutation builder.
 func (m *LedgerLockMutation) Where(ps ...predicate.LedgerLock) {
 	m.predicates = append(m.predicates, ps...)
@@ -5288,7 +5338,7 @@ func (m *LedgerLockMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LedgerLockMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, ledgerlock.FieldCreatedAt)
 	}
@@ -5312,6 +5362,9 @@ func (m *LedgerLockMutation) Fields() []string {
 	}
 	if m.lock_state != nil {
 		fields = append(fields, ledgerlock.FieldLockState)
+	}
+	if m.ex_lock_id != nil {
+		fields = append(fields, ledgerlock.FieldExLockID)
 	}
 	return fields
 }
@@ -5337,6 +5390,8 @@ func (m *LedgerLockMutation) Field(name string) (ent.Value, bool) {
 		return m.Amount()
 	case ledgerlock.FieldLockState:
 		return m.LockState()
+	case ledgerlock.FieldExLockID:
+		return m.ExLockID()
 	}
 	return nil, false
 }
@@ -5362,6 +5417,8 @@ func (m *LedgerLockMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldAmount(ctx)
 	case ledgerlock.FieldLockState:
 		return m.OldLockState(ctx)
+	case ledgerlock.FieldExLockID:
+		return m.OldExLockID(ctx)
 	}
 	return nil, fmt.Errorf("unknown LedgerLock field %s", name)
 }
@@ -5426,6 +5483,13 @@ func (m *LedgerLockMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLockState(v)
+		return nil
+	case ledgerlock.FieldExLockID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExLockID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown LedgerLock field %s", name)
@@ -5520,6 +5584,9 @@ func (m *LedgerLockMutation) ClearedFields() []string {
 	if m.FieldCleared(ledgerlock.FieldLockState) {
 		fields = append(fields, ledgerlock.FieldLockState)
 	}
+	if m.FieldCleared(ledgerlock.FieldExLockID) {
+		fields = append(fields, ledgerlock.FieldExLockID)
+	}
 	return fields
 }
 
@@ -5545,6 +5612,9 @@ func (m *LedgerLockMutation) ClearField(name string) error {
 		return nil
 	case ledgerlock.FieldLockState:
 		m.ClearLockState()
+		return nil
+	case ledgerlock.FieldExLockID:
+		m.ClearExLockID()
 		return nil
 	}
 	return fmt.Errorf("unknown LedgerLock nullable field %s", name)
@@ -5577,6 +5647,9 @@ func (m *LedgerLockMutation) ResetField(name string) error {
 		return nil
 	case ledgerlock.FieldLockState:
 		m.ResetLockState()
+		return nil
+	case ledgerlock.FieldExLockID:
+		m.ResetExLockID()
 		return nil
 	}
 	return fmt.Errorf("unknown LedgerLock field %s", name)

@@ -27,6 +27,8 @@ type Handler struct {
 	StatementID     *uuid.UUID
 	LedgerLockState *types.LedgerLockState
 	Rollback        *bool
+	Balances        []*LockBalance
+	StatementIDs    []uuid.UUID
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -256,6 +258,39 @@ func WithLedgerLockState(e *types.LedgerLockState, must bool) func(context.Conte
 func WithRollback(b *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Rollback = b
+		return nil
+	}
+}
+
+func WithBalances(balances []*npool.LockBalancesRequest_XBalance, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		for _, balance := range balances {
+			coinTypeID, err := uuid.Parse(balance.CoinTypeID)
+			if err != nil {
+				return err
+			}
+			amount, err := decimal.NewFromString(balance.Amount)
+			if err != nil {
+				return err
+			}
+			h.Balances = append(h.Balances, &LockBalance{
+				CoinTypeID: coinTypeID,
+				Amount:     amount,
+			})
+		}
+		return nil
+	}
+}
+
+func WithStatementIDs(ids []string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		for _, id := range ids {
+			_id, err := uuid.Parse(id)
+			if err != nil {
+				return err
+			}
+			h.StatementIDs = append(h.StatementIDs, _id)
+		}
 		return nil
 	}
 }

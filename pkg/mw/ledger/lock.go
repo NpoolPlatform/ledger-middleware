@@ -7,6 +7,7 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	ledgermwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger"
+
 	"github.com/shopspring/decimal"
 )
 
@@ -17,7 +18,7 @@ type lockHandler struct {
 
 func (h *lockHandler) lockBalance(ctx context.Context) error {
 	spendable := decimal.NewFromInt(0).Sub(*h.Locked)
-	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledger, &ledgercrud.Req{
+	stm, err := ledgercrud.UpdateSetWithValidate(h.lop.ledgers[0], &ledgercrud.Req{
 		AppID:      h.AppID,
 		UserID:     h.UserID,
 		CoinTypeID: h.CoinTypeID,
@@ -44,14 +45,14 @@ func (h *Handler) LockBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
-		if err := handler.lop.getLedger(ctx, tx); err != nil {
+		if err := handler.lop.getLedgers(ctx, tx); err != nil {
 			return err
 		}
-		h.EntID = &handler.lop.ledger.EntID
+		h.EntID = &handler.lop.ledgers[0].EntID
 		if err := handler.lockBalance(ctx); err != nil {
 			return err
 		}
-		if err := handler.createLock(ctx, tx); err != nil {
+		if err := handler.createLocks(ctx, tx); err != nil {
 			return err
 		}
 		return nil

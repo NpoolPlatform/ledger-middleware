@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/mixin"
 	crudermixin "github.com/NpoolPlatform/libent-cruder/pkg/mixin"
 	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
@@ -49,10 +50,24 @@ func (LedgerLock) Fields() []ent.Field {
 			String("lock_state").
 			Optional().
 			Default(types.LedgerLockState_LedgerLockLocked.String()),
+		// To support one lock for multi coins
+		// In default it'll be set to ent id
+		field.
+			UUID("ex_lock_id", uuid.UUID{}).
+			Optional().
+			Default(func() uuid.UUID {
+				return uuid.Nil
+			}),
 	}
 }
 
 // Edges of the LedgerLock.
 func (LedgerLock) Edges() []ent.Edge {
 	return nil
+}
+
+func (LedgerLock) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("ex_lock_id"),
+	}
 }

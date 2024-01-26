@@ -135,6 +135,20 @@ func (llc *LedgerLockCreate) SetNillableLockState(s *string) *LedgerLockCreate {
 	return llc
 }
 
+// SetExLockID sets the "ex_lock_id" field.
+func (llc *LedgerLockCreate) SetExLockID(u uuid.UUID) *LedgerLockCreate {
+	llc.mutation.SetExLockID(u)
+	return llc
+}
+
+// SetNillableExLockID sets the "ex_lock_id" field if the given value is not nil.
+func (llc *LedgerLockCreate) SetNillableExLockID(u *uuid.UUID) *LedgerLockCreate {
+	if u != nil {
+		llc.SetExLockID(*u)
+	}
+	return llc
+}
+
 // SetID sets the "id" field.
 func (llc *LedgerLockCreate) SetID(u uint32) *LedgerLockCreate {
 	llc.mutation.SetID(u)
@@ -266,6 +280,13 @@ func (llc *LedgerLockCreate) defaults() error {
 		v := ledgerlock.DefaultLockState
 		llc.mutation.SetLockState(v)
 	}
+	if _, ok := llc.mutation.ExLockID(); !ok {
+		if ledgerlock.DefaultExLockID == nil {
+			return fmt.Errorf("ent: uninitialized ledgerlock.DefaultExLockID (forgotten import ent/runtime?)")
+		}
+		v := ledgerlock.DefaultExLockID()
+		llc.mutation.SetExLockID(v)
+	}
 	return nil
 }
 
@@ -380,6 +401,14 @@ func (llc *LedgerLockCreate) createSpec() (*LedgerLock, *sqlgraph.CreateSpec) {
 			Column: ledgerlock.FieldLockState,
 		})
 		_node.LockState = value
+	}
+	if value, ok := llc.mutation.ExLockID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldExLockID,
+		})
+		_node.ExLockID = value
 	}
 	return _node, _spec
 }
@@ -576,6 +605,24 @@ func (u *LedgerLockUpsert) UpdateLockState() *LedgerLockUpsert {
 // ClearLockState clears the value of the "lock_state" field.
 func (u *LedgerLockUpsert) ClearLockState() *LedgerLockUpsert {
 	u.SetNull(ledgerlock.FieldLockState)
+	return u
+}
+
+// SetExLockID sets the "ex_lock_id" field.
+func (u *LedgerLockUpsert) SetExLockID(v uuid.UUID) *LedgerLockUpsert {
+	u.Set(ledgerlock.FieldExLockID, v)
+	return u
+}
+
+// UpdateExLockID sets the "ex_lock_id" field to the value that was provided on create.
+func (u *LedgerLockUpsert) UpdateExLockID() *LedgerLockUpsert {
+	u.SetExcluded(ledgerlock.FieldExLockID)
+	return u
+}
+
+// ClearExLockID clears the value of the "ex_lock_id" field.
+func (u *LedgerLockUpsert) ClearExLockID() *LedgerLockUpsert {
+	u.SetNull(ledgerlock.FieldExLockID)
 	return u
 }
 
@@ -794,6 +841,27 @@ func (u *LedgerLockUpsertOne) UpdateLockState() *LedgerLockUpsertOne {
 func (u *LedgerLockUpsertOne) ClearLockState() *LedgerLockUpsertOne {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.ClearLockState()
+	})
+}
+
+// SetExLockID sets the "ex_lock_id" field.
+func (u *LedgerLockUpsertOne) SetExLockID(v uuid.UUID) *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetExLockID(v)
+	})
+}
+
+// UpdateExLockID sets the "ex_lock_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertOne) UpdateExLockID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateExLockID()
+	})
+}
+
+// ClearExLockID clears the value of the "ex_lock_id" field.
+func (u *LedgerLockUpsertOne) ClearExLockID() *LedgerLockUpsertOne {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearExLockID()
 	})
 }
 
@@ -1177,6 +1245,27 @@ func (u *LedgerLockUpsertBulk) UpdateLockState() *LedgerLockUpsertBulk {
 func (u *LedgerLockUpsertBulk) ClearLockState() *LedgerLockUpsertBulk {
 	return u.Update(func(s *LedgerLockUpsert) {
 		s.ClearLockState()
+	})
+}
+
+// SetExLockID sets the "ex_lock_id" field.
+func (u *LedgerLockUpsertBulk) SetExLockID(v uuid.UUID) *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.SetExLockID(v)
+	})
+}
+
+// UpdateExLockID sets the "ex_lock_id" field to the value that was provided on create.
+func (u *LedgerLockUpsertBulk) UpdateExLockID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.UpdateExLockID()
+	})
+}
+
+// ClearExLockID clears the value of the "ex_lock_id" field.
+func (u *LedgerLockUpsertBulk) ClearExLockID() *LedgerLockUpsertBulk {
+	return u.Update(func(s *LedgerLockUpsert) {
+		s.ClearExLockID()
 	})
 }
 
