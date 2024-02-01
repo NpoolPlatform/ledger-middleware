@@ -169,6 +169,86 @@ var (
 			},
 		},
 	}
+	// SimulateGeneralsColumns holds the columns for the "simulate_generals" table.
+	SimulateGeneralsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "outcoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+	}
+	// SimulateGeneralsTable holds the schema information for the "simulate_generals" table.
+	SimulateGeneralsTable = &schema.Table{
+		Name:       "simulate_generals",
+		Columns:    SimulateGeneralsColumns,
+		PrimaryKey: []*schema.Column{SimulateGeneralsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "simulateledger_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{SimulateGeneralsColumns[4]},
+			},
+		},
+	}
+	// SimulateProfitsColumns holds the columns for the "simulate_profits" table.
+	SimulateProfitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "send_coupon", Type: field.TypeBool, Nullable: true, Default: false},
+	}
+	// SimulateProfitsTable holds the schema information for the "simulate_profits" table.
+	SimulateProfitsTable = &schema.Table{
+		Name:       "simulate_profits",
+		Columns:    SimulateProfitsColumns,
+		PrimaryKey: []*schema.Column{SimulateProfitsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "simulateprofit_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{SimulateProfitsColumns[4]},
+			},
+		},
+	}
+	// SimulateDetailsColumns holds the columns for the "simulate_details" table.
+	SimulateDetailsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "ent_id", Type: field.TypeUUID, Unique: true},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "io_type", Type: field.TypeString, Nullable: true, Default: "DefaultType"},
+		{Name: "io_sub_type", Type: field.TypeString, Nullable: true, Default: "DefaultSubType"},
+		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
+		{Name: "io_extra", Type: field.TypeString, Nullable: true, Size: 512, Default: ""},
+	}
+	// SimulateDetailsTable holds the schema information for the "simulate_details" table.
+	SimulateDetailsTable = &schema.Table{
+		Name:       "simulate_details",
+		Columns:    SimulateDetailsColumns,
+		PrimaryKey: []*schema.Column{SimulateDetailsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "simulatestatement_ent_id",
+				Unique:  true,
+				Columns: []*schema.Column{SimulateDetailsColumns[4]},
+			},
+		},
+	}
 	// DetailsColumns holds the columns for the "details" table.
 	DetailsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
@@ -263,6 +343,9 @@ var (
 		GeneralsTable,
 		LedgerLocksTable,
 		ProfitsTable,
+		SimulateGeneralsTable,
+		SimulateProfitsTable,
+		SimulateDetailsTable,
 		DetailsTable,
 		MiningUnsoldsTable,
 		WithdrawsTable,
@@ -278,6 +361,12 @@ func init() {
 	}
 	GeneralsTable.Annotation = &entsql.Annotation{
 		Table: "generals",
+	}
+	SimulateGeneralsTable.Annotation = &entsql.Annotation{
+		Table: "simulate_generals",
+	}
+	SimulateDetailsTable.Annotation = &entsql.Annotation{
+		Table: "simulate_details",
 	}
 	DetailsTable.Annotation = &entsql.Annotation{
 		Table: "details",

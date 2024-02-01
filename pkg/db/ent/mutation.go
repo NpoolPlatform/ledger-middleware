@@ -15,6 +15,9 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/predicate"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateprofit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulatestatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
@@ -33,15 +36,18 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeCouponWithdraw  = "CouponWithdraw"
-	TypeGoodLedger      = "GoodLedger"
-	TypeGoodStatement   = "GoodStatement"
-	TypeLedger          = "Ledger"
-	TypeLedgerLock      = "LedgerLock"
-	TypeProfit          = "Profit"
-	TypeStatement       = "Statement"
-	TypeUnsoldStatement = "UnsoldStatement"
-	TypeWithdraw        = "Withdraw"
+	TypeCouponWithdraw    = "CouponWithdraw"
+	TypeGoodLedger        = "GoodLedger"
+	TypeGoodStatement     = "GoodStatement"
+	TypeLedger            = "Ledger"
+	TypeLedgerLock        = "LedgerLock"
+	TypeProfit            = "Profit"
+	TypeSimulateLedger    = "SimulateLedger"
+	TypeSimulateProfit    = "SimulateProfit"
+	TypeSimulateStatement = "SimulateStatement"
+	TypeStatement         = "Statement"
+	TypeUnsoldStatement   = "UnsoldStatement"
+	TypeWithdraw          = "Withdraw"
 )
 
 // CouponWithdrawMutation represents an operation that mutates the CouponWithdraw nodes in the graph.
@@ -6538,6 +6544,3135 @@ func (m *ProfitMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProfitMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Profit edge %s", name)
+}
+
+// SimulateLedgerMutation represents an operation that mutates the SimulateLedger nodes in the graph.
+type SimulateLedgerMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint32
+	created_at    *uint32
+	addcreated_at *int32
+	updated_at    *uint32
+	addupdated_at *int32
+	deleted_at    *uint32
+	adddeleted_at *int32
+	ent_id        *uuid.UUID
+	app_id        *uuid.UUID
+	user_id       *uuid.UUID
+	coin_type_id  *uuid.UUID
+	incoming      *decimal.Decimal
+	addincoming   *decimal.Decimal
+	outcoming     *decimal.Decimal
+	addoutcoming  *decimal.Decimal
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*SimulateLedger, error)
+	predicates    []predicate.SimulateLedger
+}
+
+var _ ent.Mutation = (*SimulateLedgerMutation)(nil)
+
+// simulateledgerOption allows management of the mutation configuration using functional options.
+type simulateledgerOption func(*SimulateLedgerMutation)
+
+// newSimulateLedgerMutation creates new mutation for the SimulateLedger entity.
+func newSimulateLedgerMutation(c config, op Op, opts ...simulateledgerOption) *SimulateLedgerMutation {
+	m := &SimulateLedgerMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSimulateLedger,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSimulateLedgerID sets the ID field of the mutation.
+func withSimulateLedgerID(id uint32) simulateledgerOption {
+	return func(m *SimulateLedgerMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SimulateLedger
+		)
+		m.oldValue = func(ctx context.Context) (*SimulateLedger, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SimulateLedger.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSimulateLedger sets the old SimulateLedger of the mutation.
+func withSimulateLedger(node *SimulateLedger) simulateledgerOption {
+	return func(m *SimulateLedgerMutation) {
+		m.oldValue = func(context.Context) (*SimulateLedger, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SimulateLedgerMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SimulateLedgerMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SimulateLedger entities.
+func (m *SimulateLedgerMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SimulateLedgerMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SimulateLedgerMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SimulateLedger.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SimulateLedgerMutation) SetCreatedAt(u uint32) {
+	m.created_at = &u
+	m.addcreated_at = nil
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SimulateLedgerMutation) CreatedAt() (r uint32, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldCreatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// AddCreatedAt adds u to the "created_at" field.
+func (m *SimulateLedgerMutation) AddCreatedAt(u int32) {
+	if m.addcreated_at != nil {
+		*m.addcreated_at += u
+	} else {
+		m.addcreated_at = &u
+	}
+}
+
+// AddedCreatedAt returns the value that was added to the "created_at" field in this mutation.
+func (m *SimulateLedgerMutation) AddedCreatedAt() (r int32, exists bool) {
+	v := m.addcreated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SimulateLedgerMutation) ResetCreatedAt() {
+	m.created_at = nil
+	m.addcreated_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SimulateLedgerMutation) SetUpdatedAt(u uint32) {
+	m.updated_at = &u
+	m.addupdated_at = nil
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SimulateLedgerMutation) UpdatedAt() (r uint32, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldUpdatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// AddUpdatedAt adds u to the "updated_at" field.
+func (m *SimulateLedgerMutation) AddUpdatedAt(u int32) {
+	if m.addupdated_at != nil {
+		*m.addupdated_at += u
+	} else {
+		m.addupdated_at = &u
+	}
+}
+
+// AddedUpdatedAt returns the value that was added to the "updated_at" field in this mutation.
+func (m *SimulateLedgerMutation) AddedUpdatedAt() (r int32, exists bool) {
+	v := m.addupdated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SimulateLedgerMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	m.addupdated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *SimulateLedgerMutation) SetDeletedAt(u uint32) {
+	m.deleted_at = &u
+	m.adddeleted_at = nil
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *SimulateLedgerMutation) DeletedAt() (r uint32, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldDeletedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// AddDeletedAt adds u to the "deleted_at" field.
+func (m *SimulateLedgerMutation) AddDeletedAt(u int32) {
+	if m.adddeleted_at != nil {
+		*m.adddeleted_at += u
+	} else {
+		m.adddeleted_at = &u
+	}
+}
+
+// AddedDeletedAt returns the value that was added to the "deleted_at" field in this mutation.
+func (m *SimulateLedgerMutation) AddedDeletedAt() (r int32, exists bool) {
+	v := m.adddeleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *SimulateLedgerMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	m.adddeleted_at = nil
+}
+
+// SetEntID sets the "ent_id" field.
+func (m *SimulateLedgerMutation) SetEntID(u uuid.UUID) {
+	m.ent_id = &u
+}
+
+// EntID returns the value of the "ent_id" field in the mutation.
+func (m *SimulateLedgerMutation) EntID() (r uuid.UUID, exists bool) {
+	v := m.ent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntID returns the old "ent_id" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldEntID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntID: %w", err)
+	}
+	return oldValue.EntID, nil
+}
+
+// ResetEntID resets all changes to the "ent_id" field.
+func (m *SimulateLedgerMutation) ResetEntID() {
+	m.ent_id = nil
+}
+
+// SetAppID sets the "app_id" field.
+func (m *SimulateLedgerMutation) SetAppID(u uuid.UUID) {
+	m.app_id = &u
+}
+
+// AppID returns the value of the "app_id" field in the mutation.
+func (m *SimulateLedgerMutation) AppID() (r uuid.UUID, exists bool) {
+	v := m.app_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppID returns the old "app_id" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldAppID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppID: %w", err)
+	}
+	return oldValue.AppID, nil
+}
+
+// ClearAppID clears the value of the "app_id" field.
+func (m *SimulateLedgerMutation) ClearAppID() {
+	m.app_id = nil
+	m.clearedFields[simulateledger.FieldAppID] = struct{}{}
+}
+
+// AppIDCleared returns if the "app_id" field was cleared in this mutation.
+func (m *SimulateLedgerMutation) AppIDCleared() bool {
+	_, ok := m.clearedFields[simulateledger.FieldAppID]
+	return ok
+}
+
+// ResetAppID resets all changes to the "app_id" field.
+func (m *SimulateLedgerMutation) ResetAppID() {
+	m.app_id = nil
+	delete(m.clearedFields, simulateledger.FieldAppID)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *SimulateLedgerMutation) SetUserID(u uuid.UUID) {
+	m.user_id = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *SimulateLedgerMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *SimulateLedgerMutation) ClearUserID() {
+	m.user_id = nil
+	m.clearedFields[simulateledger.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *SimulateLedgerMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[simulateledger.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *SimulateLedgerMutation) ResetUserID() {
+	m.user_id = nil
+	delete(m.clearedFields, simulateledger.FieldUserID)
+}
+
+// SetCoinTypeID sets the "coin_type_id" field.
+func (m *SimulateLedgerMutation) SetCoinTypeID(u uuid.UUID) {
+	m.coin_type_id = &u
+}
+
+// CoinTypeID returns the value of the "coin_type_id" field in the mutation.
+func (m *SimulateLedgerMutation) CoinTypeID() (r uuid.UUID, exists bool) {
+	v := m.coin_type_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCoinTypeID returns the old "coin_type_id" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldCoinTypeID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoinTypeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoinTypeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoinTypeID: %w", err)
+	}
+	return oldValue.CoinTypeID, nil
+}
+
+// ClearCoinTypeID clears the value of the "coin_type_id" field.
+func (m *SimulateLedgerMutation) ClearCoinTypeID() {
+	m.coin_type_id = nil
+	m.clearedFields[simulateledger.FieldCoinTypeID] = struct{}{}
+}
+
+// CoinTypeIDCleared returns if the "coin_type_id" field was cleared in this mutation.
+func (m *SimulateLedgerMutation) CoinTypeIDCleared() bool {
+	_, ok := m.clearedFields[simulateledger.FieldCoinTypeID]
+	return ok
+}
+
+// ResetCoinTypeID resets all changes to the "coin_type_id" field.
+func (m *SimulateLedgerMutation) ResetCoinTypeID() {
+	m.coin_type_id = nil
+	delete(m.clearedFields, simulateledger.FieldCoinTypeID)
+}
+
+// SetIncoming sets the "incoming" field.
+func (m *SimulateLedgerMutation) SetIncoming(d decimal.Decimal) {
+	m.incoming = &d
+	m.addincoming = nil
+}
+
+// Incoming returns the value of the "incoming" field in the mutation.
+func (m *SimulateLedgerMutation) Incoming() (r decimal.Decimal, exists bool) {
+	v := m.incoming
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncoming returns the old "incoming" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldIncoming(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncoming is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncoming requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncoming: %w", err)
+	}
+	return oldValue.Incoming, nil
+}
+
+// AddIncoming adds d to the "incoming" field.
+func (m *SimulateLedgerMutation) AddIncoming(d decimal.Decimal) {
+	if m.addincoming != nil {
+		*m.addincoming = m.addincoming.Add(d)
+	} else {
+		m.addincoming = &d
+	}
+}
+
+// AddedIncoming returns the value that was added to the "incoming" field in this mutation.
+func (m *SimulateLedgerMutation) AddedIncoming() (r decimal.Decimal, exists bool) {
+	v := m.addincoming
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearIncoming clears the value of the "incoming" field.
+func (m *SimulateLedgerMutation) ClearIncoming() {
+	m.incoming = nil
+	m.addincoming = nil
+	m.clearedFields[simulateledger.FieldIncoming] = struct{}{}
+}
+
+// IncomingCleared returns if the "incoming" field was cleared in this mutation.
+func (m *SimulateLedgerMutation) IncomingCleared() bool {
+	_, ok := m.clearedFields[simulateledger.FieldIncoming]
+	return ok
+}
+
+// ResetIncoming resets all changes to the "incoming" field.
+func (m *SimulateLedgerMutation) ResetIncoming() {
+	m.incoming = nil
+	m.addincoming = nil
+	delete(m.clearedFields, simulateledger.FieldIncoming)
+}
+
+// SetOutcoming sets the "outcoming" field.
+func (m *SimulateLedgerMutation) SetOutcoming(d decimal.Decimal) {
+	m.outcoming = &d
+	m.addoutcoming = nil
+}
+
+// Outcoming returns the value of the "outcoming" field in the mutation.
+func (m *SimulateLedgerMutation) Outcoming() (r decimal.Decimal, exists bool) {
+	v := m.outcoming
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutcoming returns the old "outcoming" field's value of the SimulateLedger entity.
+// If the SimulateLedger object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateLedgerMutation) OldOutcoming(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutcoming is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutcoming requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutcoming: %w", err)
+	}
+	return oldValue.Outcoming, nil
+}
+
+// AddOutcoming adds d to the "outcoming" field.
+func (m *SimulateLedgerMutation) AddOutcoming(d decimal.Decimal) {
+	if m.addoutcoming != nil {
+		*m.addoutcoming = m.addoutcoming.Add(d)
+	} else {
+		m.addoutcoming = &d
+	}
+}
+
+// AddedOutcoming returns the value that was added to the "outcoming" field in this mutation.
+func (m *SimulateLedgerMutation) AddedOutcoming() (r decimal.Decimal, exists bool) {
+	v := m.addoutcoming
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOutcoming clears the value of the "outcoming" field.
+func (m *SimulateLedgerMutation) ClearOutcoming() {
+	m.outcoming = nil
+	m.addoutcoming = nil
+	m.clearedFields[simulateledger.FieldOutcoming] = struct{}{}
+}
+
+// OutcomingCleared returns if the "outcoming" field was cleared in this mutation.
+func (m *SimulateLedgerMutation) OutcomingCleared() bool {
+	_, ok := m.clearedFields[simulateledger.FieldOutcoming]
+	return ok
+}
+
+// ResetOutcoming resets all changes to the "outcoming" field.
+func (m *SimulateLedgerMutation) ResetOutcoming() {
+	m.outcoming = nil
+	m.addoutcoming = nil
+	delete(m.clearedFields, simulateledger.FieldOutcoming)
+}
+
+// Where appends a list predicates to the SimulateLedgerMutation builder.
+func (m *SimulateLedgerMutation) Where(ps ...predicate.SimulateLedger) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *SimulateLedgerMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (SimulateLedger).
+func (m *SimulateLedgerMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SimulateLedgerMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.created_at != nil {
+		fields = append(fields, simulateledger.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, simulateledger.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, simulateledger.FieldDeletedAt)
+	}
+	if m.ent_id != nil {
+		fields = append(fields, simulateledger.FieldEntID)
+	}
+	if m.app_id != nil {
+		fields = append(fields, simulateledger.FieldAppID)
+	}
+	if m.user_id != nil {
+		fields = append(fields, simulateledger.FieldUserID)
+	}
+	if m.coin_type_id != nil {
+		fields = append(fields, simulateledger.FieldCoinTypeID)
+	}
+	if m.incoming != nil {
+		fields = append(fields, simulateledger.FieldIncoming)
+	}
+	if m.outcoming != nil {
+		fields = append(fields, simulateledger.FieldOutcoming)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SimulateLedgerMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case simulateledger.FieldCreatedAt:
+		return m.CreatedAt()
+	case simulateledger.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case simulateledger.FieldDeletedAt:
+		return m.DeletedAt()
+	case simulateledger.FieldEntID:
+		return m.EntID()
+	case simulateledger.FieldAppID:
+		return m.AppID()
+	case simulateledger.FieldUserID:
+		return m.UserID()
+	case simulateledger.FieldCoinTypeID:
+		return m.CoinTypeID()
+	case simulateledger.FieldIncoming:
+		return m.Incoming()
+	case simulateledger.FieldOutcoming:
+		return m.Outcoming()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SimulateLedgerMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case simulateledger.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case simulateledger.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case simulateledger.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case simulateledger.FieldEntID:
+		return m.OldEntID(ctx)
+	case simulateledger.FieldAppID:
+		return m.OldAppID(ctx)
+	case simulateledger.FieldUserID:
+		return m.OldUserID(ctx)
+	case simulateledger.FieldCoinTypeID:
+		return m.OldCoinTypeID(ctx)
+	case simulateledger.FieldIncoming:
+		return m.OldIncoming(ctx)
+	case simulateledger.FieldOutcoming:
+		return m.OldOutcoming(ctx)
+	}
+	return nil, fmt.Errorf("unknown SimulateLedger field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SimulateLedgerMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case simulateledger.FieldCreatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case simulateledger.FieldUpdatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case simulateledger.FieldDeletedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case simulateledger.FieldEntID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntID(v)
+		return nil
+	case simulateledger.FieldAppID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppID(v)
+		return nil
+	case simulateledger.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case simulateledger.FieldCoinTypeID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoinTypeID(v)
+		return nil
+	case simulateledger.FieldIncoming:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncoming(v)
+		return nil
+	case simulateledger.FieldOutcoming:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutcoming(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateLedger field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SimulateLedgerMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_at != nil {
+		fields = append(fields, simulateledger.FieldCreatedAt)
+	}
+	if m.addupdated_at != nil {
+		fields = append(fields, simulateledger.FieldUpdatedAt)
+	}
+	if m.adddeleted_at != nil {
+		fields = append(fields, simulateledger.FieldDeletedAt)
+	}
+	if m.addincoming != nil {
+		fields = append(fields, simulateledger.FieldIncoming)
+	}
+	if m.addoutcoming != nil {
+		fields = append(fields, simulateledger.FieldOutcoming)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SimulateLedgerMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case simulateledger.FieldCreatedAt:
+		return m.AddedCreatedAt()
+	case simulateledger.FieldUpdatedAt:
+		return m.AddedUpdatedAt()
+	case simulateledger.FieldDeletedAt:
+		return m.AddedDeletedAt()
+	case simulateledger.FieldIncoming:
+		return m.AddedIncoming()
+	case simulateledger.FieldOutcoming:
+		return m.AddedOutcoming()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SimulateLedgerMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case simulateledger.FieldCreatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedAt(v)
+		return nil
+	case simulateledger.FieldUpdatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedAt(v)
+		return nil
+	case simulateledger.FieldDeletedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedAt(v)
+		return nil
+	case simulateledger.FieldIncoming:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIncoming(v)
+		return nil
+	case simulateledger.FieldOutcoming:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOutcoming(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateLedger numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SimulateLedgerMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(simulateledger.FieldAppID) {
+		fields = append(fields, simulateledger.FieldAppID)
+	}
+	if m.FieldCleared(simulateledger.FieldUserID) {
+		fields = append(fields, simulateledger.FieldUserID)
+	}
+	if m.FieldCleared(simulateledger.FieldCoinTypeID) {
+		fields = append(fields, simulateledger.FieldCoinTypeID)
+	}
+	if m.FieldCleared(simulateledger.FieldIncoming) {
+		fields = append(fields, simulateledger.FieldIncoming)
+	}
+	if m.FieldCleared(simulateledger.FieldOutcoming) {
+		fields = append(fields, simulateledger.FieldOutcoming)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SimulateLedgerMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SimulateLedgerMutation) ClearField(name string) error {
+	switch name {
+	case simulateledger.FieldAppID:
+		m.ClearAppID()
+		return nil
+	case simulateledger.FieldUserID:
+		m.ClearUserID()
+		return nil
+	case simulateledger.FieldCoinTypeID:
+		m.ClearCoinTypeID()
+		return nil
+	case simulateledger.FieldIncoming:
+		m.ClearIncoming()
+		return nil
+	case simulateledger.FieldOutcoming:
+		m.ClearOutcoming()
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateLedger nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SimulateLedgerMutation) ResetField(name string) error {
+	switch name {
+	case simulateledger.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case simulateledger.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case simulateledger.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case simulateledger.FieldEntID:
+		m.ResetEntID()
+		return nil
+	case simulateledger.FieldAppID:
+		m.ResetAppID()
+		return nil
+	case simulateledger.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case simulateledger.FieldCoinTypeID:
+		m.ResetCoinTypeID()
+		return nil
+	case simulateledger.FieldIncoming:
+		m.ResetIncoming()
+		return nil
+	case simulateledger.FieldOutcoming:
+		m.ResetOutcoming()
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateLedger field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SimulateLedgerMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SimulateLedgerMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SimulateLedgerMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SimulateLedgerMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SimulateLedgerMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SimulateLedgerMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SimulateLedgerMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown SimulateLedger unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SimulateLedgerMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown SimulateLedger edge %s", name)
+}
+
+// SimulateProfitMutation represents an operation that mutates the SimulateProfit nodes in the graph.
+type SimulateProfitMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint32
+	created_at    *uint32
+	addcreated_at *int32
+	updated_at    *uint32
+	addupdated_at *int32
+	deleted_at    *uint32
+	adddeleted_at *int32
+	ent_id        *uuid.UUID
+	app_id        *uuid.UUID
+	user_id       *uuid.UUID
+	coin_type_id  *uuid.UUID
+	incoming      *decimal.Decimal
+	addincoming   *decimal.Decimal
+	send_coupon   *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*SimulateProfit, error)
+	predicates    []predicate.SimulateProfit
+}
+
+var _ ent.Mutation = (*SimulateProfitMutation)(nil)
+
+// simulateprofitOption allows management of the mutation configuration using functional options.
+type simulateprofitOption func(*SimulateProfitMutation)
+
+// newSimulateProfitMutation creates new mutation for the SimulateProfit entity.
+func newSimulateProfitMutation(c config, op Op, opts ...simulateprofitOption) *SimulateProfitMutation {
+	m := &SimulateProfitMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSimulateProfit,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSimulateProfitID sets the ID field of the mutation.
+func withSimulateProfitID(id uint32) simulateprofitOption {
+	return func(m *SimulateProfitMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SimulateProfit
+		)
+		m.oldValue = func(ctx context.Context) (*SimulateProfit, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SimulateProfit.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSimulateProfit sets the old SimulateProfit of the mutation.
+func withSimulateProfit(node *SimulateProfit) simulateprofitOption {
+	return func(m *SimulateProfitMutation) {
+		m.oldValue = func(context.Context) (*SimulateProfit, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SimulateProfitMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SimulateProfitMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SimulateProfit entities.
+func (m *SimulateProfitMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SimulateProfitMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SimulateProfitMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SimulateProfit.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SimulateProfitMutation) SetCreatedAt(u uint32) {
+	m.created_at = &u
+	m.addcreated_at = nil
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SimulateProfitMutation) CreatedAt() (r uint32, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldCreatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// AddCreatedAt adds u to the "created_at" field.
+func (m *SimulateProfitMutation) AddCreatedAt(u int32) {
+	if m.addcreated_at != nil {
+		*m.addcreated_at += u
+	} else {
+		m.addcreated_at = &u
+	}
+}
+
+// AddedCreatedAt returns the value that was added to the "created_at" field in this mutation.
+func (m *SimulateProfitMutation) AddedCreatedAt() (r int32, exists bool) {
+	v := m.addcreated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SimulateProfitMutation) ResetCreatedAt() {
+	m.created_at = nil
+	m.addcreated_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SimulateProfitMutation) SetUpdatedAt(u uint32) {
+	m.updated_at = &u
+	m.addupdated_at = nil
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SimulateProfitMutation) UpdatedAt() (r uint32, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldUpdatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// AddUpdatedAt adds u to the "updated_at" field.
+func (m *SimulateProfitMutation) AddUpdatedAt(u int32) {
+	if m.addupdated_at != nil {
+		*m.addupdated_at += u
+	} else {
+		m.addupdated_at = &u
+	}
+}
+
+// AddedUpdatedAt returns the value that was added to the "updated_at" field in this mutation.
+func (m *SimulateProfitMutation) AddedUpdatedAt() (r int32, exists bool) {
+	v := m.addupdated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SimulateProfitMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	m.addupdated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *SimulateProfitMutation) SetDeletedAt(u uint32) {
+	m.deleted_at = &u
+	m.adddeleted_at = nil
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *SimulateProfitMutation) DeletedAt() (r uint32, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldDeletedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// AddDeletedAt adds u to the "deleted_at" field.
+func (m *SimulateProfitMutation) AddDeletedAt(u int32) {
+	if m.adddeleted_at != nil {
+		*m.adddeleted_at += u
+	} else {
+		m.adddeleted_at = &u
+	}
+}
+
+// AddedDeletedAt returns the value that was added to the "deleted_at" field in this mutation.
+func (m *SimulateProfitMutation) AddedDeletedAt() (r int32, exists bool) {
+	v := m.adddeleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *SimulateProfitMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	m.adddeleted_at = nil
+}
+
+// SetEntID sets the "ent_id" field.
+func (m *SimulateProfitMutation) SetEntID(u uuid.UUID) {
+	m.ent_id = &u
+}
+
+// EntID returns the value of the "ent_id" field in the mutation.
+func (m *SimulateProfitMutation) EntID() (r uuid.UUID, exists bool) {
+	v := m.ent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntID returns the old "ent_id" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldEntID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntID: %w", err)
+	}
+	return oldValue.EntID, nil
+}
+
+// ResetEntID resets all changes to the "ent_id" field.
+func (m *SimulateProfitMutation) ResetEntID() {
+	m.ent_id = nil
+}
+
+// SetAppID sets the "app_id" field.
+func (m *SimulateProfitMutation) SetAppID(u uuid.UUID) {
+	m.app_id = &u
+}
+
+// AppID returns the value of the "app_id" field in the mutation.
+func (m *SimulateProfitMutation) AppID() (r uuid.UUID, exists bool) {
+	v := m.app_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppID returns the old "app_id" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldAppID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppID: %w", err)
+	}
+	return oldValue.AppID, nil
+}
+
+// ClearAppID clears the value of the "app_id" field.
+func (m *SimulateProfitMutation) ClearAppID() {
+	m.app_id = nil
+	m.clearedFields[simulateprofit.FieldAppID] = struct{}{}
+}
+
+// AppIDCleared returns if the "app_id" field was cleared in this mutation.
+func (m *SimulateProfitMutation) AppIDCleared() bool {
+	_, ok := m.clearedFields[simulateprofit.FieldAppID]
+	return ok
+}
+
+// ResetAppID resets all changes to the "app_id" field.
+func (m *SimulateProfitMutation) ResetAppID() {
+	m.app_id = nil
+	delete(m.clearedFields, simulateprofit.FieldAppID)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *SimulateProfitMutation) SetUserID(u uuid.UUID) {
+	m.user_id = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *SimulateProfitMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *SimulateProfitMutation) ClearUserID() {
+	m.user_id = nil
+	m.clearedFields[simulateprofit.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *SimulateProfitMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[simulateprofit.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *SimulateProfitMutation) ResetUserID() {
+	m.user_id = nil
+	delete(m.clearedFields, simulateprofit.FieldUserID)
+}
+
+// SetCoinTypeID sets the "coin_type_id" field.
+func (m *SimulateProfitMutation) SetCoinTypeID(u uuid.UUID) {
+	m.coin_type_id = &u
+}
+
+// CoinTypeID returns the value of the "coin_type_id" field in the mutation.
+func (m *SimulateProfitMutation) CoinTypeID() (r uuid.UUID, exists bool) {
+	v := m.coin_type_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCoinTypeID returns the old "coin_type_id" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldCoinTypeID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoinTypeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoinTypeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoinTypeID: %w", err)
+	}
+	return oldValue.CoinTypeID, nil
+}
+
+// ClearCoinTypeID clears the value of the "coin_type_id" field.
+func (m *SimulateProfitMutation) ClearCoinTypeID() {
+	m.coin_type_id = nil
+	m.clearedFields[simulateprofit.FieldCoinTypeID] = struct{}{}
+}
+
+// CoinTypeIDCleared returns if the "coin_type_id" field was cleared in this mutation.
+func (m *SimulateProfitMutation) CoinTypeIDCleared() bool {
+	_, ok := m.clearedFields[simulateprofit.FieldCoinTypeID]
+	return ok
+}
+
+// ResetCoinTypeID resets all changes to the "coin_type_id" field.
+func (m *SimulateProfitMutation) ResetCoinTypeID() {
+	m.coin_type_id = nil
+	delete(m.clearedFields, simulateprofit.FieldCoinTypeID)
+}
+
+// SetIncoming sets the "incoming" field.
+func (m *SimulateProfitMutation) SetIncoming(d decimal.Decimal) {
+	m.incoming = &d
+	m.addincoming = nil
+}
+
+// Incoming returns the value of the "incoming" field in the mutation.
+func (m *SimulateProfitMutation) Incoming() (r decimal.Decimal, exists bool) {
+	v := m.incoming
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncoming returns the old "incoming" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldIncoming(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncoming is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncoming requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncoming: %w", err)
+	}
+	return oldValue.Incoming, nil
+}
+
+// AddIncoming adds d to the "incoming" field.
+func (m *SimulateProfitMutation) AddIncoming(d decimal.Decimal) {
+	if m.addincoming != nil {
+		*m.addincoming = m.addincoming.Add(d)
+	} else {
+		m.addincoming = &d
+	}
+}
+
+// AddedIncoming returns the value that was added to the "incoming" field in this mutation.
+func (m *SimulateProfitMutation) AddedIncoming() (r decimal.Decimal, exists bool) {
+	v := m.addincoming
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearIncoming clears the value of the "incoming" field.
+func (m *SimulateProfitMutation) ClearIncoming() {
+	m.incoming = nil
+	m.addincoming = nil
+	m.clearedFields[simulateprofit.FieldIncoming] = struct{}{}
+}
+
+// IncomingCleared returns if the "incoming" field was cleared in this mutation.
+func (m *SimulateProfitMutation) IncomingCleared() bool {
+	_, ok := m.clearedFields[simulateprofit.FieldIncoming]
+	return ok
+}
+
+// ResetIncoming resets all changes to the "incoming" field.
+func (m *SimulateProfitMutation) ResetIncoming() {
+	m.incoming = nil
+	m.addincoming = nil
+	delete(m.clearedFields, simulateprofit.FieldIncoming)
+}
+
+// SetSendCoupon sets the "send_coupon" field.
+func (m *SimulateProfitMutation) SetSendCoupon(b bool) {
+	m.send_coupon = &b
+}
+
+// SendCoupon returns the value of the "send_coupon" field in the mutation.
+func (m *SimulateProfitMutation) SendCoupon() (r bool, exists bool) {
+	v := m.send_coupon
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSendCoupon returns the old "send_coupon" field's value of the SimulateProfit entity.
+// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateProfitMutation) OldSendCoupon(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSendCoupon is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSendCoupon requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSendCoupon: %w", err)
+	}
+	return oldValue.SendCoupon, nil
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (m *SimulateProfitMutation) ClearSendCoupon() {
+	m.send_coupon = nil
+	m.clearedFields[simulateprofit.FieldSendCoupon] = struct{}{}
+}
+
+// SendCouponCleared returns if the "send_coupon" field was cleared in this mutation.
+func (m *SimulateProfitMutation) SendCouponCleared() bool {
+	_, ok := m.clearedFields[simulateprofit.FieldSendCoupon]
+	return ok
+}
+
+// ResetSendCoupon resets all changes to the "send_coupon" field.
+func (m *SimulateProfitMutation) ResetSendCoupon() {
+	m.send_coupon = nil
+	delete(m.clearedFields, simulateprofit.FieldSendCoupon)
+}
+
+// Where appends a list predicates to the SimulateProfitMutation builder.
+func (m *SimulateProfitMutation) Where(ps ...predicate.SimulateProfit) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *SimulateProfitMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (SimulateProfit).
+func (m *SimulateProfitMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SimulateProfitMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.created_at != nil {
+		fields = append(fields, simulateprofit.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, simulateprofit.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, simulateprofit.FieldDeletedAt)
+	}
+	if m.ent_id != nil {
+		fields = append(fields, simulateprofit.FieldEntID)
+	}
+	if m.app_id != nil {
+		fields = append(fields, simulateprofit.FieldAppID)
+	}
+	if m.user_id != nil {
+		fields = append(fields, simulateprofit.FieldUserID)
+	}
+	if m.coin_type_id != nil {
+		fields = append(fields, simulateprofit.FieldCoinTypeID)
+	}
+	if m.incoming != nil {
+		fields = append(fields, simulateprofit.FieldIncoming)
+	}
+	if m.send_coupon != nil {
+		fields = append(fields, simulateprofit.FieldSendCoupon)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SimulateProfitMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case simulateprofit.FieldCreatedAt:
+		return m.CreatedAt()
+	case simulateprofit.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case simulateprofit.FieldDeletedAt:
+		return m.DeletedAt()
+	case simulateprofit.FieldEntID:
+		return m.EntID()
+	case simulateprofit.FieldAppID:
+		return m.AppID()
+	case simulateprofit.FieldUserID:
+		return m.UserID()
+	case simulateprofit.FieldCoinTypeID:
+		return m.CoinTypeID()
+	case simulateprofit.FieldIncoming:
+		return m.Incoming()
+	case simulateprofit.FieldSendCoupon:
+		return m.SendCoupon()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SimulateProfitMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case simulateprofit.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case simulateprofit.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case simulateprofit.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case simulateprofit.FieldEntID:
+		return m.OldEntID(ctx)
+	case simulateprofit.FieldAppID:
+		return m.OldAppID(ctx)
+	case simulateprofit.FieldUserID:
+		return m.OldUserID(ctx)
+	case simulateprofit.FieldCoinTypeID:
+		return m.OldCoinTypeID(ctx)
+	case simulateprofit.FieldIncoming:
+		return m.OldIncoming(ctx)
+	case simulateprofit.FieldSendCoupon:
+		return m.OldSendCoupon(ctx)
+	}
+	return nil, fmt.Errorf("unknown SimulateProfit field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SimulateProfitMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case simulateprofit.FieldCreatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case simulateprofit.FieldUpdatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case simulateprofit.FieldDeletedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case simulateprofit.FieldEntID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntID(v)
+		return nil
+	case simulateprofit.FieldAppID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppID(v)
+		return nil
+	case simulateprofit.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case simulateprofit.FieldCoinTypeID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoinTypeID(v)
+		return nil
+	case simulateprofit.FieldIncoming:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncoming(v)
+		return nil
+	case simulateprofit.FieldSendCoupon:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSendCoupon(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateProfit field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SimulateProfitMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_at != nil {
+		fields = append(fields, simulateprofit.FieldCreatedAt)
+	}
+	if m.addupdated_at != nil {
+		fields = append(fields, simulateprofit.FieldUpdatedAt)
+	}
+	if m.adddeleted_at != nil {
+		fields = append(fields, simulateprofit.FieldDeletedAt)
+	}
+	if m.addincoming != nil {
+		fields = append(fields, simulateprofit.FieldIncoming)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SimulateProfitMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case simulateprofit.FieldCreatedAt:
+		return m.AddedCreatedAt()
+	case simulateprofit.FieldUpdatedAt:
+		return m.AddedUpdatedAt()
+	case simulateprofit.FieldDeletedAt:
+		return m.AddedDeletedAt()
+	case simulateprofit.FieldIncoming:
+		return m.AddedIncoming()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SimulateProfitMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case simulateprofit.FieldCreatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedAt(v)
+		return nil
+	case simulateprofit.FieldUpdatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedAt(v)
+		return nil
+	case simulateprofit.FieldDeletedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedAt(v)
+		return nil
+	case simulateprofit.FieldIncoming:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIncoming(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateProfit numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SimulateProfitMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(simulateprofit.FieldAppID) {
+		fields = append(fields, simulateprofit.FieldAppID)
+	}
+	if m.FieldCleared(simulateprofit.FieldUserID) {
+		fields = append(fields, simulateprofit.FieldUserID)
+	}
+	if m.FieldCleared(simulateprofit.FieldCoinTypeID) {
+		fields = append(fields, simulateprofit.FieldCoinTypeID)
+	}
+	if m.FieldCleared(simulateprofit.FieldIncoming) {
+		fields = append(fields, simulateprofit.FieldIncoming)
+	}
+	if m.FieldCleared(simulateprofit.FieldSendCoupon) {
+		fields = append(fields, simulateprofit.FieldSendCoupon)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SimulateProfitMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SimulateProfitMutation) ClearField(name string) error {
+	switch name {
+	case simulateprofit.FieldAppID:
+		m.ClearAppID()
+		return nil
+	case simulateprofit.FieldUserID:
+		m.ClearUserID()
+		return nil
+	case simulateprofit.FieldCoinTypeID:
+		m.ClearCoinTypeID()
+		return nil
+	case simulateprofit.FieldIncoming:
+		m.ClearIncoming()
+		return nil
+	case simulateprofit.FieldSendCoupon:
+		m.ClearSendCoupon()
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateProfit nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SimulateProfitMutation) ResetField(name string) error {
+	switch name {
+	case simulateprofit.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case simulateprofit.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case simulateprofit.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case simulateprofit.FieldEntID:
+		m.ResetEntID()
+		return nil
+	case simulateprofit.FieldAppID:
+		m.ResetAppID()
+		return nil
+	case simulateprofit.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case simulateprofit.FieldCoinTypeID:
+		m.ResetCoinTypeID()
+		return nil
+	case simulateprofit.FieldIncoming:
+		m.ResetIncoming()
+		return nil
+	case simulateprofit.FieldSendCoupon:
+		m.ResetSendCoupon()
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateProfit field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SimulateProfitMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SimulateProfitMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SimulateProfitMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SimulateProfitMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SimulateProfitMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SimulateProfitMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SimulateProfitMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown SimulateProfit unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SimulateProfitMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown SimulateProfit edge %s", name)
+}
+
+// SimulateStatementMutation represents an operation that mutates the SimulateStatement nodes in the graph.
+type SimulateStatementMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint32
+	created_at    *uint32
+	addcreated_at *int32
+	updated_at    *uint32
+	addupdated_at *int32
+	deleted_at    *uint32
+	adddeleted_at *int32
+	ent_id        *uuid.UUID
+	app_id        *uuid.UUID
+	user_id       *uuid.UUID
+	coin_type_id  *uuid.UUID
+	io_type       *string
+	io_sub_type   *string
+	amount        *decimal.Decimal
+	addamount     *decimal.Decimal
+	io_extra      *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*SimulateStatement, error)
+	predicates    []predicate.SimulateStatement
+}
+
+var _ ent.Mutation = (*SimulateStatementMutation)(nil)
+
+// simulatestatementOption allows management of the mutation configuration using functional options.
+type simulatestatementOption func(*SimulateStatementMutation)
+
+// newSimulateStatementMutation creates new mutation for the SimulateStatement entity.
+func newSimulateStatementMutation(c config, op Op, opts ...simulatestatementOption) *SimulateStatementMutation {
+	m := &SimulateStatementMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSimulateStatement,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSimulateStatementID sets the ID field of the mutation.
+func withSimulateStatementID(id uint32) simulatestatementOption {
+	return func(m *SimulateStatementMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SimulateStatement
+		)
+		m.oldValue = func(ctx context.Context) (*SimulateStatement, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SimulateStatement.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSimulateStatement sets the old SimulateStatement of the mutation.
+func withSimulateStatement(node *SimulateStatement) simulatestatementOption {
+	return func(m *SimulateStatementMutation) {
+		m.oldValue = func(context.Context) (*SimulateStatement, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SimulateStatementMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SimulateStatementMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SimulateStatement entities.
+func (m *SimulateStatementMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SimulateStatementMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SimulateStatementMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SimulateStatement.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SimulateStatementMutation) SetCreatedAt(u uint32) {
+	m.created_at = &u
+	m.addcreated_at = nil
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SimulateStatementMutation) CreatedAt() (r uint32, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldCreatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// AddCreatedAt adds u to the "created_at" field.
+func (m *SimulateStatementMutation) AddCreatedAt(u int32) {
+	if m.addcreated_at != nil {
+		*m.addcreated_at += u
+	} else {
+		m.addcreated_at = &u
+	}
+}
+
+// AddedCreatedAt returns the value that was added to the "created_at" field in this mutation.
+func (m *SimulateStatementMutation) AddedCreatedAt() (r int32, exists bool) {
+	v := m.addcreated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SimulateStatementMutation) ResetCreatedAt() {
+	m.created_at = nil
+	m.addcreated_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SimulateStatementMutation) SetUpdatedAt(u uint32) {
+	m.updated_at = &u
+	m.addupdated_at = nil
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SimulateStatementMutation) UpdatedAt() (r uint32, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldUpdatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// AddUpdatedAt adds u to the "updated_at" field.
+func (m *SimulateStatementMutation) AddUpdatedAt(u int32) {
+	if m.addupdated_at != nil {
+		*m.addupdated_at += u
+	} else {
+		m.addupdated_at = &u
+	}
+}
+
+// AddedUpdatedAt returns the value that was added to the "updated_at" field in this mutation.
+func (m *SimulateStatementMutation) AddedUpdatedAt() (r int32, exists bool) {
+	v := m.addupdated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SimulateStatementMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	m.addupdated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *SimulateStatementMutation) SetDeletedAt(u uint32) {
+	m.deleted_at = &u
+	m.adddeleted_at = nil
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *SimulateStatementMutation) DeletedAt() (r uint32, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldDeletedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// AddDeletedAt adds u to the "deleted_at" field.
+func (m *SimulateStatementMutation) AddDeletedAt(u int32) {
+	if m.adddeleted_at != nil {
+		*m.adddeleted_at += u
+	} else {
+		m.adddeleted_at = &u
+	}
+}
+
+// AddedDeletedAt returns the value that was added to the "deleted_at" field in this mutation.
+func (m *SimulateStatementMutation) AddedDeletedAt() (r int32, exists bool) {
+	v := m.adddeleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *SimulateStatementMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	m.adddeleted_at = nil
+}
+
+// SetEntID sets the "ent_id" field.
+func (m *SimulateStatementMutation) SetEntID(u uuid.UUID) {
+	m.ent_id = &u
+}
+
+// EntID returns the value of the "ent_id" field in the mutation.
+func (m *SimulateStatementMutation) EntID() (r uuid.UUID, exists bool) {
+	v := m.ent_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntID returns the old "ent_id" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldEntID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntID: %w", err)
+	}
+	return oldValue.EntID, nil
+}
+
+// ResetEntID resets all changes to the "ent_id" field.
+func (m *SimulateStatementMutation) ResetEntID() {
+	m.ent_id = nil
+}
+
+// SetAppID sets the "app_id" field.
+func (m *SimulateStatementMutation) SetAppID(u uuid.UUID) {
+	m.app_id = &u
+}
+
+// AppID returns the value of the "app_id" field in the mutation.
+func (m *SimulateStatementMutation) AppID() (r uuid.UUID, exists bool) {
+	v := m.app_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppID returns the old "app_id" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldAppID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppID: %w", err)
+	}
+	return oldValue.AppID, nil
+}
+
+// ClearAppID clears the value of the "app_id" field.
+func (m *SimulateStatementMutation) ClearAppID() {
+	m.app_id = nil
+	m.clearedFields[simulatestatement.FieldAppID] = struct{}{}
+}
+
+// AppIDCleared returns if the "app_id" field was cleared in this mutation.
+func (m *SimulateStatementMutation) AppIDCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldAppID]
+	return ok
+}
+
+// ResetAppID resets all changes to the "app_id" field.
+func (m *SimulateStatementMutation) ResetAppID() {
+	m.app_id = nil
+	delete(m.clearedFields, simulatestatement.FieldAppID)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *SimulateStatementMutation) SetUserID(u uuid.UUID) {
+	m.user_id = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *SimulateStatementMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *SimulateStatementMutation) ClearUserID() {
+	m.user_id = nil
+	m.clearedFields[simulatestatement.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *SimulateStatementMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *SimulateStatementMutation) ResetUserID() {
+	m.user_id = nil
+	delete(m.clearedFields, simulatestatement.FieldUserID)
+}
+
+// SetCoinTypeID sets the "coin_type_id" field.
+func (m *SimulateStatementMutation) SetCoinTypeID(u uuid.UUID) {
+	m.coin_type_id = &u
+}
+
+// CoinTypeID returns the value of the "coin_type_id" field in the mutation.
+func (m *SimulateStatementMutation) CoinTypeID() (r uuid.UUID, exists bool) {
+	v := m.coin_type_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCoinTypeID returns the old "coin_type_id" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldCoinTypeID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoinTypeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoinTypeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoinTypeID: %w", err)
+	}
+	return oldValue.CoinTypeID, nil
+}
+
+// ClearCoinTypeID clears the value of the "coin_type_id" field.
+func (m *SimulateStatementMutation) ClearCoinTypeID() {
+	m.coin_type_id = nil
+	m.clearedFields[simulatestatement.FieldCoinTypeID] = struct{}{}
+}
+
+// CoinTypeIDCleared returns if the "coin_type_id" field was cleared in this mutation.
+func (m *SimulateStatementMutation) CoinTypeIDCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldCoinTypeID]
+	return ok
+}
+
+// ResetCoinTypeID resets all changes to the "coin_type_id" field.
+func (m *SimulateStatementMutation) ResetCoinTypeID() {
+	m.coin_type_id = nil
+	delete(m.clearedFields, simulatestatement.FieldCoinTypeID)
+}
+
+// SetIoType sets the "io_type" field.
+func (m *SimulateStatementMutation) SetIoType(s string) {
+	m.io_type = &s
+}
+
+// IoType returns the value of the "io_type" field in the mutation.
+func (m *SimulateStatementMutation) IoType() (r string, exists bool) {
+	v := m.io_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIoType returns the old "io_type" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldIoType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIoType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIoType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIoType: %w", err)
+	}
+	return oldValue.IoType, nil
+}
+
+// ClearIoType clears the value of the "io_type" field.
+func (m *SimulateStatementMutation) ClearIoType() {
+	m.io_type = nil
+	m.clearedFields[simulatestatement.FieldIoType] = struct{}{}
+}
+
+// IoTypeCleared returns if the "io_type" field was cleared in this mutation.
+func (m *SimulateStatementMutation) IoTypeCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldIoType]
+	return ok
+}
+
+// ResetIoType resets all changes to the "io_type" field.
+func (m *SimulateStatementMutation) ResetIoType() {
+	m.io_type = nil
+	delete(m.clearedFields, simulatestatement.FieldIoType)
+}
+
+// SetIoSubType sets the "io_sub_type" field.
+func (m *SimulateStatementMutation) SetIoSubType(s string) {
+	m.io_sub_type = &s
+}
+
+// IoSubType returns the value of the "io_sub_type" field in the mutation.
+func (m *SimulateStatementMutation) IoSubType() (r string, exists bool) {
+	v := m.io_sub_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIoSubType returns the old "io_sub_type" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldIoSubType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIoSubType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIoSubType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIoSubType: %w", err)
+	}
+	return oldValue.IoSubType, nil
+}
+
+// ClearIoSubType clears the value of the "io_sub_type" field.
+func (m *SimulateStatementMutation) ClearIoSubType() {
+	m.io_sub_type = nil
+	m.clearedFields[simulatestatement.FieldIoSubType] = struct{}{}
+}
+
+// IoSubTypeCleared returns if the "io_sub_type" field was cleared in this mutation.
+func (m *SimulateStatementMutation) IoSubTypeCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldIoSubType]
+	return ok
+}
+
+// ResetIoSubType resets all changes to the "io_sub_type" field.
+func (m *SimulateStatementMutation) ResetIoSubType() {
+	m.io_sub_type = nil
+	delete(m.clearedFields, simulatestatement.FieldIoSubType)
+}
+
+// SetAmount sets the "amount" field.
+func (m *SimulateStatementMutation) SetAmount(d decimal.Decimal) {
+	m.amount = &d
+	m.addamount = nil
+}
+
+// Amount returns the value of the "amount" field in the mutation.
+func (m *SimulateStatementMutation) Amount() (r decimal.Decimal, exists bool) {
+	v := m.amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAmount returns the old "amount" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldAmount(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAmount: %w", err)
+	}
+	return oldValue.Amount, nil
+}
+
+// AddAmount adds d to the "amount" field.
+func (m *SimulateStatementMutation) AddAmount(d decimal.Decimal) {
+	if m.addamount != nil {
+		*m.addamount = m.addamount.Add(d)
+	} else {
+		m.addamount = &d
+	}
+}
+
+// AddedAmount returns the value that was added to the "amount" field in this mutation.
+func (m *SimulateStatementMutation) AddedAmount() (r decimal.Decimal, exists bool) {
+	v := m.addamount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAmount clears the value of the "amount" field.
+func (m *SimulateStatementMutation) ClearAmount() {
+	m.amount = nil
+	m.addamount = nil
+	m.clearedFields[simulatestatement.FieldAmount] = struct{}{}
+}
+
+// AmountCleared returns if the "amount" field was cleared in this mutation.
+func (m *SimulateStatementMutation) AmountCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldAmount]
+	return ok
+}
+
+// ResetAmount resets all changes to the "amount" field.
+func (m *SimulateStatementMutation) ResetAmount() {
+	m.amount = nil
+	m.addamount = nil
+	delete(m.clearedFields, simulatestatement.FieldAmount)
+}
+
+// SetIoExtra sets the "io_extra" field.
+func (m *SimulateStatementMutation) SetIoExtra(s string) {
+	m.io_extra = &s
+}
+
+// IoExtra returns the value of the "io_extra" field in the mutation.
+func (m *SimulateStatementMutation) IoExtra() (r string, exists bool) {
+	v := m.io_extra
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIoExtra returns the old "io_extra" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldIoExtra(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIoExtra is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIoExtra requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIoExtra: %w", err)
+	}
+	return oldValue.IoExtra, nil
+}
+
+// ClearIoExtra clears the value of the "io_extra" field.
+func (m *SimulateStatementMutation) ClearIoExtra() {
+	m.io_extra = nil
+	m.clearedFields[simulatestatement.FieldIoExtra] = struct{}{}
+}
+
+// IoExtraCleared returns if the "io_extra" field was cleared in this mutation.
+func (m *SimulateStatementMutation) IoExtraCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldIoExtra]
+	return ok
+}
+
+// ResetIoExtra resets all changes to the "io_extra" field.
+func (m *SimulateStatementMutation) ResetIoExtra() {
+	m.io_extra = nil
+	delete(m.clearedFields, simulatestatement.FieldIoExtra)
+}
+
+// Where appends a list predicates to the SimulateStatementMutation builder.
+func (m *SimulateStatementMutation) Where(ps ...predicate.SimulateStatement) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *SimulateStatementMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (SimulateStatement).
+func (m *SimulateStatementMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SimulateStatementMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.created_at != nil {
+		fields = append(fields, simulatestatement.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, simulatestatement.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, simulatestatement.FieldDeletedAt)
+	}
+	if m.ent_id != nil {
+		fields = append(fields, simulatestatement.FieldEntID)
+	}
+	if m.app_id != nil {
+		fields = append(fields, simulatestatement.FieldAppID)
+	}
+	if m.user_id != nil {
+		fields = append(fields, simulatestatement.FieldUserID)
+	}
+	if m.coin_type_id != nil {
+		fields = append(fields, simulatestatement.FieldCoinTypeID)
+	}
+	if m.io_type != nil {
+		fields = append(fields, simulatestatement.FieldIoType)
+	}
+	if m.io_sub_type != nil {
+		fields = append(fields, simulatestatement.FieldIoSubType)
+	}
+	if m.amount != nil {
+		fields = append(fields, simulatestatement.FieldAmount)
+	}
+	if m.io_extra != nil {
+		fields = append(fields, simulatestatement.FieldIoExtra)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SimulateStatementMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case simulatestatement.FieldCreatedAt:
+		return m.CreatedAt()
+	case simulatestatement.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case simulatestatement.FieldDeletedAt:
+		return m.DeletedAt()
+	case simulatestatement.FieldEntID:
+		return m.EntID()
+	case simulatestatement.FieldAppID:
+		return m.AppID()
+	case simulatestatement.FieldUserID:
+		return m.UserID()
+	case simulatestatement.FieldCoinTypeID:
+		return m.CoinTypeID()
+	case simulatestatement.FieldIoType:
+		return m.IoType()
+	case simulatestatement.FieldIoSubType:
+		return m.IoSubType()
+	case simulatestatement.FieldAmount:
+		return m.Amount()
+	case simulatestatement.FieldIoExtra:
+		return m.IoExtra()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SimulateStatementMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case simulatestatement.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case simulatestatement.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case simulatestatement.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case simulatestatement.FieldEntID:
+		return m.OldEntID(ctx)
+	case simulatestatement.FieldAppID:
+		return m.OldAppID(ctx)
+	case simulatestatement.FieldUserID:
+		return m.OldUserID(ctx)
+	case simulatestatement.FieldCoinTypeID:
+		return m.OldCoinTypeID(ctx)
+	case simulatestatement.FieldIoType:
+		return m.OldIoType(ctx)
+	case simulatestatement.FieldIoSubType:
+		return m.OldIoSubType(ctx)
+	case simulatestatement.FieldAmount:
+		return m.OldAmount(ctx)
+	case simulatestatement.FieldIoExtra:
+		return m.OldIoExtra(ctx)
+	}
+	return nil, fmt.Errorf("unknown SimulateStatement field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SimulateStatementMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case simulatestatement.FieldCreatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case simulatestatement.FieldUpdatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case simulatestatement.FieldDeletedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case simulatestatement.FieldEntID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntID(v)
+		return nil
+	case simulatestatement.FieldAppID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppID(v)
+		return nil
+	case simulatestatement.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case simulatestatement.FieldCoinTypeID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoinTypeID(v)
+		return nil
+	case simulatestatement.FieldIoType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIoType(v)
+		return nil
+	case simulatestatement.FieldIoSubType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIoSubType(v)
+		return nil
+	case simulatestatement.FieldAmount:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAmount(v)
+		return nil
+	case simulatestatement.FieldIoExtra:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIoExtra(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateStatement field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SimulateStatementMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_at != nil {
+		fields = append(fields, simulatestatement.FieldCreatedAt)
+	}
+	if m.addupdated_at != nil {
+		fields = append(fields, simulatestatement.FieldUpdatedAt)
+	}
+	if m.adddeleted_at != nil {
+		fields = append(fields, simulatestatement.FieldDeletedAt)
+	}
+	if m.addamount != nil {
+		fields = append(fields, simulatestatement.FieldAmount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SimulateStatementMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case simulatestatement.FieldCreatedAt:
+		return m.AddedCreatedAt()
+	case simulatestatement.FieldUpdatedAt:
+		return m.AddedUpdatedAt()
+	case simulatestatement.FieldDeletedAt:
+		return m.AddedDeletedAt()
+	case simulatestatement.FieldAmount:
+		return m.AddedAmount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SimulateStatementMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case simulatestatement.FieldCreatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedAt(v)
+		return nil
+	case simulatestatement.FieldUpdatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedAt(v)
+		return nil
+	case simulatestatement.FieldDeletedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedAt(v)
+		return nil
+	case simulatestatement.FieldAmount:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAmount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateStatement numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SimulateStatementMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(simulatestatement.FieldAppID) {
+		fields = append(fields, simulatestatement.FieldAppID)
+	}
+	if m.FieldCleared(simulatestatement.FieldUserID) {
+		fields = append(fields, simulatestatement.FieldUserID)
+	}
+	if m.FieldCleared(simulatestatement.FieldCoinTypeID) {
+		fields = append(fields, simulatestatement.FieldCoinTypeID)
+	}
+	if m.FieldCleared(simulatestatement.FieldIoType) {
+		fields = append(fields, simulatestatement.FieldIoType)
+	}
+	if m.FieldCleared(simulatestatement.FieldIoSubType) {
+		fields = append(fields, simulatestatement.FieldIoSubType)
+	}
+	if m.FieldCleared(simulatestatement.FieldAmount) {
+		fields = append(fields, simulatestatement.FieldAmount)
+	}
+	if m.FieldCleared(simulatestatement.FieldIoExtra) {
+		fields = append(fields, simulatestatement.FieldIoExtra)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SimulateStatementMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SimulateStatementMutation) ClearField(name string) error {
+	switch name {
+	case simulatestatement.FieldAppID:
+		m.ClearAppID()
+		return nil
+	case simulatestatement.FieldUserID:
+		m.ClearUserID()
+		return nil
+	case simulatestatement.FieldCoinTypeID:
+		m.ClearCoinTypeID()
+		return nil
+	case simulatestatement.FieldIoType:
+		m.ClearIoType()
+		return nil
+	case simulatestatement.FieldIoSubType:
+		m.ClearIoSubType()
+		return nil
+	case simulatestatement.FieldAmount:
+		m.ClearAmount()
+		return nil
+	case simulatestatement.FieldIoExtra:
+		m.ClearIoExtra()
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateStatement nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SimulateStatementMutation) ResetField(name string) error {
+	switch name {
+	case simulatestatement.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case simulatestatement.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case simulatestatement.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case simulatestatement.FieldEntID:
+		m.ResetEntID()
+		return nil
+	case simulatestatement.FieldAppID:
+		m.ResetAppID()
+		return nil
+	case simulatestatement.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case simulatestatement.FieldCoinTypeID:
+		m.ResetCoinTypeID()
+		return nil
+	case simulatestatement.FieldIoType:
+		m.ResetIoType()
+		return nil
+	case simulatestatement.FieldIoSubType:
+		m.ResetIoSubType()
+		return nil
+	case simulatestatement.FieldAmount:
+		m.ResetAmount()
+		return nil
+	case simulatestatement.FieldIoExtra:
+		m.ResetIoExtra()
+		return nil
+	}
+	return fmt.Errorf("unknown SimulateStatement field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SimulateStatementMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SimulateStatementMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SimulateStatementMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SimulateStatementMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SimulateStatementMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SimulateStatementMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SimulateStatementMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown SimulateStatement unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SimulateStatementMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown SimulateStatement edge %s", name)
 }
 
 // StatementMutation represents an operation that mutates the Statement nodes in the graph.

@@ -9,6 +9,9 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateprofit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulatestatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
@@ -21,7 +24,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 9)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 12)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   couponwithdraw.Table,
@@ -160,6 +163,74 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   simulateledger.Table,
+			Columns: simulateledger.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: simulateledger.FieldID,
+			},
+		},
+		Type: "SimulateLedger",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			simulateledger.FieldCreatedAt:  {Type: field.TypeUint32, Column: simulateledger.FieldCreatedAt},
+			simulateledger.FieldUpdatedAt:  {Type: field.TypeUint32, Column: simulateledger.FieldUpdatedAt},
+			simulateledger.FieldDeletedAt:  {Type: field.TypeUint32, Column: simulateledger.FieldDeletedAt},
+			simulateledger.FieldEntID:      {Type: field.TypeUUID, Column: simulateledger.FieldEntID},
+			simulateledger.FieldAppID:      {Type: field.TypeUUID, Column: simulateledger.FieldAppID},
+			simulateledger.FieldUserID:     {Type: field.TypeUUID, Column: simulateledger.FieldUserID},
+			simulateledger.FieldCoinTypeID: {Type: field.TypeUUID, Column: simulateledger.FieldCoinTypeID},
+			simulateledger.FieldIncoming:   {Type: field.TypeFloat64, Column: simulateledger.FieldIncoming},
+			simulateledger.FieldOutcoming:  {Type: field.TypeFloat64, Column: simulateledger.FieldOutcoming},
+		},
+	}
+	graph.Nodes[7] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   simulateprofit.Table,
+			Columns: simulateprofit.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: simulateprofit.FieldID,
+			},
+		},
+		Type: "SimulateProfit",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			simulateprofit.FieldCreatedAt:  {Type: field.TypeUint32, Column: simulateprofit.FieldCreatedAt},
+			simulateprofit.FieldUpdatedAt:  {Type: field.TypeUint32, Column: simulateprofit.FieldUpdatedAt},
+			simulateprofit.FieldDeletedAt:  {Type: field.TypeUint32, Column: simulateprofit.FieldDeletedAt},
+			simulateprofit.FieldEntID:      {Type: field.TypeUUID, Column: simulateprofit.FieldEntID},
+			simulateprofit.FieldAppID:      {Type: field.TypeUUID, Column: simulateprofit.FieldAppID},
+			simulateprofit.FieldUserID:     {Type: field.TypeUUID, Column: simulateprofit.FieldUserID},
+			simulateprofit.FieldCoinTypeID: {Type: field.TypeUUID, Column: simulateprofit.FieldCoinTypeID},
+			simulateprofit.FieldIncoming:   {Type: field.TypeFloat64, Column: simulateprofit.FieldIncoming},
+			simulateprofit.FieldSendCoupon: {Type: field.TypeBool, Column: simulateprofit.FieldSendCoupon},
+		},
+	}
+	graph.Nodes[8] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   simulatestatement.Table,
+			Columns: simulatestatement.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: simulatestatement.FieldID,
+			},
+		},
+		Type: "SimulateStatement",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			simulatestatement.FieldCreatedAt:  {Type: field.TypeUint32, Column: simulatestatement.FieldCreatedAt},
+			simulatestatement.FieldUpdatedAt:  {Type: field.TypeUint32, Column: simulatestatement.FieldUpdatedAt},
+			simulatestatement.FieldDeletedAt:  {Type: field.TypeUint32, Column: simulatestatement.FieldDeletedAt},
+			simulatestatement.FieldEntID:      {Type: field.TypeUUID, Column: simulatestatement.FieldEntID},
+			simulatestatement.FieldAppID:      {Type: field.TypeUUID, Column: simulatestatement.FieldAppID},
+			simulatestatement.FieldUserID:     {Type: field.TypeUUID, Column: simulatestatement.FieldUserID},
+			simulatestatement.FieldCoinTypeID: {Type: field.TypeUUID, Column: simulatestatement.FieldCoinTypeID},
+			simulatestatement.FieldIoType:     {Type: field.TypeString, Column: simulatestatement.FieldIoType},
+			simulatestatement.FieldIoSubType:  {Type: field.TypeString, Column: simulatestatement.FieldIoSubType},
+			simulatestatement.FieldAmount:     {Type: field.TypeFloat64, Column: simulatestatement.FieldAmount},
+			simulatestatement.FieldIoExtra:    {Type: field.TypeString, Column: simulatestatement.FieldIoExtra},
+		},
+	}
+	graph.Nodes[9] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   statement.Table,
 			Columns: statement.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -183,7 +254,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			statement.FieldIoExtraV1:  {Type: field.TypeString, Column: statement.FieldIoExtraV1},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[10] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   unsoldstatement.Table,
 			Columns: unsoldstatement.Columns,
@@ -205,7 +276,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			unsoldstatement.FieldStatementID: {Type: field.TypeUUID, Column: unsoldstatement.FieldStatementID},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[11] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   withdraw.Table,
 			Columns: withdraw.Columns,
@@ -772,6 +843,271 @@ func (f *ProfitFilter) WhereIncoming(p entql.Float64P) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (slq *SimulateLedgerQuery) addPredicate(pred func(s *sql.Selector)) {
+	slq.predicates = append(slq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the SimulateLedgerQuery builder.
+func (slq *SimulateLedgerQuery) Filter() *SimulateLedgerFilter {
+	return &SimulateLedgerFilter{config: slq.config, predicateAdder: slq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *SimulateLedgerMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the SimulateLedgerMutation builder.
+func (m *SimulateLedgerMutation) Filter() *SimulateLedgerFilter {
+	return &SimulateLedgerFilter{config: m.config, predicateAdder: m}
+}
+
+// SimulateLedgerFilter provides a generic filtering capability at runtime for SimulateLedgerQuery.
+type SimulateLedgerFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *SimulateLedgerFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *SimulateLedgerFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(simulateledger.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *SimulateLedgerFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulateledger.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *SimulateLedgerFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulateledger.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *SimulateLedgerFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulateledger.FieldDeletedAt))
+}
+
+// WhereEntID applies the entql [16]byte predicate on the ent_id field.
+func (f *SimulateLedgerFilter) WhereEntID(p entql.ValueP) {
+	f.Where(p.Field(simulateledger.FieldEntID))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *SimulateLedgerFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(simulateledger.FieldAppID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *SimulateLedgerFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(simulateledger.FieldUserID))
+}
+
+// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
+func (f *SimulateLedgerFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(simulateledger.FieldCoinTypeID))
+}
+
+// WhereIncoming applies the entql float64 predicate on the incoming field.
+func (f *SimulateLedgerFilter) WhereIncoming(p entql.Float64P) {
+	f.Where(p.Field(simulateledger.FieldIncoming))
+}
+
+// WhereOutcoming applies the entql float64 predicate on the outcoming field.
+func (f *SimulateLedgerFilter) WhereOutcoming(p entql.Float64P) {
+	f.Where(p.Field(simulateledger.FieldOutcoming))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (spq *SimulateProfitQuery) addPredicate(pred func(s *sql.Selector)) {
+	spq.predicates = append(spq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the SimulateProfitQuery builder.
+func (spq *SimulateProfitQuery) Filter() *SimulateProfitFilter {
+	return &SimulateProfitFilter{config: spq.config, predicateAdder: spq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *SimulateProfitMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the SimulateProfitMutation builder.
+func (m *SimulateProfitMutation) Filter() *SimulateProfitFilter {
+	return &SimulateProfitFilter{config: m.config, predicateAdder: m}
+}
+
+// SimulateProfitFilter provides a generic filtering capability at runtime for SimulateProfitQuery.
+type SimulateProfitFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *SimulateProfitFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *SimulateProfitFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(simulateprofit.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *SimulateProfitFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulateprofit.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *SimulateProfitFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulateprofit.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *SimulateProfitFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulateprofit.FieldDeletedAt))
+}
+
+// WhereEntID applies the entql [16]byte predicate on the ent_id field.
+func (f *SimulateProfitFilter) WhereEntID(p entql.ValueP) {
+	f.Where(p.Field(simulateprofit.FieldEntID))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *SimulateProfitFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(simulateprofit.FieldAppID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *SimulateProfitFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(simulateprofit.FieldUserID))
+}
+
+// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
+func (f *SimulateProfitFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(simulateprofit.FieldCoinTypeID))
+}
+
+// WhereIncoming applies the entql float64 predicate on the incoming field.
+func (f *SimulateProfitFilter) WhereIncoming(p entql.Float64P) {
+	f.Where(p.Field(simulateprofit.FieldIncoming))
+}
+
+// WhereSendCoupon applies the entql bool predicate on the send_coupon field.
+func (f *SimulateProfitFilter) WhereSendCoupon(p entql.BoolP) {
+	f.Where(p.Field(simulateprofit.FieldSendCoupon))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (ssq *SimulateStatementQuery) addPredicate(pred func(s *sql.Selector)) {
+	ssq.predicates = append(ssq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the SimulateStatementQuery builder.
+func (ssq *SimulateStatementQuery) Filter() *SimulateStatementFilter {
+	return &SimulateStatementFilter{config: ssq.config, predicateAdder: ssq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *SimulateStatementMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the SimulateStatementMutation builder.
+func (m *SimulateStatementMutation) Filter() *SimulateStatementFilter {
+	return &SimulateStatementFilter{config: m.config, predicateAdder: m}
+}
+
+// SimulateStatementFilter provides a generic filtering capability at runtime for SimulateStatementQuery.
+type SimulateStatementFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *SimulateStatementFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *SimulateStatementFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(simulatestatement.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *SimulateStatementFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulatestatement.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *SimulateStatementFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulatestatement.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *SimulateStatementFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(simulatestatement.FieldDeletedAt))
+}
+
+// WhereEntID applies the entql [16]byte predicate on the ent_id field.
+func (f *SimulateStatementFilter) WhereEntID(p entql.ValueP) {
+	f.Where(p.Field(simulatestatement.FieldEntID))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *SimulateStatementFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(simulatestatement.FieldAppID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *SimulateStatementFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(simulatestatement.FieldUserID))
+}
+
+// WhereCoinTypeID applies the entql [16]byte predicate on the coin_type_id field.
+func (f *SimulateStatementFilter) WhereCoinTypeID(p entql.ValueP) {
+	f.Where(p.Field(simulatestatement.FieldCoinTypeID))
+}
+
+// WhereIoType applies the entql string predicate on the io_type field.
+func (f *SimulateStatementFilter) WhereIoType(p entql.StringP) {
+	f.Where(p.Field(simulatestatement.FieldIoType))
+}
+
+// WhereIoSubType applies the entql string predicate on the io_sub_type field.
+func (f *SimulateStatementFilter) WhereIoSubType(p entql.StringP) {
+	f.Where(p.Field(simulatestatement.FieldIoSubType))
+}
+
+// WhereAmount applies the entql float64 predicate on the amount field.
+func (f *SimulateStatementFilter) WhereAmount(p entql.Float64P) {
+	f.Where(p.Field(simulatestatement.FieldAmount))
+}
+
+// WhereIoExtra applies the entql string predicate on the io_extra field.
+func (f *SimulateStatementFilter) WhereIoExtra(p entql.StringP) {
+	f.Where(p.Field(simulatestatement.FieldIoExtra))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (sq *StatementQuery) addPredicate(pred func(s *sql.Selector)) {
 	sq.predicates = append(sq.predicates, pred)
 }
@@ -800,7 +1136,7 @@ type StatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *StatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -900,7 +1236,7 @@ type UnsoldStatementFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UnsoldStatementFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -985,7 +1321,7 @@ type WithdrawFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *WithdrawFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

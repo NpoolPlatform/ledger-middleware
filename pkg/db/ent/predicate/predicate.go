@@ -24,6 +24,15 @@ type LedgerLock func(*sql.Selector)
 // Profit is the predicate function for profit builders.
 type Profit func(*sql.Selector)
 
+// SimulateLedger is the predicate function for simulateledger builders.
+type SimulateLedger func(*sql.Selector)
+
+// SimulateProfit is the predicate function for simulateprofit builders.
+type SimulateProfit func(*sql.Selector)
+
+// SimulateStatement is the predicate function for simulatestatement builders.
+type SimulateStatement func(*sql.Selector)
+
 // Statement is the predicate function for statement builders.
 type Statement func(*sql.Selector)
 

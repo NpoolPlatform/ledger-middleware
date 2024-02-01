@@ -16,6 +16,9 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateprofit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulatestatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
@@ -41,6 +44,12 @@ type Client struct {
 	LedgerLock *LedgerLockClient
 	// Profit is the client for interacting with the Profit builders.
 	Profit *ProfitClient
+	// SimulateLedger is the client for interacting with the SimulateLedger builders.
+	SimulateLedger *SimulateLedgerClient
+	// SimulateProfit is the client for interacting with the SimulateProfit builders.
+	SimulateProfit *SimulateProfitClient
+	// SimulateStatement is the client for interacting with the SimulateStatement builders.
+	SimulateStatement *SimulateStatementClient
 	// Statement is the client for interacting with the Statement builders.
 	Statement *StatementClient
 	// UnsoldStatement is the client for interacting with the UnsoldStatement builders.
@@ -66,6 +75,9 @@ func (c *Client) init() {
 	c.Ledger = NewLedgerClient(c.config)
 	c.LedgerLock = NewLedgerLockClient(c.config)
 	c.Profit = NewProfitClient(c.config)
+	c.SimulateLedger = NewSimulateLedgerClient(c.config)
+	c.SimulateProfit = NewSimulateProfitClient(c.config)
+	c.SimulateStatement = NewSimulateStatementClient(c.config)
 	c.Statement = NewStatementClient(c.config)
 	c.UnsoldStatement = NewUnsoldStatementClient(c.config)
 	c.Withdraw = NewWithdrawClient(c.config)
@@ -100,17 +112,20 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		CouponWithdraw:  NewCouponWithdrawClient(cfg),
-		GoodLedger:      NewGoodLedgerClient(cfg),
-		GoodStatement:   NewGoodStatementClient(cfg),
-		Ledger:          NewLedgerClient(cfg),
-		LedgerLock:      NewLedgerLockClient(cfg),
-		Profit:          NewProfitClient(cfg),
-		Statement:       NewStatementClient(cfg),
-		UnsoldStatement: NewUnsoldStatementClient(cfg),
-		Withdraw:        NewWithdrawClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		CouponWithdraw:    NewCouponWithdrawClient(cfg),
+		GoodLedger:        NewGoodLedgerClient(cfg),
+		GoodStatement:     NewGoodStatementClient(cfg),
+		Ledger:            NewLedgerClient(cfg),
+		LedgerLock:        NewLedgerLockClient(cfg),
+		Profit:            NewProfitClient(cfg),
+		SimulateLedger:    NewSimulateLedgerClient(cfg),
+		SimulateProfit:    NewSimulateProfitClient(cfg),
+		SimulateStatement: NewSimulateStatementClient(cfg),
+		Statement:         NewStatementClient(cfg),
+		UnsoldStatement:   NewUnsoldStatementClient(cfg),
+		Withdraw:          NewWithdrawClient(cfg),
 	}, nil
 }
 
@@ -128,17 +143,20 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:             ctx,
-		config:          cfg,
-		CouponWithdraw:  NewCouponWithdrawClient(cfg),
-		GoodLedger:      NewGoodLedgerClient(cfg),
-		GoodStatement:   NewGoodStatementClient(cfg),
-		Ledger:          NewLedgerClient(cfg),
-		LedgerLock:      NewLedgerLockClient(cfg),
-		Profit:          NewProfitClient(cfg),
-		Statement:       NewStatementClient(cfg),
-		UnsoldStatement: NewUnsoldStatementClient(cfg),
-		Withdraw:        NewWithdrawClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		CouponWithdraw:    NewCouponWithdrawClient(cfg),
+		GoodLedger:        NewGoodLedgerClient(cfg),
+		GoodStatement:     NewGoodStatementClient(cfg),
+		Ledger:            NewLedgerClient(cfg),
+		LedgerLock:        NewLedgerLockClient(cfg),
+		Profit:            NewProfitClient(cfg),
+		SimulateLedger:    NewSimulateLedgerClient(cfg),
+		SimulateProfit:    NewSimulateProfitClient(cfg),
+		SimulateStatement: NewSimulateStatementClient(cfg),
+		Statement:         NewStatementClient(cfg),
+		UnsoldStatement:   NewUnsoldStatementClient(cfg),
+		Withdraw:          NewWithdrawClient(cfg),
 	}, nil
 }
 
@@ -174,6 +192,9 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Ledger.Use(hooks...)
 	c.LedgerLock.Use(hooks...)
 	c.Profit.Use(hooks...)
+	c.SimulateLedger.Use(hooks...)
+	c.SimulateProfit.Use(hooks...)
+	c.SimulateStatement.Use(hooks...)
 	c.Statement.Use(hooks...)
 	c.UnsoldStatement.Use(hooks...)
 	c.Withdraw.Use(hooks...)
@@ -723,6 +744,279 @@ func (c *ProfitClient) GetX(ctx context.Context, id uint32) *Profit {
 func (c *ProfitClient) Hooks() []Hook {
 	hooks := c.hooks.Profit
 	return append(hooks[:len(hooks):len(hooks)], profit.Hooks[:]...)
+}
+
+// SimulateLedgerClient is a client for the SimulateLedger schema.
+type SimulateLedgerClient struct {
+	config
+}
+
+// NewSimulateLedgerClient returns a client for the SimulateLedger from the given config.
+func NewSimulateLedgerClient(c config) *SimulateLedgerClient {
+	return &SimulateLedgerClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `simulateledger.Hooks(f(g(h())))`.
+func (c *SimulateLedgerClient) Use(hooks ...Hook) {
+	c.hooks.SimulateLedger = append(c.hooks.SimulateLedger, hooks...)
+}
+
+// Create returns a builder for creating a SimulateLedger entity.
+func (c *SimulateLedgerClient) Create() *SimulateLedgerCreate {
+	mutation := newSimulateLedgerMutation(c.config, OpCreate)
+	return &SimulateLedgerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SimulateLedger entities.
+func (c *SimulateLedgerClient) CreateBulk(builders ...*SimulateLedgerCreate) *SimulateLedgerCreateBulk {
+	return &SimulateLedgerCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SimulateLedger.
+func (c *SimulateLedgerClient) Update() *SimulateLedgerUpdate {
+	mutation := newSimulateLedgerMutation(c.config, OpUpdate)
+	return &SimulateLedgerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SimulateLedgerClient) UpdateOne(sl *SimulateLedger) *SimulateLedgerUpdateOne {
+	mutation := newSimulateLedgerMutation(c.config, OpUpdateOne, withSimulateLedger(sl))
+	return &SimulateLedgerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SimulateLedgerClient) UpdateOneID(id uint32) *SimulateLedgerUpdateOne {
+	mutation := newSimulateLedgerMutation(c.config, OpUpdateOne, withSimulateLedgerID(id))
+	return &SimulateLedgerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SimulateLedger.
+func (c *SimulateLedgerClient) Delete() *SimulateLedgerDelete {
+	mutation := newSimulateLedgerMutation(c.config, OpDelete)
+	return &SimulateLedgerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SimulateLedgerClient) DeleteOne(sl *SimulateLedger) *SimulateLedgerDeleteOne {
+	return c.DeleteOneID(sl.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *SimulateLedgerClient) DeleteOneID(id uint32) *SimulateLedgerDeleteOne {
+	builder := c.Delete().Where(simulateledger.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SimulateLedgerDeleteOne{builder}
+}
+
+// Query returns a query builder for SimulateLedger.
+func (c *SimulateLedgerClient) Query() *SimulateLedgerQuery {
+	return &SimulateLedgerQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a SimulateLedger entity by its id.
+func (c *SimulateLedgerClient) Get(ctx context.Context, id uint32) (*SimulateLedger, error) {
+	return c.Query().Where(simulateledger.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SimulateLedgerClient) GetX(ctx context.Context, id uint32) *SimulateLedger {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SimulateLedgerClient) Hooks() []Hook {
+	hooks := c.hooks.SimulateLedger
+	return append(hooks[:len(hooks):len(hooks)], simulateledger.Hooks[:]...)
+}
+
+// SimulateProfitClient is a client for the SimulateProfit schema.
+type SimulateProfitClient struct {
+	config
+}
+
+// NewSimulateProfitClient returns a client for the SimulateProfit from the given config.
+func NewSimulateProfitClient(c config) *SimulateProfitClient {
+	return &SimulateProfitClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `simulateprofit.Hooks(f(g(h())))`.
+func (c *SimulateProfitClient) Use(hooks ...Hook) {
+	c.hooks.SimulateProfit = append(c.hooks.SimulateProfit, hooks...)
+}
+
+// Create returns a builder for creating a SimulateProfit entity.
+func (c *SimulateProfitClient) Create() *SimulateProfitCreate {
+	mutation := newSimulateProfitMutation(c.config, OpCreate)
+	return &SimulateProfitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SimulateProfit entities.
+func (c *SimulateProfitClient) CreateBulk(builders ...*SimulateProfitCreate) *SimulateProfitCreateBulk {
+	return &SimulateProfitCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SimulateProfit.
+func (c *SimulateProfitClient) Update() *SimulateProfitUpdate {
+	mutation := newSimulateProfitMutation(c.config, OpUpdate)
+	return &SimulateProfitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SimulateProfitClient) UpdateOne(sp *SimulateProfit) *SimulateProfitUpdateOne {
+	mutation := newSimulateProfitMutation(c.config, OpUpdateOne, withSimulateProfit(sp))
+	return &SimulateProfitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SimulateProfitClient) UpdateOneID(id uint32) *SimulateProfitUpdateOne {
+	mutation := newSimulateProfitMutation(c.config, OpUpdateOne, withSimulateProfitID(id))
+	return &SimulateProfitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SimulateProfit.
+func (c *SimulateProfitClient) Delete() *SimulateProfitDelete {
+	mutation := newSimulateProfitMutation(c.config, OpDelete)
+	return &SimulateProfitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SimulateProfitClient) DeleteOne(sp *SimulateProfit) *SimulateProfitDeleteOne {
+	return c.DeleteOneID(sp.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *SimulateProfitClient) DeleteOneID(id uint32) *SimulateProfitDeleteOne {
+	builder := c.Delete().Where(simulateprofit.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SimulateProfitDeleteOne{builder}
+}
+
+// Query returns a query builder for SimulateProfit.
+func (c *SimulateProfitClient) Query() *SimulateProfitQuery {
+	return &SimulateProfitQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a SimulateProfit entity by its id.
+func (c *SimulateProfitClient) Get(ctx context.Context, id uint32) (*SimulateProfit, error) {
+	return c.Query().Where(simulateprofit.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SimulateProfitClient) GetX(ctx context.Context, id uint32) *SimulateProfit {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SimulateProfitClient) Hooks() []Hook {
+	hooks := c.hooks.SimulateProfit
+	return append(hooks[:len(hooks):len(hooks)], simulateprofit.Hooks[:]...)
+}
+
+// SimulateStatementClient is a client for the SimulateStatement schema.
+type SimulateStatementClient struct {
+	config
+}
+
+// NewSimulateStatementClient returns a client for the SimulateStatement from the given config.
+func NewSimulateStatementClient(c config) *SimulateStatementClient {
+	return &SimulateStatementClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `simulatestatement.Hooks(f(g(h())))`.
+func (c *SimulateStatementClient) Use(hooks ...Hook) {
+	c.hooks.SimulateStatement = append(c.hooks.SimulateStatement, hooks...)
+}
+
+// Create returns a builder for creating a SimulateStatement entity.
+func (c *SimulateStatementClient) Create() *SimulateStatementCreate {
+	mutation := newSimulateStatementMutation(c.config, OpCreate)
+	return &SimulateStatementCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SimulateStatement entities.
+func (c *SimulateStatementClient) CreateBulk(builders ...*SimulateStatementCreate) *SimulateStatementCreateBulk {
+	return &SimulateStatementCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SimulateStatement.
+func (c *SimulateStatementClient) Update() *SimulateStatementUpdate {
+	mutation := newSimulateStatementMutation(c.config, OpUpdate)
+	return &SimulateStatementUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SimulateStatementClient) UpdateOne(ss *SimulateStatement) *SimulateStatementUpdateOne {
+	mutation := newSimulateStatementMutation(c.config, OpUpdateOne, withSimulateStatement(ss))
+	return &SimulateStatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SimulateStatementClient) UpdateOneID(id uint32) *SimulateStatementUpdateOne {
+	mutation := newSimulateStatementMutation(c.config, OpUpdateOne, withSimulateStatementID(id))
+	return &SimulateStatementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SimulateStatement.
+func (c *SimulateStatementClient) Delete() *SimulateStatementDelete {
+	mutation := newSimulateStatementMutation(c.config, OpDelete)
+	return &SimulateStatementDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SimulateStatementClient) DeleteOne(ss *SimulateStatement) *SimulateStatementDeleteOne {
+	return c.DeleteOneID(ss.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *SimulateStatementClient) DeleteOneID(id uint32) *SimulateStatementDeleteOne {
+	builder := c.Delete().Where(simulatestatement.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SimulateStatementDeleteOne{builder}
+}
+
+// Query returns a query builder for SimulateStatement.
+func (c *SimulateStatementClient) Query() *SimulateStatementQuery {
+	return &SimulateStatementQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a SimulateStatement entity by its id.
+func (c *SimulateStatementClient) Get(ctx context.Context, id uint32) (*SimulateStatement, error) {
+	return c.Query().Where(simulatestatement.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SimulateStatementClient) GetX(ctx context.Context, id uint32) *SimulateStatement {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SimulateStatementClient) Hooks() []Hook {
+	hooks := c.hooks.SimulateStatement
+	return append(hooks[:len(hooks):len(hooks)], simulatestatement.Hooks[:]...)
 }
 
 // StatementClient is a client for the Statement schema.

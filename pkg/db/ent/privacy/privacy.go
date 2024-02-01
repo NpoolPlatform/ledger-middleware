@@ -294,6 +294,78 @@ func (f ProfitMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProfitMutation", m)
 }
 
+// The SimulateLedgerQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SimulateLedgerQueryRuleFunc func(context.Context, *ent.SimulateLedgerQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SimulateLedgerQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SimulateLedgerQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SimulateLedgerQuery", q)
+}
+
+// The SimulateLedgerMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SimulateLedgerMutationRuleFunc func(context.Context, *ent.SimulateLedgerMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SimulateLedgerMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SimulateLedgerMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SimulateLedgerMutation", m)
+}
+
+// The SimulateProfitQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SimulateProfitQueryRuleFunc func(context.Context, *ent.SimulateProfitQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SimulateProfitQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SimulateProfitQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SimulateProfitQuery", q)
+}
+
+// The SimulateProfitMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SimulateProfitMutationRuleFunc func(context.Context, *ent.SimulateProfitMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SimulateProfitMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SimulateProfitMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SimulateProfitMutation", m)
+}
+
+// The SimulateStatementQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type SimulateStatementQueryRuleFunc func(context.Context, *ent.SimulateStatementQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f SimulateStatementQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SimulateStatementQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SimulateStatementQuery", q)
+}
+
+// The SimulateStatementMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type SimulateStatementMutationRuleFunc func(context.Context, *ent.SimulateStatementMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f SimulateStatementMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SimulateStatementMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SimulateStatementMutation", m)
+}
+
 // The StatementQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type StatementQueryRuleFunc func(context.Context, *ent.StatementQuery) error
@@ -413,6 +485,12 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.ProfitQuery:
 		return q.Filter(), nil
+	case *ent.SimulateLedgerQuery:
+		return q.Filter(), nil
+	case *ent.SimulateProfitQuery:
+		return q.Filter(), nil
+	case *ent.SimulateStatementQuery:
+		return q.Filter(), nil
 	case *ent.StatementQuery:
 		return q.Filter(), nil
 	case *ent.UnsoldStatementQuery:
@@ -437,6 +515,12 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.LedgerLockMutation:
 		return m.Filter(), nil
 	case *ent.ProfitMutation:
+		return m.Filter(), nil
+	case *ent.SimulateLedgerMutation:
+		return m.Filter(), nil
+	case *ent.SimulateProfitMutation:
+		return m.Filter(), nil
+	case *ent.SimulateStatementMutation:
 		return m.Filter(), nil
 	case *ent.StatementMutation:
 		return m.Filter(), nil
