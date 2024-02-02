@@ -19,7 +19,6 @@ type Req struct {
 	UserID     *uuid.UUID
 	CoinTypeID *uuid.UUID
 	Incoming   *decimal.Decimal
-	SendCoupon *bool
 	CreatedAt  *uint32
 	DeletedAt  *uint32
 }
@@ -39,9 +38,6 @@ func CreateSet(c *ent.SimulateProfitCreate, in *Req) *ent.SimulateProfitCreate {
 	}
 	if in.CoinTypeID != nil {
 		c.SetCoinTypeID(*in.CoinTypeID)
-	}
-	if in.SendCoupon != nil {
-		c.SetSendCoupon(*in.SendCoupon)
 	}
 
 	incoming := decimal.NewFromInt(0)
@@ -88,7 +84,6 @@ type Conds struct {
 	UserID     *cruder.Cond
 	CoinTypeID *cruder.Cond
 	Incoming   *cruder.Cond
-	SendCoupon *cruder.Cond
 }
 
 func SetQueryConds(q *ent.SimulateProfitQuery, conds *Conds) (*ent.SimulateProfitQuery, error) { //nolint
@@ -158,18 +153,6 @@ func SetQueryConds(q *ent.SimulateProfitQuery, conds *Conds) (*ent.SimulateProfi
 			q.Where(entprofit.IncomingEQ(incoming))
 		default:
 			return nil, fmt.Errorf("invalid incoming op field %v", conds.Incoming.Op)
-		}
-	}
-	if conds.SendCoupon != nil {
-		sendcoupon, ok := conds.SendCoupon.Val.(bool)
-		if !ok {
-			return nil, fmt.Errorf("invalid sendcoupon")
-		}
-		switch conds.SendCoupon.Op {
-		case cruder.EQ:
-			q.Where(entprofit.SendCoupon(sendcoupon))
-		default:
-			return nil, fmt.Errorf("invalid sendcoupon op field %v", conds.SendCoupon.Op)
 		}
 	}
 

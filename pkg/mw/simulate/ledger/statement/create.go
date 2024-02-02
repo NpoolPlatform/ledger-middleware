@@ -29,7 +29,7 @@ func (h *createHandler) createOrUpdateProfit(ctx context.Context, tx *ent.Tx, re
 	}
 	key := fmt.Sprintf(
 		"%v:%v:%v:%v",
-		basetypes.Prefix_PrefixCreateLedgerProfit,
+		basetypes.Prefix_PrefixCreateSimulateLedgerProfit,
 		*req.AppID,
 		*req.UserID,
 		*req.CoinTypeID,
@@ -129,7 +129,7 @@ func (h *createHandler) createStatement(ctx context.Context, tx *ent.Tx, req *cr
 
 func (h *createHandler) createOrUpdateLedger(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
 	key := fmt.Sprintf("%v:%v:%v:%v",
-		basetypes.Prefix_PrefixCreateLedger,
+		basetypes.Prefix_PrefixCreateSimulateLedger,
 		*req.AppID,
 		*req.UserID,
 		*req.CoinTypeID,

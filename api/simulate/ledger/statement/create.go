@@ -31,6 +31,7 @@ func (s *Server) CreateStatement(ctx context.Context, in *npool.CreateStatementR
 		statement1.WithAmount(req.Amount, true),
 		statement1.WithIOExtra(req.IOExtra, true),
 		statement1.WithCreatedAt(req.CreatedAt, false),
+		statement1.WithSendCoupon(req.SendCoupon, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -16,13 +16,14 @@ import (
 
 type Handler struct {
 	crud.Req
-	Rollback *bool
-	Reqs     []*crud.Req
-	StartAt  uint32
-	EndAT    uint32
-	Conds    *crud.Conds
-	Offset   int32
-	Limit    int32
+	SendCoupon *bool
+	Rollback   *bool
+	Reqs       []*crud.Req
+	StartAt    uint32
+	EndAT      uint32
+	Conds      *crud.Conds
+	Offset     int32
+	Limit      int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -242,6 +243,19 @@ func WithRollback(rollback *bool, must bool) func(context.Context, *Handler) err
 	}
 }
 
+func WithSendCoupon(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid sendcoupon")
+			}
+			return nil
+		}
+		h.SendCoupon = value
+		return nil
+	}
+}
+
 //nolint
 func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
@@ -354,6 +368,12 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			h.Conds.UserIDs = &cruder.Cond{
 				Op:  conds.GetUserIDs().GetOp(),
 				Val: ids,
+			}
+		}
+		if conds.SendCoupon != nil {
+			h.Conds.SendCoupon = &cruder.Cond{
+				Op:  conds.GetSendCoupon().GetOp(),
+				Val: conds.GetSendCoupon().GetValue(),
 			}
 		}
 		return nil

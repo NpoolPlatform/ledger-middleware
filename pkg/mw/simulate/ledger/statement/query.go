@@ -31,6 +31,7 @@ func (h *queryHandler) selectStatement(stm *ent.SimulateStatementQuery) {
 		entstatement.FieldIoSubType,
 		entstatement.FieldAmount,
 		entstatement.FieldIoExtra,
+		entstatement.FieldSendCoupon,
 		entstatement.FieldCreatedAt,
 		entstatement.FieldUpdatedAt,
 	)

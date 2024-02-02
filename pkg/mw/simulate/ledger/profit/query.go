@@ -29,7 +29,6 @@ func (h *queryHandler) selectProfit(stm *ent.SimulateProfitQuery) {
 		entprofit.FieldIncoming,
 		entprofit.FieldCreatedAt,
 		entprofit.FieldUpdatedAt,
-		entprofit.FieldSendCoupon,
 	)
 }
 

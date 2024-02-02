@@ -23,6 +23,7 @@ type Req struct {
 	IOSubType  *basetypes.IOSubType
 	Amount     *decimal.Decimal
 	IOExtra    *string
+	SendCoupon *bool
 	CreatedAt  *uint32
 	DeletedAt  *uint32
 }
@@ -51,6 +52,9 @@ func CreateSet(c *ent.SimulateStatementCreate, in *Req) *ent.SimulateStatementCr
 	}
 	if in.IOExtra != nil {
 		c.SetIoExtra(*in.IOExtra)
+	}
+	if in.SendCoupon != nil {
+		c.SetSendCoupon(*in.SendCoupon)
 	}
 	if in.CreatedAt != nil {
 		c.SetCreatedAt(*in.CreatedAt)
@@ -81,6 +85,7 @@ type Conds struct {
 	IOSubTypes  *cruder.Cond
 	CoinTypeIDs *cruder.Cond
 	UserIDs     *cruder.Cond
+	SendCoupon  *cruder.Cond
 }
 
 func SetQueryConds(q *ent.SimulateStatementQuery, conds *Conds) (*ent.SimulateStatementQuery, error) { //nolint
@@ -270,6 +275,18 @@ func SetQueryConds(q *ent.SimulateStatementQuery, conds *Conds) (*ent.SimulateSt
 			q.Where(entstatement.UserIDIn(ids...))
 		default:
 			return nil, fmt.Errorf("invalid user ids op field %v", conds.UserIDs.Op)
+		}
+	}
+	if conds.SendCoupon != nil {
+		sendcoupon, ok := conds.SendCoupon.Val.(bool)
+		if !ok {
+			return nil, fmt.Errorf("invalid sendcoupon")
+		}
+		switch conds.SendCoupon.Op {
+		case cruder.EQ:
+			q.Where(entstatement.SendCoupon(sendcoupon))
+		default:
+			return nil, fmt.Errorf("invalid sendcoupon op field %v", conds.SendCoupon.Op)
 		}
 	}
 	return q, nil
