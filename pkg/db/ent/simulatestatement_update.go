@@ -245,6 +245,26 @@ func (ssu *SimulateStatementUpdate) ClearIoExtra() *SimulateStatementUpdate {
 	return ssu
 }
 
+// SetSendCoupon sets the "send_coupon" field.
+func (ssu *SimulateStatementUpdate) SetSendCoupon(b bool) *SimulateStatementUpdate {
+	ssu.mutation.SetSendCoupon(b)
+	return ssu
+}
+
+// SetNillableSendCoupon sets the "send_coupon" field if the given value is not nil.
+func (ssu *SimulateStatementUpdate) SetNillableSendCoupon(b *bool) *SimulateStatementUpdate {
+	if b != nil {
+		ssu.SetSendCoupon(*b)
+	}
+	return ssu
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (ssu *SimulateStatementUpdate) ClearSendCoupon() *SimulateStatementUpdate {
+	ssu.mutation.ClearSendCoupon()
+	return ssu
+}
+
 // Mutation returns the SimulateStatementMutation object of the builder.
 func (ssu *SimulateStatementUpdate) Mutation() *SimulateStatementMutation {
 	return ssu.mutation
@@ -500,6 +520,19 @@ func (ssu *SimulateStatementUpdate) sqlSave(ctx context.Context) (n int, err err
 			Column: simulatestatement.FieldIoExtra,
 		})
 	}
+	if value, ok := ssu.mutation.SendCoupon(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldSendCoupon,
+		})
+	}
+	if ssu.mutation.SendCouponCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: simulatestatement.FieldSendCoupon,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ssu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{simulatestatement.Label}
@@ -732,6 +765,26 @@ func (ssuo *SimulateStatementUpdateOne) SetNillableIoExtra(s *string) *SimulateS
 // ClearIoExtra clears the value of the "io_extra" field.
 func (ssuo *SimulateStatementUpdateOne) ClearIoExtra() *SimulateStatementUpdateOne {
 	ssuo.mutation.ClearIoExtra()
+	return ssuo
+}
+
+// SetSendCoupon sets the "send_coupon" field.
+func (ssuo *SimulateStatementUpdateOne) SetSendCoupon(b bool) *SimulateStatementUpdateOne {
+	ssuo.mutation.SetSendCoupon(b)
+	return ssuo
+}
+
+// SetNillableSendCoupon sets the "send_coupon" field if the given value is not nil.
+func (ssuo *SimulateStatementUpdateOne) SetNillableSendCoupon(b *bool) *SimulateStatementUpdateOne {
+	if b != nil {
+		ssuo.SetSendCoupon(*b)
+	}
+	return ssuo
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (ssuo *SimulateStatementUpdateOne) ClearSendCoupon() *SimulateStatementUpdateOne {
+	ssuo.mutation.ClearSendCoupon()
 	return ssuo
 }
 
@@ -1018,6 +1071,19 @@ func (ssuo *SimulateStatementUpdateOne) sqlSave(ctx context.Context) (_node *Sim
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: simulatestatement.FieldIoExtra,
+		})
+	}
+	if value, ok := ssuo.mutation.SendCoupon(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldSendCoupon,
+		})
+	}
+	if ssuo.mutation.SendCouponCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: simulatestatement.FieldSendCoupon,
 		})
 	}
 	_node = &SimulateStatement{config: ssuo.config}

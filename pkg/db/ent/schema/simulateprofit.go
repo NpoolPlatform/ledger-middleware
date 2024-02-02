@@ -1,3 +1,4 @@
+//nolint:dupl
 package schema
 
 import (
@@ -50,10 +51,6 @@ func (SimulateProfit) Fields() []ent.Field {
 				dialect.MySQL: "decimal(37, 18)",
 			}).
 			Optional(),
-		field.
-			Bool("send_coupon").
-			Optional().
-			Default(false),
 	}
 }
 

@@ -7581,7 +7581,6 @@ type SimulateProfitMutation struct {
 	coin_type_id  *uuid.UUID
 	incoming      *decimal.Decimal
 	addincoming   *decimal.Decimal
-	send_coupon   *bool
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*SimulateProfit, error)
@@ -8113,55 +8112,6 @@ func (m *SimulateProfitMutation) ResetIncoming() {
 	delete(m.clearedFields, simulateprofit.FieldIncoming)
 }
 
-// SetSendCoupon sets the "send_coupon" field.
-func (m *SimulateProfitMutation) SetSendCoupon(b bool) {
-	m.send_coupon = &b
-}
-
-// SendCoupon returns the value of the "send_coupon" field in the mutation.
-func (m *SimulateProfitMutation) SendCoupon() (r bool, exists bool) {
-	v := m.send_coupon
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSendCoupon returns the old "send_coupon" field's value of the SimulateProfit entity.
-// If the SimulateProfit object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SimulateProfitMutation) OldSendCoupon(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSendCoupon is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSendCoupon requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSendCoupon: %w", err)
-	}
-	return oldValue.SendCoupon, nil
-}
-
-// ClearSendCoupon clears the value of the "send_coupon" field.
-func (m *SimulateProfitMutation) ClearSendCoupon() {
-	m.send_coupon = nil
-	m.clearedFields[simulateprofit.FieldSendCoupon] = struct{}{}
-}
-
-// SendCouponCleared returns if the "send_coupon" field was cleared in this mutation.
-func (m *SimulateProfitMutation) SendCouponCleared() bool {
-	_, ok := m.clearedFields[simulateprofit.FieldSendCoupon]
-	return ok
-}
-
-// ResetSendCoupon resets all changes to the "send_coupon" field.
-func (m *SimulateProfitMutation) ResetSendCoupon() {
-	m.send_coupon = nil
-	delete(m.clearedFields, simulateprofit.FieldSendCoupon)
-}
-
 // Where appends a list predicates to the SimulateProfitMutation builder.
 func (m *SimulateProfitMutation) Where(ps ...predicate.SimulateProfit) {
 	m.predicates = append(m.predicates, ps...)
@@ -8181,7 +8131,7 @@ func (m *SimulateProfitMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SimulateProfitMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, simulateprofit.FieldCreatedAt)
 	}
@@ -8205,9 +8155,6 @@ func (m *SimulateProfitMutation) Fields() []string {
 	}
 	if m.incoming != nil {
 		fields = append(fields, simulateprofit.FieldIncoming)
-	}
-	if m.send_coupon != nil {
-		fields = append(fields, simulateprofit.FieldSendCoupon)
 	}
 	return fields
 }
@@ -8233,8 +8180,6 @@ func (m *SimulateProfitMutation) Field(name string) (ent.Value, bool) {
 		return m.CoinTypeID()
 	case simulateprofit.FieldIncoming:
 		return m.Incoming()
-	case simulateprofit.FieldSendCoupon:
-		return m.SendCoupon()
 	}
 	return nil, false
 }
@@ -8260,8 +8205,6 @@ func (m *SimulateProfitMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldCoinTypeID(ctx)
 	case simulateprofit.FieldIncoming:
 		return m.OldIncoming(ctx)
-	case simulateprofit.FieldSendCoupon:
-		return m.OldSendCoupon(ctx)
 	}
 	return nil, fmt.Errorf("unknown SimulateProfit field %s", name)
 }
@@ -8326,13 +8269,6 @@ func (m *SimulateProfitMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIncoming(v)
-		return nil
-	case simulateprofit.FieldSendCoupon:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSendCoupon(v)
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateProfit field %s", name)
@@ -8427,9 +8363,6 @@ func (m *SimulateProfitMutation) ClearedFields() []string {
 	if m.FieldCleared(simulateprofit.FieldIncoming) {
 		fields = append(fields, simulateprofit.FieldIncoming)
 	}
-	if m.FieldCleared(simulateprofit.FieldSendCoupon) {
-		fields = append(fields, simulateprofit.FieldSendCoupon)
-	}
 	return fields
 }
 
@@ -8455,9 +8388,6 @@ func (m *SimulateProfitMutation) ClearField(name string) error {
 		return nil
 	case simulateprofit.FieldIncoming:
 		m.ClearIncoming()
-		return nil
-	case simulateprofit.FieldSendCoupon:
-		m.ClearSendCoupon()
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateProfit nullable field %s", name)
@@ -8490,9 +8420,6 @@ func (m *SimulateProfitMutation) ResetField(name string) error {
 		return nil
 	case simulateprofit.FieldIncoming:
 		m.ResetIncoming()
-		return nil
-	case simulateprofit.FieldSendCoupon:
-		m.ResetSendCoupon()
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateProfit field %s", name)
@@ -8567,6 +8494,7 @@ type SimulateStatementMutation struct {
 	amount        *decimal.Decimal
 	addamount     *decimal.Decimal
 	io_extra      *string
+	send_coupon   *bool
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*SimulateStatement, error)
@@ -9245,6 +9173,55 @@ func (m *SimulateStatementMutation) ResetIoExtra() {
 	delete(m.clearedFields, simulatestatement.FieldIoExtra)
 }
 
+// SetSendCoupon sets the "send_coupon" field.
+func (m *SimulateStatementMutation) SetSendCoupon(b bool) {
+	m.send_coupon = &b
+}
+
+// SendCoupon returns the value of the "send_coupon" field in the mutation.
+func (m *SimulateStatementMutation) SendCoupon() (r bool, exists bool) {
+	v := m.send_coupon
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSendCoupon returns the old "send_coupon" field's value of the SimulateStatement entity.
+// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SimulateStatementMutation) OldSendCoupon(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSendCoupon is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSendCoupon requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSendCoupon: %w", err)
+	}
+	return oldValue.SendCoupon, nil
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (m *SimulateStatementMutation) ClearSendCoupon() {
+	m.send_coupon = nil
+	m.clearedFields[simulatestatement.FieldSendCoupon] = struct{}{}
+}
+
+// SendCouponCleared returns if the "send_coupon" field was cleared in this mutation.
+func (m *SimulateStatementMutation) SendCouponCleared() bool {
+	_, ok := m.clearedFields[simulatestatement.FieldSendCoupon]
+	return ok
+}
+
+// ResetSendCoupon resets all changes to the "send_coupon" field.
+func (m *SimulateStatementMutation) ResetSendCoupon() {
+	m.send_coupon = nil
+	delete(m.clearedFields, simulatestatement.FieldSendCoupon)
+}
+
 // Where appends a list predicates to the SimulateStatementMutation builder.
 func (m *SimulateStatementMutation) Where(ps ...predicate.SimulateStatement) {
 	m.predicates = append(m.predicates, ps...)
@@ -9264,7 +9241,7 @@ func (m *SimulateStatementMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SimulateStatementMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, simulatestatement.FieldCreatedAt)
 	}
@@ -9298,6 +9275,9 @@ func (m *SimulateStatementMutation) Fields() []string {
 	if m.io_extra != nil {
 		fields = append(fields, simulatestatement.FieldIoExtra)
 	}
+	if m.send_coupon != nil {
+		fields = append(fields, simulatestatement.FieldSendCoupon)
+	}
 	return fields
 }
 
@@ -9328,6 +9308,8 @@ func (m *SimulateStatementMutation) Field(name string) (ent.Value, bool) {
 		return m.Amount()
 	case simulatestatement.FieldIoExtra:
 		return m.IoExtra()
+	case simulatestatement.FieldSendCoupon:
+		return m.SendCoupon()
 	}
 	return nil, false
 }
@@ -9359,6 +9341,8 @@ func (m *SimulateStatementMutation) OldField(ctx context.Context, name string) (
 		return m.OldAmount(ctx)
 	case simulatestatement.FieldIoExtra:
 		return m.OldIoExtra(ctx)
+	case simulatestatement.FieldSendCoupon:
+		return m.OldSendCoupon(ctx)
 	}
 	return nil, fmt.Errorf("unknown SimulateStatement field %s", name)
 }
@@ -9444,6 +9428,13 @@ func (m *SimulateStatementMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIoExtra(v)
+		return nil
+	case simulatestatement.FieldSendCoupon:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSendCoupon(v)
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement field %s", name)
@@ -9547,6 +9538,9 @@ func (m *SimulateStatementMutation) ClearedFields() []string {
 	if m.FieldCleared(simulatestatement.FieldIoExtra) {
 		fields = append(fields, simulatestatement.FieldIoExtra)
 	}
+	if m.FieldCleared(simulatestatement.FieldSendCoupon) {
+		fields = append(fields, simulatestatement.FieldSendCoupon)
+	}
 	return fields
 }
 
@@ -9581,6 +9575,9 @@ func (m *SimulateStatementMutation) ClearField(name string) error {
 		return nil
 	case simulatestatement.FieldIoExtra:
 		m.ClearIoExtra()
+		return nil
+	case simulatestatement.FieldSendCoupon:
+		m.ClearSendCoupon()
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement nullable field %s", name)
@@ -9622,6 +9619,9 @@ func (m *SimulateStatementMutation) ResetField(name string) error {
 		return nil
 	case simulatestatement.FieldIoExtra:
 		m.ResetIoExtra()
+		return nil
+	case simulatestatement.FieldSendCoupon:
+		m.ResetSendCoupon()
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement field %s", name)

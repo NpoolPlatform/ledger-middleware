@@ -28,8 +28,6 @@ const (
 	FieldCoinTypeID = "coin_type_id"
 	// FieldIncoming holds the string denoting the incoming field in the database.
 	FieldIncoming = "incoming"
-	// FieldSendCoupon holds the string denoting the send_coupon field in the database.
-	FieldSendCoupon = "send_coupon"
 	// Table holds the table name of the simulateprofit in the database.
 	Table = "simulate_profits"
 )
@@ -45,7 +43,6 @@ var Columns = []string{
 	FieldUserID,
 	FieldCoinTypeID,
 	FieldIncoming,
-	FieldSendCoupon,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -83,6 +80,4 @@ var (
 	DefaultUserID func() uuid.UUID
 	// DefaultCoinTypeID holds the default value on creation for the "coin_type_id" field.
 	DefaultCoinTypeID func() uuid.UUID
-	// DefaultSendCoupon holds the default value on creation for the "send_coupon" field.
-	DefaultSendCoupon bool
 )

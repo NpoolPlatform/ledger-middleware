@@ -206,7 +206,6 @@ var (
 		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "coin_type_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "incoming", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
-		{Name: "send_coupon", Type: field.TypeBool, Nullable: true, Default: false},
 	}
 	// SimulateProfitsTable holds the schema information for the "simulate_profits" table.
 	SimulateProfitsTable = &schema.Table{
@@ -235,6 +234,7 @@ var (
 		{Name: "io_sub_type", Type: field.TypeString, Nullable: true, Default: "DefaultSubType"},
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
 		{Name: "io_extra", Type: field.TypeString, Nullable: true, Size: 512, Default: ""},
+		{Name: "send_coupon", Type: field.TypeBool, Nullable: true, Default: false},
 	}
 	// SimulateDetailsTable holds the schema information for the "simulate_details" table.
 	SimulateDetailsTable = &schema.Table{

@@ -33,8 +33,6 @@ type SimulateProfit struct {
 	CoinTypeID uuid.UUID `json:"coin_type_id,omitempty"`
 	// Incoming holds the value of the "incoming" field.
 	Incoming decimal.Decimal `json:"incoming,omitempty"`
-	// SendCoupon holds the value of the "send_coupon" field.
-	SendCoupon bool `json:"send_coupon,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -44,8 +42,6 @@ func (*SimulateProfit) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case simulateprofit.FieldIncoming:
 			values[i] = new(decimal.Decimal)
-		case simulateprofit.FieldSendCoupon:
-			values[i] = new(sql.NullBool)
 		case simulateprofit.FieldID, simulateprofit.FieldCreatedAt, simulateprofit.FieldUpdatedAt, simulateprofit.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
 		case simulateprofit.FieldEntID, simulateprofit.FieldAppID, simulateprofit.FieldUserID, simulateprofit.FieldCoinTypeID:
@@ -119,12 +115,6 @@ func (sp *SimulateProfit) assignValues(columns []string, values []interface{}) e
 			} else if value != nil {
 				sp.Incoming = *value
 			}
-		case simulateprofit.FieldSendCoupon:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field send_coupon", values[i])
-			} else if value.Valid {
-				sp.SendCoupon = value.Bool
-			}
 		}
 	}
 	return nil
@@ -176,9 +166,6 @@ func (sp *SimulateProfit) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("incoming=")
 	builder.WriteString(fmt.Sprintf("%v", sp.Incoming))
-	builder.WriteString(", ")
-	builder.WriteString("send_coupon=")
-	builder.WriteString(fmt.Sprintf("%v", sp.SendCoupon))
 	builder.WriteByte(')')
 	return builder.String()
 }

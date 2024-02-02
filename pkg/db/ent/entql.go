@@ -202,7 +202,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			simulateprofit.FieldUserID:     {Type: field.TypeUUID, Column: simulateprofit.FieldUserID},
 			simulateprofit.FieldCoinTypeID: {Type: field.TypeUUID, Column: simulateprofit.FieldCoinTypeID},
 			simulateprofit.FieldIncoming:   {Type: field.TypeFloat64, Column: simulateprofit.FieldIncoming},
-			simulateprofit.FieldSendCoupon: {Type: field.TypeBool, Column: simulateprofit.FieldSendCoupon},
 		},
 	}
 	graph.Nodes[8] = &sqlgraph.Node{
@@ -227,6 +226,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			simulatestatement.FieldIoSubType:  {Type: field.TypeString, Column: simulatestatement.FieldIoSubType},
 			simulatestatement.FieldAmount:     {Type: field.TypeFloat64, Column: simulatestatement.FieldAmount},
 			simulatestatement.FieldIoExtra:    {Type: field.TypeString, Column: simulatestatement.FieldIoExtra},
+			simulatestatement.FieldSendCoupon: {Type: field.TypeBool, Column: simulatestatement.FieldSendCoupon},
 		},
 	}
 	graph.Nodes[9] = &sqlgraph.Node{
@@ -1007,11 +1007,6 @@ func (f *SimulateProfitFilter) WhereIncoming(p entql.Float64P) {
 	f.Where(p.Field(simulateprofit.FieldIncoming))
 }
 
-// WhereSendCoupon applies the entql bool predicate on the send_coupon field.
-func (f *SimulateProfitFilter) WhereSendCoupon(p entql.BoolP) {
-	f.Where(p.Field(simulateprofit.FieldSendCoupon))
-}
-
 // addPredicate implements the predicateAdder interface.
 func (ssq *SimulateStatementQuery) addPredicate(pred func(s *sql.Selector)) {
 	ssq.predicates = append(ssq.predicates, pred)
@@ -1105,6 +1100,11 @@ func (f *SimulateStatementFilter) WhereAmount(p entql.Float64P) {
 // WhereIoExtra applies the entql string predicate on the io_extra field.
 func (f *SimulateStatementFilter) WhereIoExtra(p entql.StringP) {
 	f.Where(p.Field(simulatestatement.FieldIoExtra))
+}
+
+// WhereSendCoupon applies the entql bool predicate on the send_coupon field.
+func (f *SimulateStatementFilter) WhereSendCoupon(p entql.BoolP) {
+	f.Where(p.Field(simulatestatement.FieldSendCoupon))
 }
 
 // addPredicate implements the predicateAdder interface.

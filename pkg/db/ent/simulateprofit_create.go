@@ -135,20 +135,6 @@ func (spc *SimulateProfitCreate) SetNillableIncoming(d *decimal.Decimal) *Simula
 	return spc
 }
 
-// SetSendCoupon sets the "send_coupon" field.
-func (spc *SimulateProfitCreate) SetSendCoupon(b bool) *SimulateProfitCreate {
-	spc.mutation.SetSendCoupon(b)
-	return spc
-}
-
-// SetNillableSendCoupon sets the "send_coupon" field if the given value is not nil.
-func (spc *SimulateProfitCreate) SetNillableSendCoupon(b *bool) *SimulateProfitCreate {
-	if b != nil {
-		spc.SetSendCoupon(*b)
-	}
-	return spc
-}
-
 // SetID sets the "id" field.
 func (spc *SimulateProfitCreate) SetID(u uint32) *SimulateProfitCreate {
 	spc.mutation.SetID(u)
@@ -283,10 +269,6 @@ func (spc *SimulateProfitCreate) defaults() error {
 		v := simulateprofit.DefaultCoinTypeID()
 		spc.mutation.SetCoinTypeID(v)
 	}
-	if _, ok := spc.mutation.SendCoupon(); !ok {
-		v := simulateprofit.DefaultSendCoupon
-		spc.mutation.SetSendCoupon(v)
-	}
 	return nil
 }
 
@@ -401,14 +383,6 @@ func (spc *SimulateProfitCreate) createSpec() (*SimulateProfit, *sqlgraph.Create
 			Column: simulateprofit.FieldIncoming,
 		})
 		_node.Incoming = value
-	}
-	if value, ok := spc.mutation.SendCoupon(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: simulateprofit.FieldSendCoupon,
-		})
-		_node.SendCoupon = value
 	}
 	return _node, _spec
 }
@@ -605,24 +579,6 @@ func (u *SimulateProfitUpsert) AddIncoming(v decimal.Decimal) *SimulateProfitUps
 // ClearIncoming clears the value of the "incoming" field.
 func (u *SimulateProfitUpsert) ClearIncoming() *SimulateProfitUpsert {
 	u.SetNull(simulateprofit.FieldIncoming)
-	return u
-}
-
-// SetSendCoupon sets the "send_coupon" field.
-func (u *SimulateProfitUpsert) SetSendCoupon(v bool) *SimulateProfitUpsert {
-	u.Set(simulateprofit.FieldSendCoupon, v)
-	return u
-}
-
-// UpdateSendCoupon sets the "send_coupon" field to the value that was provided on create.
-func (u *SimulateProfitUpsert) UpdateSendCoupon() *SimulateProfitUpsert {
-	u.SetExcluded(simulateprofit.FieldSendCoupon)
-	return u
-}
-
-// ClearSendCoupon clears the value of the "send_coupon" field.
-func (u *SimulateProfitUpsert) ClearSendCoupon() *SimulateProfitUpsert {
-	u.SetNull(simulateprofit.FieldSendCoupon)
 	return u
 }
 
@@ -841,27 +797,6 @@ func (u *SimulateProfitUpsertOne) UpdateIncoming() *SimulateProfitUpsertOne {
 func (u *SimulateProfitUpsertOne) ClearIncoming() *SimulateProfitUpsertOne {
 	return u.Update(func(s *SimulateProfitUpsert) {
 		s.ClearIncoming()
-	})
-}
-
-// SetSendCoupon sets the "send_coupon" field.
-func (u *SimulateProfitUpsertOne) SetSendCoupon(v bool) *SimulateProfitUpsertOne {
-	return u.Update(func(s *SimulateProfitUpsert) {
-		s.SetSendCoupon(v)
-	})
-}
-
-// UpdateSendCoupon sets the "send_coupon" field to the value that was provided on create.
-func (u *SimulateProfitUpsertOne) UpdateSendCoupon() *SimulateProfitUpsertOne {
-	return u.Update(func(s *SimulateProfitUpsert) {
-		s.UpdateSendCoupon()
-	})
-}
-
-// ClearSendCoupon clears the value of the "send_coupon" field.
-func (u *SimulateProfitUpsertOne) ClearSendCoupon() *SimulateProfitUpsertOne {
-	return u.Update(func(s *SimulateProfitUpsert) {
-		s.ClearSendCoupon()
 	})
 }
 
@@ -1245,27 +1180,6 @@ func (u *SimulateProfitUpsertBulk) UpdateIncoming() *SimulateProfitUpsertBulk {
 func (u *SimulateProfitUpsertBulk) ClearIncoming() *SimulateProfitUpsertBulk {
 	return u.Update(func(s *SimulateProfitUpsert) {
 		s.ClearIncoming()
-	})
-}
-
-// SetSendCoupon sets the "send_coupon" field.
-func (u *SimulateProfitUpsertBulk) SetSendCoupon(v bool) *SimulateProfitUpsertBulk {
-	return u.Update(func(s *SimulateProfitUpsert) {
-		s.SetSendCoupon(v)
-	})
-}
-
-// UpdateSendCoupon sets the "send_coupon" field to the value that was provided on create.
-func (u *SimulateProfitUpsertBulk) UpdateSendCoupon() *SimulateProfitUpsertBulk {
-	return u.Update(func(s *SimulateProfitUpsert) {
-		s.UpdateSendCoupon()
-	})
-}
-
-// ClearSendCoupon clears the value of the "send_coupon" field.
-func (u *SimulateProfitUpsertBulk) ClearSendCoupon() *SimulateProfitUpsertBulk {
-	return u.Update(func(s *SimulateProfitUpsert) {
-		s.ClearSendCoupon()
 	})
 }
 

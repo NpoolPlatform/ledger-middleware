@@ -185,26 +185,6 @@ func (spu *SimulateProfitUpdate) ClearIncoming() *SimulateProfitUpdate {
 	return spu
 }
 
-// SetSendCoupon sets the "send_coupon" field.
-func (spu *SimulateProfitUpdate) SetSendCoupon(b bool) *SimulateProfitUpdate {
-	spu.mutation.SetSendCoupon(b)
-	return spu
-}
-
-// SetNillableSendCoupon sets the "send_coupon" field if the given value is not nil.
-func (spu *SimulateProfitUpdate) SetNillableSendCoupon(b *bool) *SimulateProfitUpdate {
-	if b != nil {
-		spu.SetSendCoupon(*b)
-	}
-	return spu
-}
-
-// ClearSendCoupon clears the value of the "send_coupon" field.
-func (spu *SimulateProfitUpdate) ClearSendCoupon() *SimulateProfitUpdate {
-	spu.mutation.ClearSendCoupon()
-	return spu
-}
-
 // Mutation returns the SimulateProfitMutation object of the builder.
 func (spu *SimulateProfitUpdate) Mutation() *SimulateProfitMutation {
 	return spu.mutation
@@ -405,19 +385,6 @@ func (spu *SimulateProfitUpdate) sqlSave(ctx context.Context) (n int, err error)
 			Column: simulateprofit.FieldIncoming,
 		})
 	}
-	if value, ok := spu.mutation.SendCoupon(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: simulateprofit.FieldSendCoupon,
-		})
-	}
-	if spu.mutation.SendCouponCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: simulateprofit.FieldSendCoupon,
-		})
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, spu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{simulateprofit.Label}
@@ -590,26 +557,6 @@ func (spuo *SimulateProfitUpdateOne) AddIncoming(d decimal.Decimal) *SimulatePro
 // ClearIncoming clears the value of the "incoming" field.
 func (spuo *SimulateProfitUpdateOne) ClearIncoming() *SimulateProfitUpdateOne {
 	spuo.mutation.ClearIncoming()
-	return spuo
-}
-
-// SetSendCoupon sets the "send_coupon" field.
-func (spuo *SimulateProfitUpdateOne) SetSendCoupon(b bool) *SimulateProfitUpdateOne {
-	spuo.mutation.SetSendCoupon(b)
-	return spuo
-}
-
-// SetNillableSendCoupon sets the "send_coupon" field if the given value is not nil.
-func (spuo *SimulateProfitUpdateOne) SetNillableSendCoupon(b *bool) *SimulateProfitUpdateOne {
-	if b != nil {
-		spuo.SetSendCoupon(*b)
-	}
-	return spuo
-}
-
-// ClearSendCoupon clears the value of the "send_coupon" field.
-func (spuo *SimulateProfitUpdateOne) ClearSendCoupon() *SimulateProfitUpdateOne {
-	spuo.mutation.ClearSendCoupon()
 	return spuo
 }
 
@@ -841,19 +788,6 @@ func (spuo *SimulateProfitUpdateOne) sqlSave(ctx context.Context) (_node *Simula
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeFloat64,
 			Column: simulateprofit.FieldIncoming,
-		})
-	}
-	if value, ok := spuo.mutation.SendCoupon(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Value:  value,
-			Column: simulateprofit.FieldSendCoupon,
-		})
-	}
-	if spuo.mutation.SendCouponCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeBool,
-			Column: simulateprofit.FieldSendCoupon,
 		})
 	}
 	_node = &SimulateProfit{config: spuo.config}

@@ -404,10 +404,6 @@ func init() {
 	simulateprofitDescCoinTypeID := simulateprofitFields[2].Descriptor()
 	// simulateprofit.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
 	simulateprofit.DefaultCoinTypeID = simulateprofitDescCoinTypeID.Default.(func() uuid.UUID)
-	// simulateprofitDescSendCoupon is the schema descriptor for send_coupon field.
-	simulateprofitDescSendCoupon := simulateprofitFields[4].Descriptor()
-	// simulateprofit.DefaultSendCoupon holds the default value on creation for the send_coupon field.
-	simulateprofit.DefaultSendCoupon = simulateprofitDescSendCoupon.Default.(bool)
 	simulatestatementMixin := schema.SimulateStatement{}.Mixin()
 	simulatestatement.Policy = privacy.NewPolicies(simulatestatementMixin[0], schema.SimulateStatement{})
 	simulatestatement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -468,6 +464,10 @@ func init() {
 	simulatestatement.DefaultIoExtra = simulatestatementDescIoExtra.Default.(string)
 	// simulatestatement.IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
 	simulatestatement.IoExtraValidator = simulatestatementDescIoExtra.Validators[0].(func(string) error)
+	// simulatestatementDescSendCoupon is the schema descriptor for send_coupon field.
+	simulatestatementDescSendCoupon := simulatestatementFields[7].Descriptor()
+	// simulatestatement.DefaultSendCoupon holds the default value on creation for the send_coupon field.
+	simulatestatement.DefaultSendCoupon = simulatestatementDescSendCoupon.Default.(bool)
 	statementMixin := schema.Statement{}.Mixin()
 	statement.Policy = privacy.NewPolicies(statementMixin[0], schema.Statement{})
 	statement.Hooks[0] = func(next ent.Mutator) ent.Mutator {

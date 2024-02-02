@@ -136,13 +136,6 @@ func Incoming(v decimal.Decimal) predicate.SimulateProfit {
 	})
 }
 
-// SendCoupon applies equality check predicate on the "send_coupon" field. It's identical to SendCouponEQ.
-func SendCoupon(v bool) predicate.SimulateProfit {
-	return predicate.SimulateProfit(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSendCoupon), v))
-	})
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v uint32) predicate.SimulateProfit {
 	return predicate.SimulateProfit(func(s *sql.Selector) {
@@ -708,34 +701,6 @@ func IncomingIsNil() predicate.SimulateProfit {
 func IncomingNotNil() predicate.SimulateProfit {
 	return predicate.SimulateProfit(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldIncoming)))
-	})
-}
-
-// SendCouponEQ applies the EQ predicate on the "send_coupon" field.
-func SendCouponEQ(v bool) predicate.SimulateProfit {
-	return predicate.SimulateProfit(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSendCoupon), v))
-	})
-}
-
-// SendCouponNEQ applies the NEQ predicate on the "send_coupon" field.
-func SendCouponNEQ(v bool) predicate.SimulateProfit {
-	return predicate.SimulateProfit(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldSendCoupon), v))
-	})
-}
-
-// SendCouponIsNil applies the IsNil predicate on the "send_coupon" field.
-func SendCouponIsNil() predicate.SimulateProfit {
-	return predicate.SimulateProfit(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldSendCoupon)))
-	})
-}
-
-// SendCouponNotNil applies the NotNil predicate on the "send_coupon" field.
-func SendCouponNotNil() predicate.SimulateProfit {
-	return predicate.SimulateProfit(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldSendCoupon)))
 	})
 }
 

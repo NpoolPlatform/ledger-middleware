@@ -157,6 +157,13 @@ func IoExtra(v string) predicate.SimulateStatement {
 	})
 }
 
+// SendCoupon applies equality check predicate on the "send_coupon" field. It's identical to SendCouponEQ.
+func SendCoupon(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSendCoupon), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v uint32) predicate.SimulateStatement {
 	return predicate.SimulateStatement(func(s *sql.Selector) {
@@ -1061,6 +1068,34 @@ func IoExtraEqualFold(v string) predicate.SimulateStatement {
 func IoExtraContainsFold(v string) predicate.SimulateStatement {
 	return predicate.SimulateStatement(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldIoExtra), v))
+	})
+}
+
+// SendCouponEQ applies the EQ predicate on the "send_coupon" field.
+func SendCouponEQ(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSendCoupon), v))
+	})
+}
+
+// SendCouponNEQ applies the NEQ predicate on the "send_coupon" field.
+func SendCouponNEQ(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSendCoupon), v))
+	})
+}
+
+// SendCouponIsNil applies the IsNil predicate on the "send_coupon" field.
+func SendCouponIsNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSendCoupon)))
+	})
+}
+
+// SendCouponNotNil applies the NotNil predicate on the "send_coupon" field.
+func SendCouponNotNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSendCoupon)))
 	})
 }
 

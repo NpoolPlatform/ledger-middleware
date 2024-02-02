@@ -34,6 +34,8 @@ const (
 	FieldAmount = "amount"
 	// FieldIoExtra holds the string denoting the io_extra field in the database.
 	FieldIoExtra = "io_extra"
+	// FieldSendCoupon holds the string denoting the send_coupon field in the database.
+	FieldSendCoupon = "send_coupon"
 	// Table holds the table name of the simulatestatement in the database.
 	Table = "simulate_details"
 )
@@ -52,6 +54,7 @@ var Columns = []string{
 	FieldIoSubType,
 	FieldAmount,
 	FieldIoExtra,
+	FieldSendCoupon,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -97,4 +100,6 @@ var (
 	DefaultIoExtra string
 	// IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
 	IoExtraValidator func(string) error
+	// DefaultSendCoupon holds the default value on creation for the "send_coupon" field.
+	DefaultSendCoupon bool
 )

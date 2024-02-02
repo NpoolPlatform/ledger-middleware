@@ -66,6 +66,10 @@ func (SimulateStatement) Fields() []ent.Field {
 			Optional().
 			Default("").
 			MaxLen(512), //nolint
+		field.
+			Bool("send_coupon").
+			Optional().
+			Default(false),
 	}
 }
 

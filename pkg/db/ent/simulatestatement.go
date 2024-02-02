@@ -39,6 +39,8 @@ type SimulateStatement struct {
 	Amount decimal.Decimal `json:"amount,omitempty"`
 	// IoExtra holds the value of the "io_extra" field.
 	IoExtra string `json:"io_extra,omitempty"`
+	// SendCoupon holds the value of the "send_coupon" field.
+	SendCoupon bool `json:"send_coupon,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -48,6 +50,8 @@ func (*SimulateStatement) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case simulatestatement.FieldAmount:
 			values[i] = new(decimal.Decimal)
+		case simulatestatement.FieldSendCoupon:
+			values[i] = new(sql.NullBool)
 		case simulatestatement.FieldID, simulatestatement.FieldCreatedAt, simulatestatement.FieldUpdatedAt, simulatestatement.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
 		case simulatestatement.FieldIoType, simulatestatement.FieldIoSubType, simulatestatement.FieldIoExtra:
@@ -141,6 +145,12 @@ func (ss *SimulateStatement) assignValues(columns []string, values []interface{}
 			} else if value.Valid {
 				ss.IoExtra = value.String
 			}
+		case simulatestatement.FieldSendCoupon:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field send_coupon", values[i])
+			} else if value.Valid {
+				ss.SendCoupon = value.Bool
+			}
 		}
 	}
 	return nil
@@ -201,6 +211,9 @@ func (ss *SimulateStatement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("io_extra=")
 	builder.WriteString(ss.IoExtra)
+	builder.WriteString(", ")
+	builder.WriteString("send_coupon=")
+	builder.WriteString(fmt.Sprintf("%v", ss.SendCoupon))
 	builder.WriteByte(')')
 	return builder.String()
 }

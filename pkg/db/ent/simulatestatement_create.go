@@ -177,6 +177,20 @@ func (ssc *SimulateStatementCreate) SetNillableIoExtra(s *string) *SimulateState
 	return ssc
 }
 
+// SetSendCoupon sets the "send_coupon" field.
+func (ssc *SimulateStatementCreate) SetSendCoupon(b bool) *SimulateStatementCreate {
+	ssc.mutation.SetSendCoupon(b)
+	return ssc
+}
+
+// SetNillableSendCoupon sets the "send_coupon" field if the given value is not nil.
+func (ssc *SimulateStatementCreate) SetNillableSendCoupon(b *bool) *SimulateStatementCreate {
+	if b != nil {
+		ssc.SetSendCoupon(*b)
+	}
+	return ssc
+}
+
 // SetID sets the "id" field.
 func (ssc *SimulateStatementCreate) SetID(u uint32) *SimulateStatementCreate {
 	ssc.mutation.SetID(u)
@@ -323,6 +337,10 @@ func (ssc *SimulateStatementCreate) defaults() error {
 		v := simulatestatement.DefaultIoExtra
 		ssc.mutation.SetIoExtra(v)
 	}
+	if _, ok := ssc.mutation.SendCoupon(); !ok {
+		v := simulatestatement.DefaultSendCoupon
+		ssc.mutation.SetSendCoupon(v)
+	}
 	return nil
 }
 
@@ -466,6 +484,14 @@ func (ssc *SimulateStatementCreate) createSpec() (*SimulateStatement, *sqlgraph.
 			Column: simulatestatement.FieldIoExtra,
 		})
 		_node.IoExtra = value
+	}
+	if value, ok := ssc.mutation.SendCoupon(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldSendCoupon,
+		})
+		_node.SendCoupon = value
 	}
 	return _node, _spec
 }
@@ -716,6 +742,24 @@ func (u *SimulateStatementUpsert) UpdateIoExtra() *SimulateStatementUpsert {
 // ClearIoExtra clears the value of the "io_extra" field.
 func (u *SimulateStatementUpsert) ClearIoExtra() *SimulateStatementUpsert {
 	u.SetNull(simulatestatement.FieldIoExtra)
+	return u
+}
+
+// SetSendCoupon sets the "send_coupon" field.
+func (u *SimulateStatementUpsert) SetSendCoupon(v bool) *SimulateStatementUpsert {
+	u.Set(simulatestatement.FieldSendCoupon, v)
+	return u
+}
+
+// UpdateSendCoupon sets the "send_coupon" field to the value that was provided on create.
+func (u *SimulateStatementUpsert) UpdateSendCoupon() *SimulateStatementUpsert {
+	u.SetExcluded(simulatestatement.FieldSendCoupon)
+	return u
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (u *SimulateStatementUpsert) ClearSendCoupon() *SimulateStatementUpsert {
+	u.SetNull(simulatestatement.FieldSendCoupon)
 	return u
 }
 
@@ -997,6 +1041,27 @@ func (u *SimulateStatementUpsertOne) UpdateIoExtra() *SimulateStatementUpsertOne
 func (u *SimulateStatementUpsertOne) ClearIoExtra() *SimulateStatementUpsertOne {
 	return u.Update(func(s *SimulateStatementUpsert) {
 		s.ClearIoExtra()
+	})
+}
+
+// SetSendCoupon sets the "send_coupon" field.
+func (u *SimulateStatementUpsertOne) SetSendCoupon(v bool) *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetSendCoupon(v)
+	})
+}
+
+// UpdateSendCoupon sets the "send_coupon" field to the value that was provided on create.
+func (u *SimulateStatementUpsertOne) UpdateSendCoupon() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateSendCoupon()
+	})
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (u *SimulateStatementUpsertOne) ClearSendCoupon() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearSendCoupon()
 	})
 }
 
@@ -1443,6 +1508,27 @@ func (u *SimulateStatementUpsertBulk) UpdateIoExtra() *SimulateStatementUpsertBu
 func (u *SimulateStatementUpsertBulk) ClearIoExtra() *SimulateStatementUpsertBulk {
 	return u.Update(func(s *SimulateStatementUpsert) {
 		s.ClearIoExtra()
+	})
+}
+
+// SetSendCoupon sets the "send_coupon" field.
+func (u *SimulateStatementUpsertBulk) SetSendCoupon(v bool) *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetSendCoupon(v)
+	})
+}
+
+// UpdateSendCoupon sets the "send_coupon" field to the value that was provided on create.
+func (u *SimulateStatementUpsertBulk) UpdateSendCoupon() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateSendCoupon()
+	})
+}
+
+// ClearSendCoupon clears the value of the "send_coupon" field.
+func (u *SimulateStatementUpsertBulk) ClearSendCoupon() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearSendCoupon()
 	})
 }
 
