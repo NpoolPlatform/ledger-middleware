@@ -77,7 +77,7 @@ func (h *lockopHandler) createLocks(ctx context.Context, tx *ent.Tx) error {
 }
 
 func (h *lockopHandler) updateLocks(ctx context.Context, tx *ent.Tx) error {
-	for _, lock := range h.locks {
+	for i, lock := range h.locks {
 		switch lock.LockState {
 		case types.LedgerLockState_LedgerLockLocked.String():
 			switch *h.state {
@@ -90,21 +90,21 @@ func (h *lockopHandler) updateLocks(ctx context.Context, tx *ent.Tx) error {
 		default:
 			return fmt.Errorf("invalid ledgerlockstate")
 		}
-	}
 
-	stm := tx.
-		LedgerLock.
-		Update().
-		SetLockState(h.state.String())
-	if *h.state == types.LedgerLockState_LedgerLockSettle {
-		stm.SetStatementID(*h.StatementID)
-	}
-	stm.Where(
-		entledgerlock.ExLockID(h.locks[0].ExLockID),
-		entledgerlock.DeletedAt(0),
-	)
-	if _, err := stm.Save(ctx); err != nil {
-		return err
+		stm := tx.
+			LedgerLock.
+			Update().
+			SetLockState(h.state.String())
+		if *h.state == types.LedgerLockState_LedgerLockSettle {
+			stm.SetStatementID(h.StatementIDs[i])
+		}
+		stm.Where(
+			entledgerlock.ExLockID(lock.ExLockID),
+			entledgerlock.DeletedAt(0),
+		)
+		if _, err := stm.Save(ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
