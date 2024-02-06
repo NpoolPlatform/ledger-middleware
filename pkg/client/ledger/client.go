@@ -127,3 +127,45 @@ func SettleBalance(ctx context.Context, in *npool.SettleBalanceRequest) (*npool.
 	}
 	return info.(*npool.Ledger), nil
 }
+
+func LockBalances(ctx context.Context, in *npool.LockBalancesRequest) ([]*npool.Ledger, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.LockBalances(ctx, in)
+		if err != nil {
+			return nil, fmt.Errorf("fail lock balance: %v", err)
+		}
+		return resp.Infos, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail lock balance: %v", err)
+	}
+	return infos.([]*npool.Ledger), nil
+}
+
+func UnlockBalances(ctx context.Context, in *npool.UnlockBalancesRequest) ([]*npool.Ledger, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.UnlockBalances(ctx, in)
+		if err != nil {
+			return nil, fmt.Errorf("fail unlock balance: %v", err)
+		}
+		return resp.Infos, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail unlock balance: %v", err)
+	}
+	return infos.([]*npool.Ledger), nil
+}
+
+func SettleBalances(ctx context.Context, in *npool.SettleBalancesRequest) ([]*npool.Ledger, error) {
+	infos, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.SettleBalances(ctx, in)
+		if err != nil {
+			return nil, fmt.Errorf("fail settle balance: %v", err)
+		}
+		return resp.Infos, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail settle balance: %v", err)
+	}
+	return infos.([]*npool.Ledger), nil
+}

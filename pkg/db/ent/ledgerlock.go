@@ -33,6 +33,8 @@ type LedgerLock struct {
 	Amount decimal.Decimal `json:"amount,omitempty"`
 	// LockState holds the value of the "lock_state" field.
 	LockState string `json:"lock_state,omitempty"`
+	// ExLockID holds the value of the "ex_lock_id" field.
+	ExLockID uuid.UUID `json:"ex_lock_id,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -46,7 +48,7 @@ func (*LedgerLock) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case ledgerlock.FieldLockState:
 			values[i] = new(sql.NullString)
-		case ledgerlock.FieldEntID, ledgerlock.FieldLedgerID, ledgerlock.FieldStatementID:
+		case ledgerlock.FieldEntID, ledgerlock.FieldLedgerID, ledgerlock.FieldStatementID, ledgerlock.FieldExLockID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type LedgerLock", columns[i])
@@ -117,6 +119,12 @@ func (ll *LedgerLock) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				ll.LockState = value.String
 			}
+		case ledgerlock.FieldExLockID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field ex_lock_id", values[i])
+			} else if value != nil {
+				ll.ExLockID = *value
+			}
 		}
 	}
 	return nil
@@ -168,6 +176,9 @@ func (ll *LedgerLock) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("lock_state=")
 	builder.WriteString(ll.LockState)
+	builder.WriteString(", ")
+	builder.WriteString("ex_lock_id=")
+	builder.WriteString(fmt.Sprintf("%v", ll.ExLockID))
 	builder.WriteByte(')')
 	return builder.String()
 }

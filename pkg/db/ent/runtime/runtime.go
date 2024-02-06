@@ -263,6 +263,10 @@ func init() {
 	ledgerlockDescLockState := ledgerlockFields[3].Descriptor()
 	// ledgerlock.DefaultLockState holds the default value on creation for the lock_state field.
 	ledgerlock.DefaultLockState = ledgerlockDescLockState.Default.(string)
+	// ledgerlockDescExLockID is the schema descriptor for ex_lock_id field.
+	ledgerlockDescExLockID := ledgerlockFields[4].Descriptor()
+	// ledgerlock.DefaultExLockID holds the default value on creation for the ex_lock_id field.
+	ledgerlock.DefaultExLockID = ledgerlockDescExLockID.Default.(func() uuid.UUID)
 	profitMixin := schema.Profit{}.Mixin()
 	profit.Policy = privacy.NewPolicies(profitMixin[0], schema.Profit{})
 	profit.Hooks[0] = func(next ent.Mutator) ent.Mutator {

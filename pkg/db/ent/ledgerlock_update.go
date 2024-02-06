@@ -185,6 +185,26 @@ func (llu *LedgerLockUpdate) ClearLockState() *LedgerLockUpdate {
 	return llu
 }
 
+// SetExLockID sets the "ex_lock_id" field.
+func (llu *LedgerLockUpdate) SetExLockID(u uuid.UUID) *LedgerLockUpdate {
+	llu.mutation.SetExLockID(u)
+	return llu
+}
+
+// SetNillableExLockID sets the "ex_lock_id" field if the given value is not nil.
+func (llu *LedgerLockUpdate) SetNillableExLockID(u *uuid.UUID) *LedgerLockUpdate {
+	if u != nil {
+		llu.SetExLockID(*u)
+	}
+	return llu
+}
+
+// ClearExLockID clears the value of the "ex_lock_id" field.
+func (llu *LedgerLockUpdate) ClearExLockID() *LedgerLockUpdate {
+	llu.mutation.ClearExLockID()
+	return llu
+}
+
 // Mutation returns the LedgerLockMutation object of the builder.
 func (llu *LedgerLockUpdate) Mutation() *LedgerLockMutation {
 	return llu.mutation
@@ -385,6 +405,19 @@ func (llu *LedgerLockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: ledgerlock.FieldLockState,
 		})
 	}
+	if value, ok := llu.mutation.ExLockID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldExLockID,
+		})
+	}
+	if llu.mutation.ExLockIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: ledgerlock.FieldExLockID,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, llu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{ledgerlock.Label}
@@ -557,6 +590,26 @@ func (lluo *LedgerLockUpdateOne) SetNillableLockState(s *string) *LedgerLockUpda
 // ClearLockState clears the value of the "lock_state" field.
 func (lluo *LedgerLockUpdateOne) ClearLockState() *LedgerLockUpdateOne {
 	lluo.mutation.ClearLockState()
+	return lluo
+}
+
+// SetExLockID sets the "ex_lock_id" field.
+func (lluo *LedgerLockUpdateOne) SetExLockID(u uuid.UUID) *LedgerLockUpdateOne {
+	lluo.mutation.SetExLockID(u)
+	return lluo
+}
+
+// SetNillableExLockID sets the "ex_lock_id" field if the given value is not nil.
+func (lluo *LedgerLockUpdateOne) SetNillableExLockID(u *uuid.UUID) *LedgerLockUpdateOne {
+	if u != nil {
+		lluo.SetExLockID(*u)
+	}
+	return lluo
+}
+
+// ClearExLockID clears the value of the "ex_lock_id" field.
+func (lluo *LedgerLockUpdateOne) ClearExLockID() *LedgerLockUpdateOne {
+	lluo.mutation.ClearExLockID()
 	return lluo
 }
 
@@ -788,6 +841,19 @@ func (lluo *LedgerLockUpdateOne) sqlSave(ctx context.Context) (_node *LedgerLock
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: ledgerlock.FieldLockState,
+		})
+	}
+	if value, ok := lluo.mutation.ExLockID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Value:  value,
+			Column: ledgerlock.FieldExLockID,
+		})
+	}
+	if lluo.mutation.ExLockIDCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUUID,
+			Column: ledgerlock.FieldExLockID,
 		})
 	}
 	_node = &LedgerLock{config: lluo.config}
