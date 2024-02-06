@@ -84,3 +84,19 @@ func GetProfits(ctx context.Context, conds *npool.Conds, offset, limit int32) ([
 	}
 	return infos.([]*npool.Profit), total, nil
 }
+
+func ExistProfitConds(ctx context.Context, conds *npool.Conds) (bool, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.ExistProfitConds(ctx, &npool.ExistProfitCondsRequest{
+			Conds: conds,
+		})
+		if err != nil {
+			return false, fmt.Errorf("fail get profits: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return false, fmt.Errorf("fail get profits: %v", err)
+	}
+	return info.(bool), nil
+}
