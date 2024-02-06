@@ -39,9 +39,6 @@ func (h *lockopHandler) getLocks(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if len(locks) == 0 {
-			return fmt.Errorf("invalid ledgerlock")
-		}
 		h.locks = locks
 		return nil
 	})

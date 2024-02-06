@@ -46,10 +46,10 @@ func (h *Handler) LockBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 		},
 	}
 
-	if err := handler.lockopHandler.getLocks(ctx); err != nil {
+	if err := handler.getLocks(ctx); err != nil {
 		return nil, err
 	}
-	if len(handler.lockopHandler.locks) > 0 {
+	if len(handler.locks) > 0 {
 		return nil, fmt.Errorf("invalid lockid")
 	}
 
@@ -106,10 +106,10 @@ func (h *Handler) LockBalances(ctx context.Context) ([]*ledgermwpb.Ledger, error
 		},
 	}
 
-	if err := handler.lockopHandler.getLocks(ctx); err != nil {
+	if err := handler.getLocks(ctx); err != nil {
 		return nil, err
 	}
-	if len(handler.lockopHandler.locks) > 0 {
+	if len(handler.locks) > 0 {
 		return nil, fmt.Errorf("invalid lockid")
 	}
 
