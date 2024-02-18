@@ -116,6 +116,9 @@ func (h *Handler) UnlockBalances(ctx context.Context) ([]*ledgermwpb.Ledger, err
 		}
 		return nil, err
 	}
+	if len(handler.locks) == 0 {
+		return nil, fmt.Errorf("invalid locks")
+	}
 	if h.Rollback != nil && *h.Rollback {
 		handler.state = types.LedgerLockState_LedgerLockRollback.Enum()
 	}
