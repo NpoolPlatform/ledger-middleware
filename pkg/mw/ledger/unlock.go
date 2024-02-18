@@ -64,7 +64,7 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 	if len(handler.locks) <= 0 {
 		return nil, fmt.Errorf("invalid locks")
 	}
-	if h.Rollback != nil || *h.Rollback {
+	if h.Rollback != nil && *h.Rollback {
 		handler.state = types.LedgerLockState_LedgerLockRollback.Enum()
 	}
 	handler.lop.ledgerIDs = []uuid.UUID{handler.locks[0].LedgerID}
@@ -116,7 +116,7 @@ func (h *Handler) UnlockBalances(ctx context.Context) ([]*ledgermwpb.Ledger, err
 		}
 		return nil, err
 	}
-	if h.Rollback != nil || *h.Rollback {
+	if h.Rollback != nil && *h.Rollback {
 		handler.state = types.LedgerLockState_LedgerLockRollback.Enum()
 	}
 	for _, lock := range handler.locks {
