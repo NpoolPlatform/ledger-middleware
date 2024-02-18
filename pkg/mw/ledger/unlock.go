@@ -61,7 +61,7 @@ func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 		}
 		return nil, err
 	}
-	if len(handler.locks) <= 0 {
+	if len(handler.locks) == 0 {
 		return nil, fmt.Errorf("invalid locks")
 	}
 	if h.Rollback != nil && *h.Rollback {
