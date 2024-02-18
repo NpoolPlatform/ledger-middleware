@@ -43,6 +43,7 @@ func (h *unlockHandler) unlockBalances(ctx context.Context) error {
 	return nil
 }
 
+//nolint:gocyclo
 func (h *Handler) UnlockBalance(ctx context.Context) (*ledgermwpb.Ledger, error) {
 	handler := &unlockHandler{
 		lockopHandler: &lockopHandler{
