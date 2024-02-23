@@ -70,6 +70,14 @@ func (SimulateStatement) Fields() []ent.Field {
 			Bool("send_coupon").
 			Optional().
 			Default(false),
+		field.
+			Bool("cashable").
+			Optional().
+			Default(false),
+		field.
+			Bool("cash_used").
+			Optional().
+			Default(false),
 	}
 }
 

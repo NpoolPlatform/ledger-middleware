@@ -164,6 +164,20 @@ func SendCoupon(v bool) predicate.SimulateStatement {
 	})
 }
 
+// Cashable applies equality check predicate on the "cashable" field. It's identical to CashableEQ.
+func Cashable(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCashable), v))
+	})
+}
+
+// CashUsed applies equality check predicate on the "cash_used" field. It's identical to CashUsedEQ.
+func CashUsed(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCashUsed), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v uint32) predicate.SimulateStatement {
 	return predicate.SimulateStatement(func(s *sql.Selector) {
@@ -1096,6 +1110,62 @@ func SendCouponIsNil() predicate.SimulateStatement {
 func SendCouponNotNil() predicate.SimulateStatement {
 	return predicate.SimulateStatement(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldSendCoupon)))
+	})
+}
+
+// CashableEQ applies the EQ predicate on the "cashable" field.
+func CashableEQ(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCashable), v))
+	})
+}
+
+// CashableNEQ applies the NEQ predicate on the "cashable" field.
+func CashableNEQ(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCashable), v))
+	})
+}
+
+// CashableIsNil applies the IsNil predicate on the "cashable" field.
+func CashableIsNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCashable)))
+	})
+}
+
+// CashableNotNil applies the NotNil predicate on the "cashable" field.
+func CashableNotNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCashable)))
+	})
+}
+
+// CashUsedEQ applies the EQ predicate on the "cash_used" field.
+func CashUsedEQ(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCashUsed), v))
+	})
+}
+
+// CashUsedNEQ applies the NEQ predicate on the "cash_used" field.
+func CashUsedNEQ(v bool) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCashUsed), v))
+	})
+}
+
+// CashUsedIsNil applies the IsNil predicate on the "cash_used" field.
+func CashUsedIsNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCashUsed)))
+	})
+}
+
+// CashUsedNotNil applies the NotNil predicate on the "cash_used" field.
+func CashUsedNotNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCashUsed)))
 	})
 }
 

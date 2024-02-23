@@ -191,6 +191,34 @@ func (ssc *SimulateStatementCreate) SetNillableSendCoupon(b *bool) *SimulateStat
 	return ssc
 }
 
+// SetCashable sets the "cashable" field.
+func (ssc *SimulateStatementCreate) SetCashable(b bool) *SimulateStatementCreate {
+	ssc.mutation.SetCashable(b)
+	return ssc
+}
+
+// SetNillableCashable sets the "cashable" field if the given value is not nil.
+func (ssc *SimulateStatementCreate) SetNillableCashable(b *bool) *SimulateStatementCreate {
+	if b != nil {
+		ssc.SetCashable(*b)
+	}
+	return ssc
+}
+
+// SetCashUsed sets the "cash_used" field.
+func (ssc *SimulateStatementCreate) SetCashUsed(b bool) *SimulateStatementCreate {
+	ssc.mutation.SetCashUsed(b)
+	return ssc
+}
+
+// SetNillableCashUsed sets the "cash_used" field if the given value is not nil.
+func (ssc *SimulateStatementCreate) SetNillableCashUsed(b *bool) *SimulateStatementCreate {
+	if b != nil {
+		ssc.SetCashUsed(*b)
+	}
+	return ssc
+}
+
 // SetID sets the "id" field.
 func (ssc *SimulateStatementCreate) SetID(u uint32) *SimulateStatementCreate {
 	ssc.mutation.SetID(u)
@@ -340,6 +368,14 @@ func (ssc *SimulateStatementCreate) defaults() error {
 	if _, ok := ssc.mutation.SendCoupon(); !ok {
 		v := simulatestatement.DefaultSendCoupon
 		ssc.mutation.SetSendCoupon(v)
+	}
+	if _, ok := ssc.mutation.Cashable(); !ok {
+		v := simulatestatement.DefaultCashable
+		ssc.mutation.SetCashable(v)
+	}
+	if _, ok := ssc.mutation.CashUsed(); !ok {
+		v := simulatestatement.DefaultCashUsed
+		ssc.mutation.SetCashUsed(v)
 	}
 	return nil
 }
@@ -492,6 +528,22 @@ func (ssc *SimulateStatementCreate) createSpec() (*SimulateStatement, *sqlgraph.
 			Column: simulatestatement.FieldSendCoupon,
 		})
 		_node.SendCoupon = value
+	}
+	if value, ok := ssc.mutation.Cashable(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldCashable,
+		})
+		_node.Cashable = value
+	}
+	if value, ok := ssc.mutation.CashUsed(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsed,
+		})
+		_node.CashUsed = value
 	}
 	return _node, _spec
 }
@@ -760,6 +812,42 @@ func (u *SimulateStatementUpsert) UpdateSendCoupon() *SimulateStatementUpsert {
 // ClearSendCoupon clears the value of the "send_coupon" field.
 func (u *SimulateStatementUpsert) ClearSendCoupon() *SimulateStatementUpsert {
 	u.SetNull(simulatestatement.FieldSendCoupon)
+	return u
+}
+
+// SetCashable sets the "cashable" field.
+func (u *SimulateStatementUpsert) SetCashable(v bool) *SimulateStatementUpsert {
+	u.Set(simulatestatement.FieldCashable, v)
+	return u
+}
+
+// UpdateCashable sets the "cashable" field to the value that was provided on create.
+func (u *SimulateStatementUpsert) UpdateCashable() *SimulateStatementUpsert {
+	u.SetExcluded(simulatestatement.FieldCashable)
+	return u
+}
+
+// ClearCashable clears the value of the "cashable" field.
+func (u *SimulateStatementUpsert) ClearCashable() *SimulateStatementUpsert {
+	u.SetNull(simulatestatement.FieldCashable)
+	return u
+}
+
+// SetCashUsed sets the "cash_used" field.
+func (u *SimulateStatementUpsert) SetCashUsed(v bool) *SimulateStatementUpsert {
+	u.Set(simulatestatement.FieldCashUsed, v)
+	return u
+}
+
+// UpdateCashUsed sets the "cash_used" field to the value that was provided on create.
+func (u *SimulateStatementUpsert) UpdateCashUsed() *SimulateStatementUpsert {
+	u.SetExcluded(simulatestatement.FieldCashUsed)
+	return u
+}
+
+// ClearCashUsed clears the value of the "cash_used" field.
+func (u *SimulateStatementUpsert) ClearCashUsed() *SimulateStatementUpsert {
+	u.SetNull(simulatestatement.FieldCashUsed)
 	return u
 }
 
@@ -1062,6 +1150,48 @@ func (u *SimulateStatementUpsertOne) UpdateSendCoupon() *SimulateStatementUpsert
 func (u *SimulateStatementUpsertOne) ClearSendCoupon() *SimulateStatementUpsertOne {
 	return u.Update(func(s *SimulateStatementUpsert) {
 		s.ClearSendCoupon()
+	})
+}
+
+// SetCashable sets the "cashable" field.
+func (u *SimulateStatementUpsertOne) SetCashable(v bool) *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetCashable(v)
+	})
+}
+
+// UpdateCashable sets the "cashable" field to the value that was provided on create.
+func (u *SimulateStatementUpsertOne) UpdateCashable() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateCashable()
+	})
+}
+
+// ClearCashable clears the value of the "cashable" field.
+func (u *SimulateStatementUpsertOne) ClearCashable() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearCashable()
+	})
+}
+
+// SetCashUsed sets the "cash_used" field.
+func (u *SimulateStatementUpsertOne) SetCashUsed(v bool) *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetCashUsed(v)
+	})
+}
+
+// UpdateCashUsed sets the "cash_used" field to the value that was provided on create.
+func (u *SimulateStatementUpsertOne) UpdateCashUsed() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateCashUsed()
+	})
+}
+
+// ClearCashUsed clears the value of the "cash_used" field.
+func (u *SimulateStatementUpsertOne) ClearCashUsed() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearCashUsed()
 	})
 }
 
@@ -1529,6 +1659,48 @@ func (u *SimulateStatementUpsertBulk) UpdateSendCoupon() *SimulateStatementUpser
 func (u *SimulateStatementUpsertBulk) ClearSendCoupon() *SimulateStatementUpsertBulk {
 	return u.Update(func(s *SimulateStatementUpsert) {
 		s.ClearSendCoupon()
+	})
+}
+
+// SetCashable sets the "cashable" field.
+func (u *SimulateStatementUpsertBulk) SetCashable(v bool) *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetCashable(v)
+	})
+}
+
+// UpdateCashable sets the "cashable" field to the value that was provided on create.
+func (u *SimulateStatementUpsertBulk) UpdateCashable() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateCashable()
+	})
+}
+
+// ClearCashable clears the value of the "cashable" field.
+func (u *SimulateStatementUpsertBulk) ClearCashable() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearCashable()
+	})
+}
+
+// SetCashUsed sets the "cash_used" field.
+func (u *SimulateStatementUpsertBulk) SetCashUsed(v bool) *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetCashUsed(v)
+	})
+}
+
+// UpdateCashUsed sets the "cash_used" field to the value that was provided on create.
+func (u *SimulateStatementUpsertBulk) UpdateCashUsed() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateCashUsed()
+	})
+}
+
+// ClearCashUsed clears the value of the "cash_used" field.
+func (u *SimulateStatementUpsertBulk) ClearCashUsed() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearCashUsed()
 	})
 }
 

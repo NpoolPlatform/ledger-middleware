@@ -235,6 +235,8 @@ var (
 		{Name: "amount", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"mysql": "decimal(37, 18)"}},
 		{Name: "io_extra", Type: field.TypeString, Nullable: true, Size: 512, Default: ""},
 		{Name: "send_coupon", Type: field.TypeBool, Nullable: true, Default: false},
+		{Name: "cashable", Type: field.TypeBool, Nullable: true, Default: false},
+		{Name: "cash_used", Type: field.TypeBool, Nullable: true, Default: false},
 	}
 	// SimulateDetailsTable holds the schema information for the "simulate_details" table.
 	SimulateDetailsTable = &schema.Table{

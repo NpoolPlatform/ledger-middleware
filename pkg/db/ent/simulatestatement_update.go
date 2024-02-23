@@ -265,6 +265,46 @@ func (ssu *SimulateStatementUpdate) ClearSendCoupon() *SimulateStatementUpdate {
 	return ssu
 }
 
+// SetCashable sets the "cashable" field.
+func (ssu *SimulateStatementUpdate) SetCashable(b bool) *SimulateStatementUpdate {
+	ssu.mutation.SetCashable(b)
+	return ssu
+}
+
+// SetNillableCashable sets the "cashable" field if the given value is not nil.
+func (ssu *SimulateStatementUpdate) SetNillableCashable(b *bool) *SimulateStatementUpdate {
+	if b != nil {
+		ssu.SetCashable(*b)
+	}
+	return ssu
+}
+
+// ClearCashable clears the value of the "cashable" field.
+func (ssu *SimulateStatementUpdate) ClearCashable() *SimulateStatementUpdate {
+	ssu.mutation.ClearCashable()
+	return ssu
+}
+
+// SetCashUsed sets the "cash_used" field.
+func (ssu *SimulateStatementUpdate) SetCashUsed(b bool) *SimulateStatementUpdate {
+	ssu.mutation.SetCashUsed(b)
+	return ssu
+}
+
+// SetNillableCashUsed sets the "cash_used" field if the given value is not nil.
+func (ssu *SimulateStatementUpdate) SetNillableCashUsed(b *bool) *SimulateStatementUpdate {
+	if b != nil {
+		ssu.SetCashUsed(*b)
+	}
+	return ssu
+}
+
+// ClearCashUsed clears the value of the "cash_used" field.
+func (ssu *SimulateStatementUpdate) ClearCashUsed() *SimulateStatementUpdate {
+	ssu.mutation.ClearCashUsed()
+	return ssu
+}
+
 // Mutation returns the SimulateStatementMutation object of the builder.
 func (ssu *SimulateStatementUpdate) Mutation() *SimulateStatementMutation {
 	return ssu.mutation
@@ -533,6 +573,32 @@ func (ssu *SimulateStatementUpdate) sqlSave(ctx context.Context) (n int, err err
 			Column: simulatestatement.FieldSendCoupon,
 		})
 	}
+	if value, ok := ssu.mutation.Cashable(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldCashable,
+		})
+	}
+	if ssu.mutation.CashableCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: simulatestatement.FieldCashable,
+		})
+	}
+	if value, ok := ssu.mutation.CashUsed(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsed,
+		})
+	}
+	if ssu.mutation.CashUsedCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: simulatestatement.FieldCashUsed,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ssu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{simulatestatement.Label}
@@ -785,6 +851,46 @@ func (ssuo *SimulateStatementUpdateOne) SetNillableSendCoupon(b *bool) *Simulate
 // ClearSendCoupon clears the value of the "send_coupon" field.
 func (ssuo *SimulateStatementUpdateOne) ClearSendCoupon() *SimulateStatementUpdateOne {
 	ssuo.mutation.ClearSendCoupon()
+	return ssuo
+}
+
+// SetCashable sets the "cashable" field.
+func (ssuo *SimulateStatementUpdateOne) SetCashable(b bool) *SimulateStatementUpdateOne {
+	ssuo.mutation.SetCashable(b)
+	return ssuo
+}
+
+// SetNillableCashable sets the "cashable" field if the given value is not nil.
+func (ssuo *SimulateStatementUpdateOne) SetNillableCashable(b *bool) *SimulateStatementUpdateOne {
+	if b != nil {
+		ssuo.SetCashable(*b)
+	}
+	return ssuo
+}
+
+// ClearCashable clears the value of the "cashable" field.
+func (ssuo *SimulateStatementUpdateOne) ClearCashable() *SimulateStatementUpdateOne {
+	ssuo.mutation.ClearCashable()
+	return ssuo
+}
+
+// SetCashUsed sets the "cash_used" field.
+func (ssuo *SimulateStatementUpdateOne) SetCashUsed(b bool) *SimulateStatementUpdateOne {
+	ssuo.mutation.SetCashUsed(b)
+	return ssuo
+}
+
+// SetNillableCashUsed sets the "cash_used" field if the given value is not nil.
+func (ssuo *SimulateStatementUpdateOne) SetNillableCashUsed(b *bool) *SimulateStatementUpdateOne {
+	if b != nil {
+		ssuo.SetCashUsed(*b)
+	}
+	return ssuo
+}
+
+// ClearCashUsed clears the value of the "cash_used" field.
+func (ssuo *SimulateStatementUpdateOne) ClearCashUsed() *SimulateStatementUpdateOne {
+	ssuo.mutation.ClearCashUsed()
 	return ssuo
 }
 
@@ -1084,6 +1190,32 @@ func (ssuo *SimulateStatementUpdateOne) sqlSave(ctx context.Context) (_node *Sim
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeBool,
 			Column: simulatestatement.FieldSendCoupon,
+		})
+	}
+	if value, ok := ssuo.mutation.Cashable(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldCashable,
+		})
+	}
+	if ssuo.mutation.CashableCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: simulatestatement.FieldCashable,
+		})
+	}
+	if value, ok := ssuo.mutation.CashUsed(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsed,
+		})
+	}
+	if ssuo.mutation.CashUsedCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: simulatestatement.FieldCashUsed,
 		})
 	}
 	_node = &SimulateStatement{config: ssuo.config}

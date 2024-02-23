@@ -468,6 +468,14 @@ func init() {
 	simulatestatementDescSendCoupon := simulatestatementFields[7].Descriptor()
 	// simulatestatement.DefaultSendCoupon holds the default value on creation for the send_coupon field.
 	simulatestatement.DefaultSendCoupon = simulatestatementDescSendCoupon.Default.(bool)
+	// simulatestatementDescCashable is the schema descriptor for cashable field.
+	simulatestatementDescCashable := simulatestatementFields[8].Descriptor()
+	// simulatestatement.DefaultCashable holds the default value on creation for the cashable field.
+	simulatestatement.DefaultCashable = simulatestatementDescCashable.Default.(bool)
+	// simulatestatementDescCashUsed is the schema descriptor for cash_used field.
+	simulatestatementDescCashUsed := simulatestatementFields[9].Descriptor()
+	// simulatestatement.DefaultCashUsed holds the default value on creation for the cash_used field.
+	simulatestatement.DefaultCashUsed = simulatestatementDescCashUsed.Default.(bool)
 	statementMixin := schema.Statement{}.Mixin()
 	statement.Policy = privacy.NewPolicies(statementMixin[0], schema.Statement{})
 	statement.Hooks[0] = func(next ent.Mutator) ent.Mutator {

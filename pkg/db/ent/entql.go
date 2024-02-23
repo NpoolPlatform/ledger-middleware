@@ -227,6 +227,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			simulatestatement.FieldAmount:     {Type: field.TypeFloat64, Column: simulatestatement.FieldAmount},
 			simulatestatement.FieldIoExtra:    {Type: field.TypeString, Column: simulatestatement.FieldIoExtra},
 			simulatestatement.FieldSendCoupon: {Type: field.TypeBool, Column: simulatestatement.FieldSendCoupon},
+			simulatestatement.FieldCashable:   {Type: field.TypeBool, Column: simulatestatement.FieldCashable},
+			simulatestatement.FieldCashUsed:   {Type: field.TypeBool, Column: simulatestatement.FieldCashUsed},
 		},
 	}
 	graph.Nodes[9] = &sqlgraph.Node{
@@ -1105,6 +1107,16 @@ func (f *SimulateStatementFilter) WhereIoExtra(p entql.StringP) {
 // WhereSendCoupon applies the entql bool predicate on the send_coupon field.
 func (f *SimulateStatementFilter) WhereSendCoupon(p entql.BoolP) {
 	f.Where(p.Field(simulatestatement.FieldSendCoupon))
+}
+
+// WhereCashable applies the entql bool predicate on the cashable field.
+func (f *SimulateStatementFilter) WhereCashable(p entql.BoolP) {
+	f.Where(p.Field(simulatestatement.FieldCashable))
+}
+
+// WhereCashUsed applies the entql bool predicate on the cash_used field.
+func (f *SimulateStatementFilter) WhereCashUsed(p entql.BoolP) {
+	f.Where(p.Field(simulatestatement.FieldCashUsed))
 }
 
 // addPredicate implements the predicateAdder interface.

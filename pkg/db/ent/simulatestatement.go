@@ -41,6 +41,10 @@ type SimulateStatement struct {
 	IoExtra string `json:"io_extra,omitempty"`
 	// SendCoupon holds the value of the "send_coupon" field.
 	SendCoupon bool `json:"send_coupon,omitempty"`
+	// Cashable holds the value of the "cashable" field.
+	Cashable bool `json:"cashable,omitempty"`
+	// CashUsed holds the value of the "cash_used" field.
+	CashUsed bool `json:"cash_used,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -50,7 +54,7 @@ func (*SimulateStatement) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case simulatestatement.FieldAmount:
 			values[i] = new(decimal.Decimal)
-		case simulatestatement.FieldSendCoupon:
+		case simulatestatement.FieldSendCoupon, simulatestatement.FieldCashable, simulatestatement.FieldCashUsed:
 			values[i] = new(sql.NullBool)
 		case simulatestatement.FieldID, simulatestatement.FieldCreatedAt, simulatestatement.FieldUpdatedAt, simulatestatement.FieldDeletedAt:
 			values[i] = new(sql.NullInt64)
@@ -151,6 +155,18 @@ func (ss *SimulateStatement) assignValues(columns []string, values []interface{}
 			} else if value.Valid {
 				ss.SendCoupon = value.Bool
 			}
+		case simulatestatement.FieldCashable:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field cashable", values[i])
+			} else if value.Valid {
+				ss.Cashable = value.Bool
+			}
+		case simulatestatement.FieldCashUsed:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field cash_used", values[i])
+			} else if value.Valid {
+				ss.CashUsed = value.Bool
+			}
 		}
 	}
 	return nil
@@ -214,6 +230,12 @@ func (ss *SimulateStatement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("send_coupon=")
 	builder.WriteString(fmt.Sprintf("%v", ss.SendCoupon))
+	builder.WriteString(", ")
+	builder.WriteString("cashable=")
+	builder.WriteString(fmt.Sprintf("%v", ss.Cashable))
+	builder.WriteString(", ")
+	builder.WriteString("cash_used=")
+	builder.WriteString(fmt.Sprintf("%v", ss.CashUsed))
 	builder.WriteByte(')')
 	return builder.String()
 }
