@@ -24,6 +24,9 @@ type Req struct {
 	Amount     *decimal.Decimal
 	IOExtra    *string
 	SendCoupon *bool
+	Cashable   *bool
+	CashUsed   *bool
+	CashUsedAt *uint32
 	CreatedAt  *uint32
 	DeletedAt  *uint32
 }
@@ -56,6 +59,9 @@ func CreateSet(c *ent.SimulateStatementCreate, in *Req) *ent.SimulateStatementCr
 	if in.SendCoupon != nil {
 		c.SetSendCoupon(*in.SendCoupon)
 	}
+	if in.Cashable != nil {
+		c.SetCashable(*in.Cashable)
+	}
 	if in.CreatedAt != nil {
 		c.SetCreatedAt(*in.CreatedAt)
 	}
@@ -63,6 +69,12 @@ func CreateSet(c *ent.SimulateStatementCreate, in *Req) *ent.SimulateStatementCr
 }
 
 func UpdateSet(u *ent.SimulateStatementUpdateOne, req *Req) *ent.SimulateStatementUpdateOne {
+	if req.CashUsed != nil {
+		u.SetCashUsed(*req.CashUsed)
+	}
+	if req.CashUsedAt != nil {
+		u.SetCashUsedAt(*req.CashUsedAt)
+	}
 	if req.DeletedAt != nil {
 		u.SetDeletedAt(*req.DeletedAt)
 	}
@@ -86,6 +98,8 @@ type Conds struct {
 	CoinTypeIDs *cruder.Cond
 	UserIDs     *cruder.Cond
 	SendCoupon  *cruder.Cond
+	Cashable    *cruder.Cond
+	CashUsed    *cruder.Cond
 }
 
 func SetQueryConds(q *ent.SimulateStatementQuery, conds *Conds) (*ent.SimulateStatementQuery, error) { //nolint
@@ -287,6 +301,30 @@ func SetQueryConds(q *ent.SimulateStatementQuery, conds *Conds) (*ent.SimulateSt
 			q.Where(entstatement.SendCoupon(sendcoupon))
 		default:
 			return nil, fmt.Errorf("invalid sendcoupon op field %v", conds.SendCoupon.Op)
+		}
+	}
+	if conds.Cashable != nil {
+		cashable, ok := conds.Cashable.Val.(bool)
+		if !ok {
+			return nil, fmt.Errorf("invalid cashable")
+		}
+		switch conds.Cashable.Op {
+		case cruder.EQ:
+			q.Where(entstatement.Cashable(cashable))
+		default:
+			return nil, fmt.Errorf("invalid cashable op field %v", conds.Cashable.Op)
+		}
+	}
+	if conds.CashUsed != nil {
+		cashused, ok := conds.CashUsed.Val.(bool)
+		if !ok {
+			return nil, fmt.Errorf("invalid cashused")
+		}
+		switch conds.CashUsed.Op {
+		case cruder.EQ:
+			q.Where(entstatement.CashUsed(cashused))
+		default:
+			return nil, fmt.Errorf("invalid cashused op field %v", conds.CashUsed.Op)
 		}
 	}
 	return q, nil

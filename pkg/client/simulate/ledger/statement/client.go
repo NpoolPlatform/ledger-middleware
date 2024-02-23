@@ -165,3 +165,20 @@ func ExistStatementConds(ctx context.Context, conds *npool.Conds) (bool, error) 
 	}
 	return info.(bool), nil
 }
+
+//nolint:dupl
+func UpdateStatement(ctx context.Context, in *npool.StatementReq) (*npool.Statement, error) {
+	info, err := do(ctx, func(_ctx context.Context, cli npool.MiddlewareClient) (cruder.Any, error) {
+		resp, err := cli.UpdateStatement(ctx, &npool.UpdateStatementRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail update statement: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail update statement: %v", err)
+	}
+	return info.(*npool.Statement), nil
+}

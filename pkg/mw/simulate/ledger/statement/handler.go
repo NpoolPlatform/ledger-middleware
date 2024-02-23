@@ -16,14 +16,13 @@ import (
 
 type Handler struct {
 	crud.Req
-	SendCoupon *bool
-	Rollback   *bool
-	Reqs       []*crud.Req
-	StartAt    uint32
-	EndAT      uint32
-	Conds      *crud.Conds
-	Offset     int32
-	Limit      int32
+	Rollback *bool
+	Reqs     []*crud.Req
+	StartAt  uint32
+	EndAT    uint32
+	Conds    *crud.Conds
+	Offset   int32
+	Limit    int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -256,6 +255,32 @@ func WithSendCoupon(value *bool, must bool) func(context.Context, *Handler) erro
 	}
 }
 
+func WithCashable(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid cashable")
+			}
+			return nil
+		}
+		h.Cashable = value
+		return nil
+	}
+}
+
+func WithCashUsed(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid cashused")
+			}
+			return nil
+		}
+		h.CashUsed = value
+		return nil
+	}
+}
+
 //nolint
 func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
@@ -376,6 +401,18 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: conds.GetSendCoupon().GetValue(),
 			}
 		}
+		if conds.Cashable != nil {
+			h.Conds.Cashable = &cruder.Cond{
+				Op:  conds.GetCashable().GetOp(),
+				Val: conds.GetCashable().GetValue(),
+			}
+		}
+		if conds.CashUsed != nil {
+			h.Conds.CashUsed = &cruder.Cond{
+				Op:  conds.GetCashUsed().GetOp(),
+				Val: conds.GetCashUsed().GetValue(),
+			}
+		}
 		return nil
 	}
 }
@@ -493,6 +530,15 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 			}
 			if req.IOSubType != nil {
 				_req.IOSubType = req.IOSubType
+			}
+			if req.SendCoupon != nil {
+				_req.SendCoupon = req.SendCoupon
+			}
+			if req.Cashable != nil {
+				_req.Cashable = req.Cashable
+			}
+			if req.CashUsed != nil {
+				_req.CashUsed = req.CashUsed
 			}
 			if req.Rollback != nil {
 				h.Rollback = req.Rollback
