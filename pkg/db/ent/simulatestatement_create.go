@@ -219,6 +219,20 @@ func (ssc *SimulateStatementCreate) SetNillableCashUsed(b *bool) *SimulateStatem
 	return ssc
 }
 
+// SetCashUsedAt sets the "cash_used_at" field.
+func (ssc *SimulateStatementCreate) SetCashUsedAt(u uint32) *SimulateStatementCreate {
+	ssc.mutation.SetCashUsedAt(u)
+	return ssc
+}
+
+// SetNillableCashUsedAt sets the "cash_used_at" field if the given value is not nil.
+func (ssc *SimulateStatementCreate) SetNillableCashUsedAt(u *uint32) *SimulateStatementCreate {
+	if u != nil {
+		ssc.SetCashUsedAt(*u)
+	}
+	return ssc
+}
+
 // SetID sets the "id" field.
 func (ssc *SimulateStatementCreate) SetID(u uint32) *SimulateStatementCreate {
 	ssc.mutation.SetID(u)
@@ -376,6 +390,10 @@ func (ssc *SimulateStatementCreate) defaults() error {
 	if _, ok := ssc.mutation.CashUsed(); !ok {
 		v := simulatestatement.DefaultCashUsed
 		ssc.mutation.SetCashUsed(v)
+	}
+	if _, ok := ssc.mutation.CashUsedAt(); !ok {
+		v := simulatestatement.DefaultCashUsedAt
+		ssc.mutation.SetCashUsedAt(v)
 	}
 	return nil
 }
@@ -544,6 +562,14 @@ func (ssc *SimulateStatementCreate) createSpec() (*SimulateStatement, *sqlgraph.
 			Column: simulatestatement.FieldCashUsed,
 		})
 		_node.CashUsed = value
+	}
+	if value, ok := ssc.mutation.CashUsedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsedAt,
+		})
+		_node.CashUsedAt = value
 	}
 	return _node, _spec
 }
@@ -848,6 +874,30 @@ func (u *SimulateStatementUpsert) UpdateCashUsed() *SimulateStatementUpsert {
 // ClearCashUsed clears the value of the "cash_used" field.
 func (u *SimulateStatementUpsert) ClearCashUsed() *SimulateStatementUpsert {
 	u.SetNull(simulatestatement.FieldCashUsed)
+	return u
+}
+
+// SetCashUsedAt sets the "cash_used_at" field.
+func (u *SimulateStatementUpsert) SetCashUsedAt(v uint32) *SimulateStatementUpsert {
+	u.Set(simulatestatement.FieldCashUsedAt, v)
+	return u
+}
+
+// UpdateCashUsedAt sets the "cash_used_at" field to the value that was provided on create.
+func (u *SimulateStatementUpsert) UpdateCashUsedAt() *SimulateStatementUpsert {
+	u.SetExcluded(simulatestatement.FieldCashUsedAt)
+	return u
+}
+
+// AddCashUsedAt adds v to the "cash_used_at" field.
+func (u *SimulateStatementUpsert) AddCashUsedAt(v uint32) *SimulateStatementUpsert {
+	u.Add(simulatestatement.FieldCashUsedAt, v)
+	return u
+}
+
+// ClearCashUsedAt clears the value of the "cash_used_at" field.
+func (u *SimulateStatementUpsert) ClearCashUsedAt() *SimulateStatementUpsert {
+	u.SetNull(simulatestatement.FieldCashUsedAt)
 	return u
 }
 
@@ -1192,6 +1242,34 @@ func (u *SimulateStatementUpsertOne) UpdateCashUsed() *SimulateStatementUpsertOn
 func (u *SimulateStatementUpsertOne) ClearCashUsed() *SimulateStatementUpsertOne {
 	return u.Update(func(s *SimulateStatementUpsert) {
 		s.ClearCashUsed()
+	})
+}
+
+// SetCashUsedAt sets the "cash_used_at" field.
+func (u *SimulateStatementUpsertOne) SetCashUsedAt(v uint32) *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetCashUsedAt(v)
+	})
+}
+
+// AddCashUsedAt adds v to the "cash_used_at" field.
+func (u *SimulateStatementUpsertOne) AddCashUsedAt(v uint32) *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.AddCashUsedAt(v)
+	})
+}
+
+// UpdateCashUsedAt sets the "cash_used_at" field to the value that was provided on create.
+func (u *SimulateStatementUpsertOne) UpdateCashUsedAt() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateCashUsedAt()
+	})
+}
+
+// ClearCashUsedAt clears the value of the "cash_used_at" field.
+func (u *SimulateStatementUpsertOne) ClearCashUsedAt() *SimulateStatementUpsertOne {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearCashUsedAt()
 	})
 }
 
@@ -1701,6 +1779,34 @@ func (u *SimulateStatementUpsertBulk) UpdateCashUsed() *SimulateStatementUpsertB
 func (u *SimulateStatementUpsertBulk) ClearCashUsed() *SimulateStatementUpsertBulk {
 	return u.Update(func(s *SimulateStatementUpsert) {
 		s.ClearCashUsed()
+	})
+}
+
+// SetCashUsedAt sets the "cash_used_at" field.
+func (u *SimulateStatementUpsertBulk) SetCashUsedAt(v uint32) *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.SetCashUsedAt(v)
+	})
+}
+
+// AddCashUsedAt adds v to the "cash_used_at" field.
+func (u *SimulateStatementUpsertBulk) AddCashUsedAt(v uint32) *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.AddCashUsedAt(v)
+	})
+}
+
+// UpdateCashUsedAt sets the "cash_used_at" field to the value that was provided on create.
+func (u *SimulateStatementUpsertBulk) UpdateCashUsedAt() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.UpdateCashUsedAt()
+	})
+}
+
+// ClearCashUsedAt clears the value of the "cash_used_at" field.
+func (u *SimulateStatementUpsertBulk) ClearCashUsedAt() *SimulateStatementUpsertBulk {
+	return u.Update(func(s *SimulateStatementUpsert) {
+		s.ClearCashUsedAt()
 	})
 }
 

@@ -237,6 +237,7 @@ var (
 		{Name: "send_coupon", Type: field.TypeBool, Nullable: true, Default: false},
 		{Name: "cashable", Type: field.TypeBool, Nullable: true, Default: false},
 		{Name: "cash_used", Type: field.TypeBool, Nullable: true, Default: false},
+		{Name: "cash_used_at", Type: field.TypeUint32, Nullable: true, Default: 0},
 	}
 	// SimulateDetailsTable holds the schema information for the "simulate_details" table.
 	SimulateDetailsTable = &schema.Table{

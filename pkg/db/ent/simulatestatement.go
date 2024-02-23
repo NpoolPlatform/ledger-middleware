@@ -45,6 +45,8 @@ type SimulateStatement struct {
 	Cashable bool `json:"cashable,omitempty"`
 	// CashUsed holds the value of the "cash_used" field.
 	CashUsed bool `json:"cash_used,omitempty"`
+	// CashUsedAt holds the value of the "cash_used_at" field.
+	CashUsedAt uint32 `json:"cash_used_at,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -56,7 +58,7 @@ func (*SimulateStatement) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(decimal.Decimal)
 		case simulatestatement.FieldSendCoupon, simulatestatement.FieldCashable, simulatestatement.FieldCashUsed:
 			values[i] = new(sql.NullBool)
-		case simulatestatement.FieldID, simulatestatement.FieldCreatedAt, simulatestatement.FieldUpdatedAt, simulatestatement.FieldDeletedAt:
+		case simulatestatement.FieldID, simulatestatement.FieldCreatedAt, simulatestatement.FieldUpdatedAt, simulatestatement.FieldDeletedAt, simulatestatement.FieldCashUsedAt:
 			values[i] = new(sql.NullInt64)
 		case simulatestatement.FieldIoType, simulatestatement.FieldIoSubType, simulatestatement.FieldIoExtra:
 			values[i] = new(sql.NullString)
@@ -167,6 +169,12 @@ func (ss *SimulateStatement) assignValues(columns []string, values []interface{}
 			} else if value.Valid {
 				ss.CashUsed = value.Bool
 			}
+		case simulatestatement.FieldCashUsedAt:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field cash_used_at", values[i])
+			} else if value.Valid {
+				ss.CashUsedAt = uint32(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -236,6 +244,9 @@ func (ss *SimulateStatement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("cash_used=")
 	builder.WriteString(fmt.Sprintf("%v", ss.CashUsed))
+	builder.WriteString(", ")
+	builder.WriteString("cash_used_at=")
+	builder.WriteString(fmt.Sprintf("%v", ss.CashUsedAt))
 	builder.WriteByte(')')
 	return builder.String()
 }

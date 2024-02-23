@@ -178,6 +178,13 @@ func CashUsed(v bool) predicate.SimulateStatement {
 	})
 }
 
+// CashUsedAt applies equality check predicate on the "cash_used_at" field. It's identical to CashUsedAtEQ.
+func CashUsedAt(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCashUsedAt), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v uint32) predicate.SimulateStatement {
 	return predicate.SimulateStatement(func(s *sql.Selector) {
@@ -1166,6 +1173,84 @@ func CashUsedIsNil() predicate.SimulateStatement {
 func CashUsedNotNil() predicate.SimulateStatement {
 	return predicate.SimulateStatement(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldCashUsed)))
+	})
+}
+
+// CashUsedAtEQ applies the EQ predicate on the "cash_used_at" field.
+func CashUsedAtEQ(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCashUsedAt), v))
+	})
+}
+
+// CashUsedAtNEQ applies the NEQ predicate on the "cash_used_at" field.
+func CashUsedAtNEQ(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCashUsedAt), v))
+	})
+}
+
+// CashUsedAtIn applies the In predicate on the "cash_used_at" field.
+func CashUsedAtIn(vs ...uint32) predicate.SimulateStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCashUsedAt), v...))
+	})
+}
+
+// CashUsedAtNotIn applies the NotIn predicate on the "cash_used_at" field.
+func CashUsedAtNotIn(vs ...uint32) predicate.SimulateStatement {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCashUsedAt), v...))
+	})
+}
+
+// CashUsedAtGT applies the GT predicate on the "cash_used_at" field.
+func CashUsedAtGT(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCashUsedAt), v))
+	})
+}
+
+// CashUsedAtGTE applies the GTE predicate on the "cash_used_at" field.
+func CashUsedAtGTE(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCashUsedAt), v))
+	})
+}
+
+// CashUsedAtLT applies the LT predicate on the "cash_used_at" field.
+func CashUsedAtLT(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCashUsedAt), v))
+	})
+}
+
+// CashUsedAtLTE applies the LTE predicate on the "cash_used_at" field.
+func CashUsedAtLTE(v uint32) predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCashUsedAt), v))
+	})
+}
+
+// CashUsedAtIsNil applies the IsNil predicate on the "cash_used_at" field.
+func CashUsedAtIsNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCashUsedAt)))
+	})
+}
+
+// CashUsedAtNotNil applies the NotNil predicate on the "cash_used_at" field.
+func CashUsedAtNotNil() predicate.SimulateStatement {
+	return predicate.SimulateStatement(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCashUsedAt)))
 	})
 }
 

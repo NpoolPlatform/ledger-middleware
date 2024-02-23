@@ -78,6 +78,10 @@ func (SimulateStatement) Fields() []ent.Field {
 			Bool("cash_used").
 			Optional().
 			Default(false),
+		field.
+			Uint32("cash_used_at").
+			Optional().
+			Default(0),
 	}
 }
 

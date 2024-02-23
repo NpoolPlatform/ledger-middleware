@@ -305,6 +305,33 @@ func (ssu *SimulateStatementUpdate) ClearCashUsed() *SimulateStatementUpdate {
 	return ssu
 }
 
+// SetCashUsedAt sets the "cash_used_at" field.
+func (ssu *SimulateStatementUpdate) SetCashUsedAt(u uint32) *SimulateStatementUpdate {
+	ssu.mutation.ResetCashUsedAt()
+	ssu.mutation.SetCashUsedAt(u)
+	return ssu
+}
+
+// SetNillableCashUsedAt sets the "cash_used_at" field if the given value is not nil.
+func (ssu *SimulateStatementUpdate) SetNillableCashUsedAt(u *uint32) *SimulateStatementUpdate {
+	if u != nil {
+		ssu.SetCashUsedAt(*u)
+	}
+	return ssu
+}
+
+// AddCashUsedAt adds u to the "cash_used_at" field.
+func (ssu *SimulateStatementUpdate) AddCashUsedAt(u int32) *SimulateStatementUpdate {
+	ssu.mutation.AddCashUsedAt(u)
+	return ssu
+}
+
+// ClearCashUsedAt clears the value of the "cash_used_at" field.
+func (ssu *SimulateStatementUpdate) ClearCashUsedAt() *SimulateStatementUpdate {
+	ssu.mutation.ClearCashUsedAt()
+	return ssu
+}
+
 // Mutation returns the SimulateStatementMutation object of the builder.
 func (ssu *SimulateStatementUpdate) Mutation() *SimulateStatementMutation {
 	return ssu.mutation
@@ -599,6 +626,26 @@ func (ssu *SimulateStatementUpdate) sqlSave(ctx context.Context) (n int, err err
 			Column: simulatestatement.FieldCashUsed,
 		})
 	}
+	if value, ok := ssu.mutation.CashUsedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsedAt,
+		})
+	}
+	if value, ok := ssu.mutation.AddedCashUsedAt(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsedAt,
+		})
+	}
+	if ssu.mutation.CashUsedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Column: simulatestatement.FieldCashUsedAt,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ssu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{simulatestatement.Label}
@@ -891,6 +938,33 @@ func (ssuo *SimulateStatementUpdateOne) SetNillableCashUsed(b *bool) *SimulateSt
 // ClearCashUsed clears the value of the "cash_used" field.
 func (ssuo *SimulateStatementUpdateOne) ClearCashUsed() *SimulateStatementUpdateOne {
 	ssuo.mutation.ClearCashUsed()
+	return ssuo
+}
+
+// SetCashUsedAt sets the "cash_used_at" field.
+func (ssuo *SimulateStatementUpdateOne) SetCashUsedAt(u uint32) *SimulateStatementUpdateOne {
+	ssuo.mutation.ResetCashUsedAt()
+	ssuo.mutation.SetCashUsedAt(u)
+	return ssuo
+}
+
+// SetNillableCashUsedAt sets the "cash_used_at" field if the given value is not nil.
+func (ssuo *SimulateStatementUpdateOne) SetNillableCashUsedAt(u *uint32) *SimulateStatementUpdateOne {
+	if u != nil {
+		ssuo.SetCashUsedAt(*u)
+	}
+	return ssuo
+}
+
+// AddCashUsedAt adds u to the "cash_used_at" field.
+func (ssuo *SimulateStatementUpdateOne) AddCashUsedAt(u int32) *SimulateStatementUpdateOne {
+	ssuo.mutation.AddCashUsedAt(u)
+	return ssuo
+}
+
+// ClearCashUsedAt clears the value of the "cash_used_at" field.
+func (ssuo *SimulateStatementUpdateOne) ClearCashUsedAt() *SimulateStatementUpdateOne {
+	ssuo.mutation.ClearCashUsedAt()
 	return ssuo
 }
 
@@ -1216,6 +1290,26 @@ func (ssuo *SimulateStatementUpdateOne) sqlSave(ctx context.Context) (_node *Sim
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeBool,
 			Column: simulatestatement.FieldCashUsed,
+		})
+	}
+	if value, ok := ssuo.mutation.CashUsedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsedAt,
+		})
+	}
+	if value, ok := ssuo.mutation.AddedCashUsedAt(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: simulatestatement.FieldCashUsedAt,
+		})
+	}
+	if ssuo.mutation.CashUsedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Column: simulatestatement.FieldCashUsedAt,
 		})
 	}
 	_node = &SimulateStatement{config: ssuo.config}
