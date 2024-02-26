@@ -268,19 +268,6 @@ func WithCashable(value *bool, must bool) func(context.Context, *Handler) error 
 	}
 }
 
-func WithCashUsed(value *bool, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid cashused")
-			}
-			return nil
-		}
-		h.CashUsed = value
-		return nil
-	}
-}
-
 //nolint
 func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
@@ -407,12 +394,6 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: conds.GetCashable().GetValue(),
 			}
 		}
-		if conds.CashUsed != nil {
-			h.Conds.CashUsed = &cruder.Cond{
-				Op:  conds.GetCashUsed().GetOp(),
-				Val: conds.GetCashUsed().GetValue(),
-			}
-		}
 		return nil
 	}
 }
@@ -536,9 +517,6 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 			}
 			if req.Cashable != nil {
 				_req.Cashable = req.Cashable
-			}
-			if req.CashUsed != nil {
-				_req.CashUsed = req.CashUsed
 			}
 			if req.Rollback != nil {
 				h.Rollback = req.Rollback
