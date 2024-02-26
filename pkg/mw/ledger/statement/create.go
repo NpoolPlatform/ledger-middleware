@@ -24,7 +24,7 @@ type createHandler struct {
 }
 
 func (h *createHandler) createOrUpdateProfit(ctx context.Context, tx *ent.Tx, req *crud.Req) error {
-	if *req.IOSubType != types.IOSubType_MiningBenefit {
+	if *req.IOSubType != types.IOSubType_MiningBenefit && *req.IOSubType != types.IOSubType_RandomCashableSimulateProfit {
 		return nil
 	}
 	key := fmt.Sprintf(
@@ -266,6 +266,7 @@ func (h *Handler) validate() error {
 		case types.IOSubType_Deposit:
 		case types.IOSubType_Transfer:
 		case types.IOSubType_OrderRevoke:
+		case types.IOSubType_RandomCashableSimulateProfit:
 		default:
 			return fmt.Errorf("io subtype not match io type")
 		}
