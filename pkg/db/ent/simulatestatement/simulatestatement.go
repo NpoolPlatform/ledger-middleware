@@ -38,10 +38,6 @@ const (
 	FieldSendCoupon = "send_coupon"
 	// FieldCashable holds the string denoting the cashable field in the database.
 	FieldCashable = "cashable"
-	// FieldCashUsed holds the string denoting the cash_used field in the database.
-	FieldCashUsed = "cash_used"
-	// FieldCashUsedAt holds the string denoting the cash_used_at field in the database.
-	FieldCashUsedAt = "cash_used_at"
 	// Table holds the table name of the simulatestatement in the database.
 	Table = "simulate_details"
 )
@@ -62,8 +58,6 @@ var Columns = []string{
 	FieldIoExtra,
 	FieldSendCoupon,
 	FieldCashable,
-	FieldCashUsed,
-	FieldCashUsedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -113,8 +107,4 @@ var (
 	DefaultSendCoupon bool
 	// DefaultCashable holds the default value on creation for the "cashable" field.
 	DefaultCashable bool
-	// DefaultCashUsed holds the default value on creation for the "cash_used" field.
-	DefaultCashUsed bool
-	// DefaultCashUsedAt holds the default value on creation for the "cash_used_at" field.
-	DefaultCashUsedAt uint32
 )

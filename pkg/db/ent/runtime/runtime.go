@@ -472,14 +472,6 @@ func init() {
 	simulatestatementDescCashable := simulatestatementFields[8].Descriptor()
 	// simulatestatement.DefaultCashable holds the default value on creation for the cashable field.
 	simulatestatement.DefaultCashable = simulatestatementDescCashable.Default.(bool)
-	// simulatestatementDescCashUsed is the schema descriptor for cash_used field.
-	simulatestatementDescCashUsed := simulatestatementFields[9].Descriptor()
-	// simulatestatement.DefaultCashUsed holds the default value on creation for the cash_used field.
-	simulatestatement.DefaultCashUsed = simulatestatementDescCashUsed.Default.(bool)
-	// simulatestatementDescCashUsedAt is the schema descriptor for cash_used_at field.
-	simulatestatementDescCashUsedAt := simulatestatementFields[10].Descriptor()
-	// simulatestatement.DefaultCashUsedAt holds the default value on creation for the cash_used_at field.
-	simulatestatement.DefaultCashUsedAt = simulatestatementDescCashUsedAt.Default.(uint32)
 	statementMixin := schema.Statement{}.Mixin()
 	statement.Policy = privacy.NewPolicies(statementMixin[0], schema.Statement{})
 	statement.Hooks[0] = func(next ent.Mutator) ent.Mutator {

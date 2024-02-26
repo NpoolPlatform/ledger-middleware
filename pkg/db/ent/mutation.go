@@ -8476,33 +8476,30 @@ func (m *SimulateProfitMutation) ResetEdge(name string) error {
 // SimulateStatementMutation represents an operation that mutates the SimulateStatement nodes in the graph.
 type SimulateStatementMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uint32
-	created_at      *uint32
-	addcreated_at   *int32
-	updated_at      *uint32
-	addupdated_at   *int32
-	deleted_at      *uint32
-	adddeleted_at   *int32
-	ent_id          *uuid.UUID
-	app_id          *uuid.UUID
-	user_id         *uuid.UUID
-	coin_type_id    *uuid.UUID
-	io_type         *string
-	io_sub_type     *string
-	amount          *decimal.Decimal
-	addamount       *decimal.Decimal
-	io_extra        *string
-	send_coupon     *bool
-	cashable        *bool
-	cash_used       *bool
-	cash_used_at    *uint32
-	addcash_used_at *int32
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*SimulateStatement, error)
-	predicates      []predicate.SimulateStatement
+	op            Op
+	typ           string
+	id            *uint32
+	created_at    *uint32
+	addcreated_at *int32
+	updated_at    *uint32
+	addupdated_at *int32
+	deleted_at    *uint32
+	adddeleted_at *int32
+	ent_id        *uuid.UUID
+	app_id        *uuid.UUID
+	user_id       *uuid.UUID
+	coin_type_id  *uuid.UUID
+	io_type       *string
+	io_sub_type   *string
+	amount        *decimal.Decimal
+	addamount     *decimal.Decimal
+	io_extra      *string
+	send_coupon   *bool
+	cashable      *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*SimulateStatement, error)
+	predicates    []predicate.SimulateStatement
 }
 
 var _ ent.Mutation = (*SimulateStatementMutation)(nil)
@@ -9275,125 +9272,6 @@ func (m *SimulateStatementMutation) ResetCashable() {
 	delete(m.clearedFields, simulatestatement.FieldCashable)
 }
 
-// SetCashUsed sets the "cash_used" field.
-func (m *SimulateStatementMutation) SetCashUsed(b bool) {
-	m.cash_used = &b
-}
-
-// CashUsed returns the value of the "cash_used" field in the mutation.
-func (m *SimulateStatementMutation) CashUsed() (r bool, exists bool) {
-	v := m.cash_used
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCashUsed returns the old "cash_used" field's value of the SimulateStatement entity.
-// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SimulateStatementMutation) OldCashUsed(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCashUsed is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCashUsed requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCashUsed: %w", err)
-	}
-	return oldValue.CashUsed, nil
-}
-
-// ClearCashUsed clears the value of the "cash_used" field.
-func (m *SimulateStatementMutation) ClearCashUsed() {
-	m.cash_used = nil
-	m.clearedFields[simulatestatement.FieldCashUsed] = struct{}{}
-}
-
-// CashUsedCleared returns if the "cash_used" field was cleared in this mutation.
-func (m *SimulateStatementMutation) CashUsedCleared() bool {
-	_, ok := m.clearedFields[simulatestatement.FieldCashUsed]
-	return ok
-}
-
-// ResetCashUsed resets all changes to the "cash_used" field.
-func (m *SimulateStatementMutation) ResetCashUsed() {
-	m.cash_used = nil
-	delete(m.clearedFields, simulatestatement.FieldCashUsed)
-}
-
-// SetCashUsedAt sets the "cash_used_at" field.
-func (m *SimulateStatementMutation) SetCashUsedAt(u uint32) {
-	m.cash_used_at = &u
-	m.addcash_used_at = nil
-}
-
-// CashUsedAt returns the value of the "cash_used_at" field in the mutation.
-func (m *SimulateStatementMutation) CashUsedAt() (r uint32, exists bool) {
-	v := m.cash_used_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCashUsedAt returns the old "cash_used_at" field's value of the SimulateStatement entity.
-// If the SimulateStatement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SimulateStatementMutation) OldCashUsedAt(ctx context.Context) (v uint32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCashUsedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCashUsedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCashUsedAt: %w", err)
-	}
-	return oldValue.CashUsedAt, nil
-}
-
-// AddCashUsedAt adds u to the "cash_used_at" field.
-func (m *SimulateStatementMutation) AddCashUsedAt(u int32) {
-	if m.addcash_used_at != nil {
-		*m.addcash_used_at += u
-	} else {
-		m.addcash_used_at = &u
-	}
-}
-
-// AddedCashUsedAt returns the value that was added to the "cash_used_at" field in this mutation.
-func (m *SimulateStatementMutation) AddedCashUsedAt() (r int32, exists bool) {
-	v := m.addcash_used_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearCashUsedAt clears the value of the "cash_used_at" field.
-func (m *SimulateStatementMutation) ClearCashUsedAt() {
-	m.cash_used_at = nil
-	m.addcash_used_at = nil
-	m.clearedFields[simulatestatement.FieldCashUsedAt] = struct{}{}
-}
-
-// CashUsedAtCleared returns if the "cash_used_at" field was cleared in this mutation.
-func (m *SimulateStatementMutation) CashUsedAtCleared() bool {
-	_, ok := m.clearedFields[simulatestatement.FieldCashUsedAt]
-	return ok
-}
-
-// ResetCashUsedAt resets all changes to the "cash_used_at" field.
-func (m *SimulateStatementMutation) ResetCashUsedAt() {
-	m.cash_used_at = nil
-	m.addcash_used_at = nil
-	delete(m.clearedFields, simulatestatement.FieldCashUsedAt)
-}
-
 // Where appends a list predicates to the SimulateStatementMutation builder.
 func (m *SimulateStatementMutation) Where(ps ...predicate.SimulateStatement) {
 	m.predicates = append(m.predicates, ps...)
@@ -9413,7 +9291,7 @@ func (m *SimulateStatementMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SimulateStatementMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, simulatestatement.FieldCreatedAt)
 	}
@@ -9453,12 +9331,6 @@ func (m *SimulateStatementMutation) Fields() []string {
 	if m.cashable != nil {
 		fields = append(fields, simulatestatement.FieldCashable)
 	}
-	if m.cash_used != nil {
-		fields = append(fields, simulatestatement.FieldCashUsed)
-	}
-	if m.cash_used_at != nil {
-		fields = append(fields, simulatestatement.FieldCashUsedAt)
-	}
 	return fields
 }
 
@@ -9493,10 +9365,6 @@ func (m *SimulateStatementMutation) Field(name string) (ent.Value, bool) {
 		return m.SendCoupon()
 	case simulatestatement.FieldCashable:
 		return m.Cashable()
-	case simulatestatement.FieldCashUsed:
-		return m.CashUsed()
-	case simulatestatement.FieldCashUsedAt:
-		return m.CashUsedAt()
 	}
 	return nil, false
 }
@@ -9532,10 +9400,6 @@ func (m *SimulateStatementMutation) OldField(ctx context.Context, name string) (
 		return m.OldSendCoupon(ctx)
 	case simulatestatement.FieldCashable:
 		return m.OldCashable(ctx)
-	case simulatestatement.FieldCashUsed:
-		return m.OldCashUsed(ctx)
-	case simulatestatement.FieldCashUsedAt:
-		return m.OldCashUsedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown SimulateStatement field %s", name)
 }
@@ -9636,20 +9500,6 @@ func (m *SimulateStatementMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetCashable(v)
 		return nil
-	case simulatestatement.FieldCashUsed:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCashUsed(v)
-		return nil
-	case simulatestatement.FieldCashUsedAt:
-		v, ok := value.(uint32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCashUsedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement field %s", name)
 }
@@ -9670,9 +9520,6 @@ func (m *SimulateStatementMutation) AddedFields() []string {
 	if m.addamount != nil {
 		fields = append(fields, simulatestatement.FieldAmount)
 	}
-	if m.addcash_used_at != nil {
-		fields = append(fields, simulatestatement.FieldCashUsedAt)
-	}
 	return fields
 }
 
@@ -9689,8 +9536,6 @@ func (m *SimulateStatementMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedDeletedAt()
 	case simulatestatement.FieldAmount:
 		return m.AddedAmount()
-	case simulatestatement.FieldCashUsedAt:
-		return m.AddedCashUsedAt()
 	}
 	return nil, false
 }
@@ -9728,13 +9573,6 @@ func (m *SimulateStatementMutation) AddField(name string, value ent.Value) error
 		}
 		m.AddAmount(v)
 		return nil
-	case simulatestatement.FieldCashUsedAt:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddCashUsedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement numeric field %s", name)
 }
@@ -9769,12 +9607,6 @@ func (m *SimulateStatementMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(simulatestatement.FieldCashable) {
 		fields = append(fields, simulatestatement.FieldCashable)
-	}
-	if m.FieldCleared(simulatestatement.FieldCashUsed) {
-		fields = append(fields, simulatestatement.FieldCashUsed)
-	}
-	if m.FieldCleared(simulatestatement.FieldCashUsedAt) {
-		fields = append(fields, simulatestatement.FieldCashUsedAt)
 	}
 	return fields
 }
@@ -9816,12 +9648,6 @@ func (m *SimulateStatementMutation) ClearField(name string) error {
 		return nil
 	case simulatestatement.FieldCashable:
 		m.ClearCashable()
-		return nil
-	case simulatestatement.FieldCashUsed:
-		m.ClearCashUsed()
-		return nil
-	case simulatestatement.FieldCashUsedAt:
-		m.ClearCashUsedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement nullable field %s", name)
@@ -9869,12 +9695,6 @@ func (m *SimulateStatementMutation) ResetField(name string) error {
 		return nil
 	case simulatestatement.FieldCashable:
 		m.ResetCashable()
-		return nil
-	case simulatestatement.FieldCashUsed:
-		m.ResetCashUsed()
-		return nil
-	case simulatestatement.FieldCashUsedAt:
-		m.ResetCashUsedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown SimulateStatement field %s", name)
