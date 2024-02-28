@@ -28,6 +28,8 @@ const (
 	FieldAmount = "amount"
 	// FieldLockState holds the string denoting the lock_state field in the database.
 	FieldLockState = "lock_state"
+	// FieldExLockID holds the string denoting the ex_lock_id field in the database.
+	FieldExLockID = "ex_lock_id"
 	// Table holds the table name of the ledgerlock in the database.
 	Table = "ledger_locks"
 )
@@ -43,6 +45,7 @@ var Columns = []string{
 	FieldStatementID,
 	FieldAmount,
 	FieldLockState,
+	FieldExLockID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -80,4 +83,6 @@ var (
 	DefaultStatementID func() uuid.UUID
 	// DefaultLockState holds the default value on creation for the "lock_state" field.
 	DefaultLockState string
+	// DefaultExLockID holds the default value on creation for the "ex_lock_id" field.
+	DefaultExLockID func() uuid.UUID
 )

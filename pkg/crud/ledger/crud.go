@@ -130,6 +130,7 @@ func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, er
 
 type Conds struct {
 	EntID       *cruder.Cond
+	EntIDs      *cruder.Cond
 	AppID       *cruder.Cond
 	UserID      *cruder.Cond
 	CoinTypeID  *cruder.Cond
@@ -155,6 +156,18 @@ func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) {
 			q.Where(entledger.EntID(id))
 		default:
 			return nil, fmt.Errorf("invalid entid op field %v", conds.EntID.Op)
+		}
+	}
+	if conds.EntIDs != nil {
+		ids, ok := conds.EntIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid entids %v", conds.EntIDs.Val)
+		}
+		switch conds.EntIDs.Op {
+		case cruder.IN:
+			q.Where(entledger.EntIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid entids op field %v", conds.EntIDs.Op)
 		}
 	}
 	if conds.AppID != nil {

@@ -1,3 +1,4 @@
+//nolint:dupl
 package ledger
 
 import (
@@ -37,5 +38,35 @@ func (s *Server) UnlockBalance(ctx context.Context, in *npool.UnlockBalanceReque
 
 	return &npool.UnlockBalanceResponse{
 		Info: info,
+	}, nil
+}
+
+func (s *Server) UnlockBalances(ctx context.Context, in *npool.UnlockBalancesRequest) (*npool.UnlockBalancesResponse, error) {
+	handler, err := lock1.NewHandler(
+		ctx,
+		lock1.WithLockID(&in.LockID, true),
+		lock1.WithRollback(&in.Rollback, true),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UnlockBalances",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UnlockBalancesResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+
+	infos, err := handler.UnlockBalances(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UnlockBalances",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UnlockBalancesResponse{}, status.Error(codes.Aborted, err.Error())
+	}
+
+	return &npool.UnlockBalancesResponse{
+		Infos: infos,
 	}, nil
 }
