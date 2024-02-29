@@ -36,7 +36,7 @@ func (h *deleteHandler) updateProfit(req *crud.Req, ctx context.Context, tx *ent
 	}
 
 	if statement.IoSubType != basetypes.IOSubType_MiningBenefit.String() &&
-		statement.IoSubType != basetypes.IOSubType_RandomCashableSimulateProfit.String() {
+		statement.IoSubType != basetypes.IOSubType_SimulateMiningBenefit.String() {
 		return nil
 	}
 
