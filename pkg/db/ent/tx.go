@@ -26,6 +26,12 @@ type Tx struct {
 	LedgerLock *LedgerLockClient
 	// Profit is the client for interacting with the Profit builders.
 	Profit *ProfitClient
+	// SimulateLedger is the client for interacting with the SimulateLedger builders.
+	SimulateLedger *SimulateLedgerClient
+	// SimulateProfit is the client for interacting with the SimulateProfit builders.
+	SimulateProfit *SimulateProfitClient
+	// SimulateStatement is the client for interacting with the SimulateStatement builders.
+	SimulateStatement *SimulateStatementClient
 	// Statement is the client for interacting with the Statement builders.
 	Statement *StatementClient
 	// UnsoldStatement is the client for interacting with the UnsoldStatement builders.
@@ -173,6 +179,9 @@ func (tx *Tx) init() {
 	tx.Ledger = NewLedgerClient(tx.config)
 	tx.LedgerLock = NewLedgerLockClient(tx.config)
 	tx.Profit = NewProfitClient(tx.config)
+	tx.SimulateLedger = NewSimulateLedgerClient(tx.config)
+	tx.SimulateProfit = NewSimulateProfitClient(tx.config)
+	tx.SimulateStatement = NewSimulateStatementClient(tx.config)
 	tx.Statement = NewStatementClient(tx.config)
 	tx.UnsoldStatement = NewUnsoldStatementClient(tx.config)
 	tx.Withdraw = NewWithdrawClient(tx.config)

@@ -28,15 +28,18 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
-	CouponWithdraw  []ent.Hook
-	GoodLedger      []ent.Hook
-	GoodStatement   []ent.Hook
-	Ledger          []ent.Hook
-	LedgerLock      []ent.Hook
-	Profit          []ent.Hook
-	Statement       []ent.Hook
-	UnsoldStatement []ent.Hook
-	Withdraw        []ent.Hook
+	CouponWithdraw    []ent.Hook
+	GoodLedger        []ent.Hook
+	GoodStatement     []ent.Hook
+	Ledger            []ent.Hook
+	LedgerLock        []ent.Hook
+	Profit            []ent.Hook
+	SimulateLedger    []ent.Hook
+	SimulateProfit    []ent.Hook
+	SimulateStatement []ent.Hook
+	Statement         []ent.Hook
+	UnsoldStatement   []ent.Hook
+	Withdraw          []ent.Hook
 }
 
 // Options applies the options on the config object.

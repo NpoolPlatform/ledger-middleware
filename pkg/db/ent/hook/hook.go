@@ -87,6 +87,45 @@ func (f ProfitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return f(ctx, mv)
 }
 
+// The SimulateLedgerFunc type is an adapter to allow the use of ordinary
+// function as SimulateLedger mutator.
+type SimulateLedgerFunc func(context.Context, *ent.SimulateLedgerMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SimulateLedgerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.SimulateLedgerMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SimulateLedgerMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The SimulateProfitFunc type is an adapter to allow the use of ordinary
+// function as SimulateProfit mutator.
+type SimulateProfitFunc func(context.Context, *ent.SimulateProfitMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SimulateProfitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.SimulateProfitMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SimulateProfitMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The SimulateStatementFunc type is an adapter to allow the use of ordinary
+// function as SimulateStatement mutator.
+type SimulateStatementFunc func(context.Context, *ent.SimulateStatementMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SimulateStatementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.SimulateStatementMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SimulateStatementMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The StatementFunc type is an adapter to allow the use of ordinary
 // function as Statement mutator.
 type StatementFunc func(context.Context, *ent.StatementMutation) (ent.Value, error)

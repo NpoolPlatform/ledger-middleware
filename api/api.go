@@ -8,6 +8,9 @@ import (
 	ledger1 "github.com/NpoolPlatform/ledger-middleware/api/ledger"
 	profit "github.com/NpoolPlatform/ledger-middleware/api/ledger/profit"
 	statement "github.com/NpoolPlatform/ledger-middleware/api/ledger/statement"
+	simulateledger "github.com/NpoolPlatform/ledger-middleware/api/simulate/ledger"
+	simulateprofit "github.com/NpoolPlatform/ledger-middleware/api/simulate/ledger/profit"
+	simulatestatement "github.com/NpoolPlatform/ledger-middleware/api/simulate/ledger/statement"
 	withdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw"
 	couponwithdraw "github.com/NpoolPlatform/ledger-middleware/api/withdraw/coupon"
 
@@ -30,6 +33,9 @@ func Register(server grpc.ServiceRegistrar) {
 	withdraw.Register(server)
 	couponwithdraw.Register(server)
 	goodstatement.Register(server)
+	simulateledger.Register(server)
+	simulateprofit.Register(server)
+	simulatestatement.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
@@ -49,6 +55,15 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := goodstatement.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := simulateledger.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := simulateprofit.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := simulatestatement.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil

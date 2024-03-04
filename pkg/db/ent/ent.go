@@ -16,6 +16,9 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateprofit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulatestatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
@@ -39,15 +42,18 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		couponwithdraw.Table:  couponwithdraw.ValidColumn,
-		goodledger.Table:      goodledger.ValidColumn,
-		goodstatement.Table:   goodstatement.ValidColumn,
-		ledger.Table:          ledger.ValidColumn,
-		ledgerlock.Table:      ledgerlock.ValidColumn,
-		profit.Table:          profit.ValidColumn,
-		statement.Table:       statement.ValidColumn,
-		unsoldstatement.Table: unsoldstatement.ValidColumn,
-		withdraw.Table:        withdraw.ValidColumn,
+		couponwithdraw.Table:    couponwithdraw.ValidColumn,
+		goodledger.Table:        goodledger.ValidColumn,
+		goodstatement.Table:     goodstatement.ValidColumn,
+		ledger.Table:            ledger.ValidColumn,
+		ledgerlock.Table:        ledgerlock.ValidColumn,
+		profit.Table:            profit.ValidColumn,
+		simulateledger.Table:    simulateledger.ValidColumn,
+		simulateprofit.Table:    simulateprofit.ValidColumn,
+		simulatestatement.Table: simulatestatement.ValidColumn,
+		statement.Table:         statement.ValidColumn,
+		unsoldstatement.Table:   unsoldstatement.ValidColumn,
+		withdraw.Table:          withdraw.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

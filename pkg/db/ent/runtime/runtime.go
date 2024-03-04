@@ -12,6 +12,9 @@ import (
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledgerlock"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/profit"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/schema"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateledger"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulateprofit"
+	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/simulatestatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/unsoldstatement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/withdraw"
@@ -313,6 +316,166 @@ func init() {
 	profitDescCoinTypeID := profitFields[2].Descriptor()
 	// profit.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
 	profit.DefaultCoinTypeID = profitDescCoinTypeID.Default.(func() uuid.UUID)
+	simulateledgerMixin := schema.SimulateLedger{}.Mixin()
+	simulateledger.Policy = privacy.NewPolicies(simulateledgerMixin[0], schema.SimulateLedger{})
+	simulateledger.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := simulateledger.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	simulateledgerMixinFields0 := simulateledgerMixin[0].Fields()
+	_ = simulateledgerMixinFields0
+	simulateledgerMixinFields1 := simulateledgerMixin[1].Fields()
+	_ = simulateledgerMixinFields1
+	simulateledgerFields := schema.SimulateLedger{}.Fields()
+	_ = simulateledgerFields
+	// simulateledgerDescCreatedAt is the schema descriptor for created_at field.
+	simulateledgerDescCreatedAt := simulateledgerMixinFields0[0].Descriptor()
+	// simulateledger.DefaultCreatedAt holds the default value on creation for the created_at field.
+	simulateledger.DefaultCreatedAt = simulateledgerDescCreatedAt.Default.(func() uint32)
+	// simulateledgerDescUpdatedAt is the schema descriptor for updated_at field.
+	simulateledgerDescUpdatedAt := simulateledgerMixinFields0[1].Descriptor()
+	// simulateledger.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	simulateledger.DefaultUpdatedAt = simulateledgerDescUpdatedAt.Default.(func() uint32)
+	// simulateledger.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	simulateledger.UpdateDefaultUpdatedAt = simulateledgerDescUpdatedAt.UpdateDefault.(func() uint32)
+	// simulateledgerDescDeletedAt is the schema descriptor for deleted_at field.
+	simulateledgerDescDeletedAt := simulateledgerMixinFields0[2].Descriptor()
+	// simulateledger.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	simulateledger.DefaultDeletedAt = simulateledgerDescDeletedAt.Default.(func() uint32)
+	// simulateledgerDescEntID is the schema descriptor for ent_id field.
+	simulateledgerDescEntID := simulateledgerMixinFields1[1].Descriptor()
+	// simulateledger.DefaultEntID holds the default value on creation for the ent_id field.
+	simulateledger.DefaultEntID = simulateledgerDescEntID.Default.(func() uuid.UUID)
+	// simulateledgerDescAppID is the schema descriptor for app_id field.
+	simulateledgerDescAppID := simulateledgerFields[0].Descriptor()
+	// simulateledger.DefaultAppID holds the default value on creation for the app_id field.
+	simulateledger.DefaultAppID = simulateledgerDescAppID.Default.(func() uuid.UUID)
+	// simulateledgerDescUserID is the schema descriptor for user_id field.
+	simulateledgerDescUserID := simulateledgerFields[1].Descriptor()
+	// simulateledger.DefaultUserID holds the default value on creation for the user_id field.
+	simulateledger.DefaultUserID = simulateledgerDescUserID.Default.(func() uuid.UUID)
+	// simulateledgerDescCoinTypeID is the schema descriptor for coin_type_id field.
+	simulateledgerDescCoinTypeID := simulateledgerFields[2].Descriptor()
+	// simulateledger.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	simulateledger.DefaultCoinTypeID = simulateledgerDescCoinTypeID.Default.(func() uuid.UUID)
+	simulateprofitMixin := schema.SimulateProfit{}.Mixin()
+	simulateprofit.Policy = privacy.NewPolicies(simulateprofitMixin[0], schema.SimulateProfit{})
+	simulateprofit.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := simulateprofit.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	simulateprofitMixinFields0 := simulateprofitMixin[0].Fields()
+	_ = simulateprofitMixinFields0
+	simulateprofitMixinFields1 := simulateprofitMixin[1].Fields()
+	_ = simulateprofitMixinFields1
+	simulateprofitFields := schema.SimulateProfit{}.Fields()
+	_ = simulateprofitFields
+	// simulateprofitDescCreatedAt is the schema descriptor for created_at field.
+	simulateprofitDescCreatedAt := simulateprofitMixinFields0[0].Descriptor()
+	// simulateprofit.DefaultCreatedAt holds the default value on creation for the created_at field.
+	simulateprofit.DefaultCreatedAt = simulateprofitDescCreatedAt.Default.(func() uint32)
+	// simulateprofitDescUpdatedAt is the schema descriptor for updated_at field.
+	simulateprofitDescUpdatedAt := simulateprofitMixinFields0[1].Descriptor()
+	// simulateprofit.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	simulateprofit.DefaultUpdatedAt = simulateprofitDescUpdatedAt.Default.(func() uint32)
+	// simulateprofit.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	simulateprofit.UpdateDefaultUpdatedAt = simulateprofitDescUpdatedAt.UpdateDefault.(func() uint32)
+	// simulateprofitDescDeletedAt is the schema descriptor for deleted_at field.
+	simulateprofitDescDeletedAt := simulateprofitMixinFields0[2].Descriptor()
+	// simulateprofit.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	simulateprofit.DefaultDeletedAt = simulateprofitDescDeletedAt.Default.(func() uint32)
+	// simulateprofitDescEntID is the schema descriptor for ent_id field.
+	simulateprofitDescEntID := simulateprofitMixinFields1[1].Descriptor()
+	// simulateprofit.DefaultEntID holds the default value on creation for the ent_id field.
+	simulateprofit.DefaultEntID = simulateprofitDescEntID.Default.(func() uuid.UUID)
+	// simulateprofitDescAppID is the schema descriptor for app_id field.
+	simulateprofitDescAppID := simulateprofitFields[0].Descriptor()
+	// simulateprofit.DefaultAppID holds the default value on creation for the app_id field.
+	simulateprofit.DefaultAppID = simulateprofitDescAppID.Default.(func() uuid.UUID)
+	// simulateprofitDescUserID is the schema descriptor for user_id field.
+	simulateprofitDescUserID := simulateprofitFields[1].Descriptor()
+	// simulateprofit.DefaultUserID holds the default value on creation for the user_id field.
+	simulateprofit.DefaultUserID = simulateprofitDescUserID.Default.(func() uuid.UUID)
+	// simulateprofitDescCoinTypeID is the schema descriptor for coin_type_id field.
+	simulateprofitDescCoinTypeID := simulateprofitFields[2].Descriptor()
+	// simulateprofit.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	simulateprofit.DefaultCoinTypeID = simulateprofitDescCoinTypeID.Default.(func() uuid.UUID)
+	simulatestatementMixin := schema.SimulateStatement{}.Mixin()
+	simulatestatement.Policy = privacy.NewPolicies(simulatestatementMixin[0], schema.SimulateStatement{})
+	simulatestatement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := simulatestatement.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	simulatestatementMixinFields0 := simulatestatementMixin[0].Fields()
+	_ = simulatestatementMixinFields0
+	simulatestatementMixinFields1 := simulatestatementMixin[1].Fields()
+	_ = simulatestatementMixinFields1
+	simulatestatementFields := schema.SimulateStatement{}.Fields()
+	_ = simulatestatementFields
+	// simulatestatementDescCreatedAt is the schema descriptor for created_at field.
+	simulatestatementDescCreatedAt := simulatestatementMixinFields0[0].Descriptor()
+	// simulatestatement.DefaultCreatedAt holds the default value on creation for the created_at field.
+	simulatestatement.DefaultCreatedAt = simulatestatementDescCreatedAt.Default.(func() uint32)
+	// simulatestatementDescUpdatedAt is the schema descriptor for updated_at field.
+	simulatestatementDescUpdatedAt := simulatestatementMixinFields0[1].Descriptor()
+	// simulatestatement.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	simulatestatement.DefaultUpdatedAt = simulatestatementDescUpdatedAt.Default.(func() uint32)
+	// simulatestatement.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	simulatestatement.UpdateDefaultUpdatedAt = simulatestatementDescUpdatedAt.UpdateDefault.(func() uint32)
+	// simulatestatementDescDeletedAt is the schema descriptor for deleted_at field.
+	simulatestatementDescDeletedAt := simulatestatementMixinFields0[2].Descriptor()
+	// simulatestatement.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	simulatestatement.DefaultDeletedAt = simulatestatementDescDeletedAt.Default.(func() uint32)
+	// simulatestatementDescEntID is the schema descriptor for ent_id field.
+	simulatestatementDescEntID := simulatestatementMixinFields1[1].Descriptor()
+	// simulatestatement.DefaultEntID holds the default value on creation for the ent_id field.
+	simulatestatement.DefaultEntID = simulatestatementDescEntID.Default.(func() uuid.UUID)
+	// simulatestatementDescAppID is the schema descriptor for app_id field.
+	simulatestatementDescAppID := simulatestatementFields[0].Descriptor()
+	// simulatestatement.DefaultAppID holds the default value on creation for the app_id field.
+	simulatestatement.DefaultAppID = simulatestatementDescAppID.Default.(func() uuid.UUID)
+	// simulatestatementDescUserID is the schema descriptor for user_id field.
+	simulatestatementDescUserID := simulatestatementFields[1].Descriptor()
+	// simulatestatement.DefaultUserID holds the default value on creation for the user_id field.
+	simulatestatement.DefaultUserID = simulatestatementDescUserID.Default.(func() uuid.UUID)
+	// simulatestatementDescCoinTypeID is the schema descriptor for coin_type_id field.
+	simulatestatementDescCoinTypeID := simulatestatementFields[2].Descriptor()
+	// simulatestatement.DefaultCoinTypeID holds the default value on creation for the coin_type_id field.
+	simulatestatement.DefaultCoinTypeID = simulatestatementDescCoinTypeID.Default.(func() uuid.UUID)
+	// simulatestatementDescIoType is the schema descriptor for io_type field.
+	simulatestatementDescIoType := simulatestatementFields[3].Descriptor()
+	// simulatestatement.DefaultIoType holds the default value on creation for the io_type field.
+	simulatestatement.DefaultIoType = simulatestatementDescIoType.Default.(string)
+	// simulatestatementDescIoSubType is the schema descriptor for io_sub_type field.
+	simulatestatementDescIoSubType := simulatestatementFields[4].Descriptor()
+	// simulatestatement.DefaultIoSubType holds the default value on creation for the io_sub_type field.
+	simulatestatement.DefaultIoSubType = simulatestatementDescIoSubType.Default.(string)
+	// simulatestatementDescIoExtra is the schema descriptor for io_extra field.
+	simulatestatementDescIoExtra := simulatestatementFields[6].Descriptor()
+	// simulatestatement.DefaultIoExtra holds the default value on creation for the io_extra field.
+	simulatestatement.DefaultIoExtra = simulatestatementDescIoExtra.Default.(string)
+	// simulatestatement.IoExtraValidator is a validator for the "io_extra" field. It is called by the builders before save.
+	simulatestatement.IoExtraValidator = simulatestatementDescIoExtra.Validators[0].(func(string) error)
+	// simulatestatementDescSendCoupon is the schema descriptor for send_coupon field.
+	simulatestatementDescSendCoupon := simulatestatementFields[7].Descriptor()
+	// simulatestatement.DefaultSendCoupon holds the default value on creation for the send_coupon field.
+	simulatestatement.DefaultSendCoupon = simulatestatementDescSendCoupon.Default.(bool)
+	// simulatestatementDescCashable is the schema descriptor for cashable field.
+	simulatestatementDescCashable := simulatestatementFields[8].Descriptor()
+	// simulatestatement.DefaultCashable holds the default value on creation for the cashable field.
+	simulatestatement.DefaultCashable = simulatestatementDescCashable.Default.(bool)
 	statementMixin := schema.Statement{}.Mixin()
 	statement.Policy = privacy.NewPolicies(statementMixin[0], schema.Statement{})
 	statement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
