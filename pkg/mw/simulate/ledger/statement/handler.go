@@ -425,30 +425,11 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 				if req.IOSubType == nil {
 					return fmt.Errorf("invalid io sub type")
 				}
-				switch *req.IOType {
-				case basetypes.IOType_Incoming:
-					switch *req.IOSubType {
-					case basetypes.IOSubType_Payment:
-					case basetypes.IOSubType_MiningBenefit:
-					case basetypes.IOSubType_Commission:
-					case basetypes.IOSubType_TechniqueFeeCommission:
-					case basetypes.IOSubType_Deposit:
-					case basetypes.IOSubType_Transfer:
-					case basetypes.IOSubType_OrderRevoke:
-					default:
-						return fmt.Errorf("io subtype not match io type")
-					}
-				case basetypes.IOType_Outcoming:
-					switch *req.IOSubType {
-					case basetypes.IOSubType_Payment:
-					case basetypes.IOSubType_Withdrawal:
-					case basetypes.IOSubType_Transfer:
-					case basetypes.IOSubType_CommissionRevoke:
-					default:
-						return fmt.Errorf("io subtype not match io type")
-					}
-				default:
+				if *req.IOType != basetypes.IOType_Incoming {
 					return fmt.Errorf("invalid io type %v", *req.IOType)
+				}
+				if *req.IOSubType != basetypes.IOSubType_MiningBenefit {
+					return fmt.Errorf("io subtype not match io type")
 				}
 			}
 

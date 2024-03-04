@@ -40,30 +40,6 @@ var (
 	userID     = uuid.NewString()
 	coinTypeID = uuid.NewString()
 
-	deposit = npool.Statement{
-		EntID:        uuid.NewString(),
-		AppID:        appID,
-		UserID:       userID,
-		CoinTypeID:   coinTypeID,
-		Amount:       "100",
-		IOType:       basetypes.IOType_Incoming,
-		IOTypeStr:    basetypes.IOType_Incoming.String(),
-		IOSubType:    basetypes.IOSubType_Deposit,
-		IOSubTypeStr: basetypes.IOSubType_Deposit.String(),
-		IOExtra:      fmt.Sprintf(`{"AccountID": "%v", "UserID": "%v"}`, uuid.NewString(), uuid.NewString()),
-	}
-	payment = npool.Statement{
-		EntID:        uuid.NewString(),
-		AppID:        appID,
-		UserID:       userID,
-		CoinTypeID:   coinTypeID,
-		Amount:       "10",
-		IOType:       basetypes.IOType_Outcoming,
-		IOTypeStr:    basetypes.IOType_Outcoming.String(),
-		IOSubType:    basetypes.IOSubType_Payment,
-		IOSubTypeStr: basetypes.IOSubType_Payment.String(),
-		IOExtra:      fmt.Sprintf(`{"PaymentID": "%v", "OrderID": "%v"}`, uuid.NewString(), uuid.NewString()),
-	}
 	miningBenefit = npool.Statement{
 		EntID:        uuid.NewString(),
 		AppID:        appID,
@@ -81,48 +57,12 @@ var (
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
-		Incoming:   "101",
-		Outcoming:  "10",
+		Incoming:   "1",
+		Outcoming:  "0",
 	}
 )
 
 func setup(t *testing.T) func(*testing.T) {
-	deposits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
-		EntID:      &deposit.EntID,
-		AppID:      &appID,
-		UserID:     &userID,
-		CoinTypeID: &coinTypeID,
-		Amount:     &deposit.Amount,
-		IOType:     &deposit.IOType,
-		IOSubType:  &deposit.IOSubType,
-		IOExtra:    &deposit.IOExtra,
-	}})
-	if assert.Nil(t, err) {
-		assert.Equal(t, 1, len(deposits))
-		deposit.CreatedAt = deposits[0].CreatedAt
-		deposit.UpdatedAt = deposits[0].UpdatedAt
-		deposit.ID = deposits[0].ID
-		assert.Equal(t, &deposit, deposits[0])
-	}
-
-	payments, err := CreateStatements(context.Background(), []*npool.StatementReq{{
-		EntID:      &payment.EntID,
-		AppID:      &appID,
-		UserID:     &userID,
-		CoinTypeID: &coinTypeID,
-		Amount:     &payment.Amount,
-		IOType:     &payment.IOType,
-		IOSubType:  &payment.IOSubType,
-		IOExtra:    &payment.IOExtra,
-	}})
-	if assert.Nil(t, err) {
-		assert.Equal(t, 1, len(payments))
-		payment.CreatedAt = payments[0].CreatedAt
-		payment.UpdatedAt = payments[0].UpdatedAt
-		payment.ID = payments[0].ID
-		assert.Equal(t, &payment, payments[0])
-	}
-
 	benefits, err := CreateStatements(context.Background(), []*npool.StatementReq{{
 		EntID:      &miningBenefit.EntID,
 		AppID:      &appID,
@@ -141,7 +81,6 @@ func setup(t *testing.T) func(*testing.T) {
 		assert.Equal(t, &miningBenefit, benefits[0])
 	}
 	return func(t *testing.T) {
-		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{EntID: &payment.EntID})
 		_, _ = DeleteStatement(context.Background(), &npool.StatementReq{EntID: &miningBenefit.EntID})
 	}
 }
@@ -200,9 +139,9 @@ func compareProfit(t *testing.T) {
 }
 
 func getStatement(t *testing.T) {
-	info, err := GetStatement(context.Background(), deposit.EntID)
+	info, err := GetStatement(context.Background(), miningBenefit.EntID)
 	if assert.Nil(t, err) {
-		assert.Equal(t, &deposit, info)
+		assert.Equal(t, &miningBenefit, info)
 	}
 }
 
@@ -212,9 +151,9 @@ func getStatementOnly(t *testing.T) {
 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOType)},
-		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOSubType)},
-		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: deposit.IOExtra},
+		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(miningBenefit.IOType)},
+		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(miningBenefit.IOSubType)},
+		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: miningBenefit.IOExtra},
 	})
 	if assert.Nil(t, err) {
 		assert.NotNil(t, info)
@@ -227,9 +166,9 @@ func getStatements(t *testing.T) {
 		AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
 		UserID:     &commonpb.StringVal{Op: cruder.EQ, Value: userID},
 		CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: coinTypeID},
-		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOType)},
-		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(deposit.IOSubType)},
-		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: deposit.IOExtra},
+		IOType:     &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(miningBenefit.IOType)},
+		IOSubType:  &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(miningBenefit.IOSubType)},
+		IOExtra:    &commonpb.StringVal{Op: cruder.LIKE, Value: miningBenefit.IOExtra},
 	}, 0, 1)
 	if assert.Nil(t, err) {
 		assert.NotEqual(t, len(infos), 0)
@@ -242,8 +181,8 @@ var (
 		AppID:      appID,
 		UserID:     userID,
 		CoinTypeID: coinTypeID,
-		Incoming:   "100",
-		Outcoming:  "10",
+		Incoming:   "0",
+		Outcoming:  "0",
 	}
 )
 

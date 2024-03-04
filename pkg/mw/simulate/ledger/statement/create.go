@@ -248,30 +248,11 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 }
 
 func (h *Handler) validate() error {
-	switch *h.IOType {
-	case types.IOType_Incoming:
-		switch *h.IOSubType {
-		case types.IOSubType_Payment:
-		case types.IOSubType_MiningBenefit:
-		case types.IOSubType_Commission:
-		case types.IOSubType_TechniqueFeeCommission:
-		case types.IOSubType_Deposit:
-		case types.IOSubType_Transfer:
-		case types.IOSubType_OrderRevoke:
-		default:
-			return fmt.Errorf("io subtype not match io type")
-		}
-	case types.IOType_Outcoming:
-		switch *h.IOSubType {
-		case types.IOSubType_Payment:
-		case types.IOSubType_Withdrawal:
-		case types.IOSubType_Transfer:
-		case types.IOSubType_CommissionRevoke:
-		default:
-			return fmt.Errorf("io subtype not match io type")
-		}
-	default:
+	if *h.IOType != types.IOType_Incoming {
 		return fmt.Errorf("invalid io type %v", *h.IOType)
+	}
+	if *h.IOSubType != types.IOSubType_MiningBenefit {
+		return fmt.Errorf("io subtype not match io type")
 	}
 	return nil
 }
