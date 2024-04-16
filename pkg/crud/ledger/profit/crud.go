@@ -79,11 +79,12 @@ func UpdateSetWithValidate(info *ent.Profit, req *Req) (*ent.ProfitUpdateOne, er
 }
 
 type Conds struct {
-	EntID      *cruder.Cond
-	AppID      *cruder.Cond
-	UserID     *cruder.Cond
-	CoinTypeID *cruder.Cond
-	Incoming   *cruder.Cond
+	EntID       *cruder.Cond
+	AppID       *cruder.Cond
+	UserID      *cruder.Cond
+	CoinTypeID  *cruder.Cond
+	CoinTypeIDs *cruder.Cond
+	Incoming    *cruder.Cond
 }
 
 func SetQueryConds(q *ent.ProfitQuery, conds *Conds) (*ent.ProfitQuery, error) { //nolint
@@ -137,6 +138,18 @@ func SetQueryConds(q *ent.ProfitQuery, conds *Conds) (*ent.ProfitQuery, error) {
 			q.Where(entprofit.CoinTypeID(coinTypeID))
 		default:
 			return nil, fmt.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
+		}
+	}
+	if conds.CoinTypeIDs != nil {
+		coinTypeIDs, ok := conds.CoinTypeIDs.Val.([]uuid.UUID)
+		if !ok {
+			return nil, fmt.Errorf("invalid coin type ids")
+		}
+		switch conds.CoinTypeIDs.Op {
+		case cruder.IN:
+			q.Where(entprofit.CoinTypeIDIn(coinTypeIDs...))
+		default:
+			return nil, fmt.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)
 		}
 	}
 	if conds.Incoming != nil {

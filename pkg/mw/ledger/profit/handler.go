@@ -177,14 +177,18 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				Val: id,
 			}
 		}
-		if conds.Incoming != nil {
-			incoming, err := decimal.NewFromString(conds.GetIncoming().GetValue())
-			if err != nil {
-				return err
+		if conds.CoinTypeIDs != nil {
+			coinTypeIDs := []uuid.UUID{}
+			for _, coinTypeID := range conds.GetCoinTypeIDs().GetValue() {
+				id, err := uuid.Parse(coinTypeID)
+				if err != nil {
+					return err
+				}
+				coinTypeIDs = append(coinTypeIDs, id)
 			}
-			h.Conds.Incoming = &cruder.Cond{
-				Op:  conds.GetIncoming().GetOp(),
-				Val: incoming,
+			h.Conds.CoinTypeIDs = &cruder.Cond{
+				Op:  conds.GetCoinTypeID().GetOp(),
+				Val: coinTypeIDs,
 			}
 		}
 		return nil
