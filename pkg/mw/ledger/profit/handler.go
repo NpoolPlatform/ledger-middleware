@@ -187,7 +187,7 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 				coinTypeIDs = append(coinTypeIDs, id)
 			}
 			h.Conds.CoinTypeIDs = &cruder.Cond{
-				Op:  conds.GetCoinTypeID().GetOp(),
+				Op:  conds.GetCoinTypeIDs().GetOp(),
 				Val: coinTypeIDs,
 			}
 		}
