@@ -85,8 +85,11 @@ type Conds struct {
 	CoinTypeID  *cruder.Cond
 	CoinTypeIDs *cruder.Cond
 	Incoming    *cruder.Cond
+	StartAt     *cruder.Cond
+	EndAt       *cruder.Cond
 }
 
+//nolint:dupl
 func SetQueryConds(q *ent.ProfitQuery, conds *Conds) (*ent.ProfitQuery, error) { //nolint
 	q.Where(entprofit.DeletedAt(0))
 	if conds == nil {
@@ -166,6 +169,46 @@ func SetQueryConds(q *ent.ProfitQuery, conds *Conds) (*ent.ProfitQuery, error) {
 			q.Where(entprofit.IncomingEQ(incoming))
 		default:
 			return nil, fmt.Errorf("invalid incoming op field %v", conds.Incoming.Op)
+		}
+	}
+	if conds.StartAt != nil {
+		startAt, ok := conds.StartAt.Val.(uint32)
+		if !ok {
+			return nil, fmt.Errorf("invalid start at")
+		}
+		switch conds.StartAt.Op {
+		case cruder.EQ:
+			q.Where(entprofit.CreatedAtGTE(startAt))
+		case cruder.GT:
+			q.Where(entprofit.CreatedAtGT(startAt))
+		case cruder.GTE:
+			q.Where(entprofit.CreatedAtGTE(startAt))
+		case cruder.LT:
+			q.Where(entprofit.CreatedAtLT(startAt))
+		case cruder.LTE:
+			q.Where(entprofit.CreatedAtLTE(startAt))
+		default:
+			return nil, fmt.Errorf("invalid start at op field %s", conds.StartAt.Op)
+		}
+	}
+	if conds.EndAt != nil {
+		endAt, ok := conds.EndAt.Val.(uint32)
+		if !ok {
+			return nil, fmt.Errorf("invalid end at")
+		}
+		switch conds.EndAt.Op {
+		case cruder.EQ:
+			q.Where(entprofit.CreatedAtLTE(endAt))
+		case cruder.LT:
+			q.Where(entprofit.CreatedAtLT(endAt))
+		case cruder.LTE:
+			q.Where(entprofit.CreatedAtLTE(endAt))
+		case cruder.GT:
+			q.Where(entprofit.CreatedAtGT(endAt))
+		case cruder.GTE:
+			q.Where(entprofit.CreatedAtGTE(endAt))
+		default:
+			return nil, fmt.Errorf("invalid end at op field %s", conds.EndAt.Op)
 		}
 	}
 
