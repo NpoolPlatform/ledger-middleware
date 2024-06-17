@@ -267,6 +267,7 @@ func (h *Handler) validate() error {
 		case types.IOSubType_Transfer:
 		case types.IOSubType_OrderRevoke:
 		case types.IOSubType_SimulateMiningBenefit:
+		case types.IOSubType_ObseletePayment:
 		default:
 			return fmt.Errorf("io subtype not match io type")
 		}
