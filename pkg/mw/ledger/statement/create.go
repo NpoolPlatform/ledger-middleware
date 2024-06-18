@@ -256,7 +256,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	return infos, nil
 }
 
-func (h *Handler) validate() error {
+func (h *Handler) validate() error { //nolint:gocyclo
 	switch *h.IOType {
 	case types.IOType_Incoming:
 		switch *h.IOSubType {
