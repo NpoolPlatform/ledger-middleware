@@ -62,6 +62,15 @@ func (h *ledgeropHandler) coinLedger(coinTypeID uuid.UUID) *ent.Ledger {
 	return nil
 }
 
+func (h *ledgeropHandler) updateCoinLedger(ledger *ent.Ledger) {
+	for i, _ledger := range h.ledgers {
+		if _ledger.CoinTypeID == ledger.CoinTypeID {
+			h.ledgers[i] = ledger
+			break
+		}
+	}
+}
+
 func (h *ledgeropHandler) ledger(ledgerID uuid.UUID) *ent.Ledger {
 	for _, ledger := range h.ledgers {
 		if ledger.EntID == ledgerID {

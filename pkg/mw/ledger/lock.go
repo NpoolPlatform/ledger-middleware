@@ -89,9 +89,10 @@ func (h *lockHandler) lockBalances(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if _, err := stm.Save(ctx); err != nil {
+		if ledger, err = stm.Save(ctx); err != nil {
 			return err
 		}
+		h.lop.updateCoinLedger(ledger)
 	}
 	return nil
 }
