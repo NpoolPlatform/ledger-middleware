@@ -48,6 +48,10 @@ func (h *settleHandler) settleBalances(ctx context.Context) error {
 }
 
 func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error {
+	// TODO: we should construct sql instead of redis lock
+
+	existsChecked := map[uuid.UUID]struct{}{}
+
 	for i, lock := range h.locks {
 		if err := func() error {
 			ledger := h.lop.ledger(lock.LedgerID)
@@ -78,9 +82,11 @@ func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error 
 			if err != nil {
 				return err
 			}
-			if exist {
+			if _, ok := existsChecked[ledger.EntID]; !ok && exist {
 				return fmt.Errorf("statement already exist")
 			}
+
+			existsChecked[ledger.EntID] = struct{}{}
 
 			if _, err := statementcrud.CreateSet(tx.Statement.Create(), &statementcrud.Req{
 				EntID:      &h.StatementIDs[i],
