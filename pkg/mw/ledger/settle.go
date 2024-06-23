@@ -40,14 +40,19 @@ func (h *settleHandler) settleBalances(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if _, err := stm.Save(ctx); err != nil {
+		if ledger, err = stm.Save(ctx); err != nil {
 			return err
 		}
+		h.lop.updateLedger(ledger)
 	}
 	return nil
 }
 
 func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error {
+	// TODO: work around of settle balances
+
+	statementCreatables := map[uuid.UUID]struct{}{}
+
 	for i, lock := range h.locks {
 		if err := func() error {
 			ledger := h.lop.ledger(lock.LedgerID)
@@ -78,9 +83,12 @@ func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error 
 			if err != nil {
 				return err
 			}
-			if exist {
+			// Workaround: if we have same coins in this batch settle, we just check the first one
+			if _, ok := statementCreatables[ledger.CoinTypeID]; !ok && exist {
 				return fmt.Errorf("statement already exist")
 			}
+
+			statementCreatables[ledger.CoinTypeID] = struct{}{}
 
 			if _, err := statementcrud.CreateSet(tx.Statement.Create(), &statementcrud.Req{
 				EntID:      &h.StatementIDs[i],

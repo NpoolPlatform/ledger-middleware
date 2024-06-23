@@ -62,9 +62,9 @@ func (h *ledgeropHandler) coinLedger(coinTypeID uuid.UUID) *ent.Ledger {
 	return nil
 }
 
-func (h *ledgeropHandler) updateCoinLedger(ledger *ent.Ledger) {
+func (h *ledgeropHandler) updateLedger(ledger *ent.Ledger) {
 	for i, _ledger := range h.ledgers {
-		if _ledger.CoinTypeID == ledger.CoinTypeID {
+		if _ledger.EntID == ledger.EntID {
 			h.ledgers[i] = ledger
 			break
 		}
