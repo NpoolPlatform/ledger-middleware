@@ -172,7 +172,7 @@ func (h *Handler) SettleBalances(ctx context.Context) ([]*ledgermwpb.Ledger, err
 		return nil, wlog.Errorf("mismatched statementids")
 	}
 
-	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error { //nolint:dupl
 		if err := handler.lop.getLedgers(ctx, tx); err != nil {
 			return wlog.WrapError(err)
 		}
