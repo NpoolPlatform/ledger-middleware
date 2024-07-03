@@ -128,7 +128,7 @@ func (h *Handler) SettleBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 	handler.lop.ledgerIDs = []uuid.UUID{handler.locks[0].LedgerID}
 	h.StatementIDs = []uuid.UUID{*h.StatementID}
 
-	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
+	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error { //nolint:dupl
 		if err := handler.lop.getLedgers(ctx, tx); err != nil {
 			return wlog.WrapError(err)
 		}
