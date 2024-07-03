@@ -2,14 +2,14 @@ package ledger
 
 import (
 	"errors"
-	"fmt"
 
-	"github.com/shopspring/decimal"
-
+	wlog "github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db/ent"
 	entledger "github.com/NpoolPlatform/ledger-middleware/pkg/db/ent/ledger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Req struct {
@@ -104,20 +104,20 @@ func UpdateSetWithValidate(info *ent.Ledger, req *Req) (*ent.LedgerUpdateOne, er
 	}
 
 	if incoming.Cmp(locked.Add(outcoming).Add(spendable)) != 0 {
-		return nil, ErrLedgerInconsistent
+		return nil, wlog.WrapError(ErrLedgerInconsistent)
 	}
 
 	if locked.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, ErrLedgerInconsistent
+		return nil, wlog.WrapError(ErrLedgerInconsistent)
 	}
 	if incoming.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, ErrLedgerInconsistent
+		return nil, wlog.WrapError(ErrLedgerInconsistent)
 	}
 	if outcoming.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, ErrLedgerInconsistent
+		return nil, wlog.WrapError(ErrLedgerInconsistent)
 	}
 	if spendable.Cmp(decimal.NewFromInt(0)) < 0 {
-		return nil, ErrLedgerInconsistent
+		return nil, wlog.WrapError(ErrLedgerInconsistent)
 	}
 
 	return UpdateSet(info.Update(), &Req{
@@ -149,91 +149,91 @@ func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) {
 	if conds.EntID != nil {
 		id, ok := conds.EntID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid entid")
+			return nil, wlog.Errorf("invalid entid")
 		}
 		switch conds.EntID.Op {
 		case cruder.EQ:
 			q.Where(entledger.EntID(id))
 		default:
-			return nil, fmt.Errorf("invalid entid op field %v", conds.EntID.Op)
+			return nil, wlog.Errorf("invalid entid op field %v", conds.EntID.Op)
 		}
 	}
 	if conds.EntIDs != nil {
 		ids, ok := conds.EntIDs.Val.([]uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid entids %v", conds.EntIDs.Val)
+			return nil, wlog.Errorf("invalid entids %v", conds.EntIDs.Val)
 		}
 		switch conds.EntIDs.Op {
 		case cruder.IN:
 			q.Where(entledger.EntIDIn(ids...))
 		default:
-			return nil, fmt.Errorf("invalid entids op field %v", conds.EntIDs.Op)
+			return nil, wlog.Errorf("invalid entids op field %v", conds.EntIDs.Op)
 		}
 	}
 	if conds.AppID != nil {
 		appID, ok := conds.AppID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid app id")
+			return nil, wlog.Errorf("invalid app id")
 		}
 		switch conds.AppID.Op {
 		case cruder.EQ:
 			q.Where(entledger.AppID(appID))
 		default:
-			return nil, fmt.Errorf("invalid app id op field %v", conds.AppID.Op)
+			return nil, wlog.Errorf("invalid app id op field %v", conds.AppID.Op)
 		}
 	}
 	if conds.UserID != nil {
 		userID, ok := conds.UserID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid user id")
+			return nil, wlog.Errorf("invalid user id")
 		}
 		switch conds.UserID.Op {
 		case cruder.EQ:
 			q.Where(entledger.UserID(userID))
 		default:
-			return nil, fmt.Errorf("invalid user id op field %v", conds.UserID.Op)
+			return nil, wlog.Errorf("invalid user id op field %v", conds.UserID.Op)
 		}
 	}
 	if conds.CoinTypeID != nil {
 		coinTypeID, ok := conds.CoinTypeID.Val.(uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid coin type id")
+			return nil, wlog.Errorf("invalid coin type id")
 		}
 		switch conds.CoinTypeID.Op {
 		case cruder.EQ:
 			q.Where(entledger.CoinTypeID(coinTypeID))
 		default:
-			return nil, fmt.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
+			return nil, wlog.Errorf("invalid coin type id op field %v", conds.CoinTypeID.Op)
 		}
 	}
 	if conds.Incoming != nil {
 		incoming, ok := conds.Incoming.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid incoming %v", conds.Incoming.Val)
+			return nil, wlog.Errorf("invalid incoming %v", conds.Incoming.Val)
 		}
 		switch conds.Incoming.Op {
 		case cruder.EQ:
 			q.Where(entledger.Incoming(incoming))
 		default:
-			return nil, fmt.Errorf("invalid incoming op field %v", conds.Incoming.Op)
+			return nil, wlog.Errorf("invalid incoming op field %v", conds.Incoming.Op)
 		}
 	}
 	if conds.Outcoming != nil {
 		outcoming, ok := conds.Outcoming.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid outcoming %v", conds.Outcoming.Val)
+			return nil, wlog.Errorf("invalid outcoming %v", conds.Outcoming.Val)
 		}
 		switch conds.Outcoming.Op {
 		case cruder.EQ:
 			q.Where(entledger.Outcoming(outcoming))
 		default:
-			return nil, fmt.Errorf("invalid outcoming op field %v", conds.Outcoming.Op)
+			return nil, wlog.Errorf("invalid outcoming op field %v", conds.Outcoming.Op)
 		}
 	}
 	if conds.Spendable != nil {
 		spendable, ok := conds.Spendable.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid spendable %v", conds.Spendable.Val)
+			return nil, wlog.Errorf("invalid spendable %v", conds.Spendable.Val)
 		}
 		switch conds.Spendable.Op {
 		case cruder.LT:
@@ -243,31 +243,31 @@ func SetQueryConds(q *ent.LedgerQuery, conds *Conds) (*ent.LedgerQuery, error) {
 		case cruder.EQ:
 			q.Where(entledger.SpendableEQ(spendable))
 		default:
-			return nil, fmt.Errorf("invalid spendable op field %v", conds.Spendable.Op)
+			return nil, wlog.Errorf("invalid spendable op field %v", conds.Spendable.Op)
 		}
 	}
 	if conds.Locked != nil {
 		locked, ok := conds.Locked.Val.(decimal.Decimal)
 		if !ok {
-			return nil, fmt.Errorf("invalid locked %v", conds.Locked.Val)
+			return nil, wlog.Errorf("invalid locked %v", conds.Locked.Val)
 		}
 		switch conds.Locked.Op {
 		case cruder.EQ:
 			q.Where(entledger.Locked(locked))
 		default:
-			return nil, fmt.Errorf("invalid locked op field %v", conds.Locked.Op)
+			return nil, wlog.Errorf("invalid locked op field %v", conds.Locked.Op)
 		}
 	}
 	if conds.CoinTypeIDs != nil {
 		ids, ok := conds.CoinTypeIDs.Val.([]uuid.UUID)
 		if !ok {
-			return nil, fmt.Errorf("invalid coin type ids %v", conds.CoinTypeIDs.Val)
+			return nil, wlog.Errorf("invalid coin type ids %v", conds.CoinTypeIDs.Val)
 		}
 		switch conds.CoinTypeIDs.Op {
 		case cruder.IN:
 			q.Where(entledger.CoinTypeIDIn(ids...))
 		default:
-			return nil, fmt.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)
+			return nil, wlog.Errorf("invalid coin type ids op field %v", conds.CoinTypeIDs.Op)
 		}
 	}
 	return q, nil

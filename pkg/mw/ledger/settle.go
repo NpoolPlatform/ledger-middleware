@@ -2,9 +2,9 @@ package ledger
 
 import (
 	"context"
-	"fmt"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	wlog "github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	ledgercrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger"
 	statementcrud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/ledger-middleware/pkg/db"
@@ -30,7 +30,7 @@ func (h *settleHandler) settleBalances(ctx context.Context) error {
 
 		ledger := h.lop.ledger(lock.LedgerID)
 		if ledger == nil {
-			return fmt.Errorf("invalid ledger")
+			return wlog.Errorf("invalid ledger")
 		}
 
 		stm, err := ledgercrud.UpdateSetWithValidate(ledger, &ledgercrud.Req{
@@ -38,10 +38,10 @@ func (h *settleHandler) settleBalances(ctx context.Context) error {
 			Outcoming: &outcoming,
 		})
 		if err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if ledger, err = stm.Save(ctx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.lop.updateLedger(ledger)
 	}
@@ -57,12 +57,12 @@ func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error 
 		if err := func() error {
 			ledger := h.lop.ledger(lock.LedgerID)
 			if ledger == nil {
-				return fmt.Errorf("invalid ledger")
+				return wlog.Errorf("invalid ledger")
 			}
 
 			key := statement1.LockKey(ledger.AppID, ledger.UserID, ledger.CoinTypeID, *h.IOExtra)
 			if err := redis2.TryLock(key, 0); err != nil {
-				return err
+				return wlog.WrapError(err)
 			}
 			defer func() {
 				_ = redis2.Unlock(key)
@@ -77,15 +77,15 @@ func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error 
 				IOExtra:    &cruder.Cond{Op: cruder.LIKE, Val: *h.IOExtra},
 			})
 			if err != nil {
-				return err
+				return wlog.WrapError(err)
 			}
 			exist, err := stm.Exist(ctx)
 			if err != nil {
-				return err
+				return wlog.WrapError(err)
 			}
 			// Workaround: if we have same coins in this batch settle, we just check the first one
 			if _, ok := statementCreatables[ledger.CoinTypeID]; !ok && exist {
-				return fmt.Errorf("statement already exist")
+				return wlog.Errorf("statement already exist")
 			}
 
 			statementCreatables[ledger.CoinTypeID] = struct{}{}
@@ -100,11 +100,11 @@ func (h *settleHandler) createStatements(ctx context.Context, tx *ent.Tx) error 
 				IOExtra:    h.IOExtra,
 				Amount:     &lock.Amount,
 			}).Save(ctx); err != nil {
-				return err
+				return wlog.WrapError(err)
 			}
 			return nil
 		}(); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 	}
 	return nil
@@ -130,16 +130,16 @@ func (h *Handler) SettleBalance(ctx context.Context) (*ledgermwpb.Ledger, error)
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if err := handler.lop.getLedgers(ctx, tx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if err := handler.settleBalances(ctx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if err := handler.createStatements(ctx, tx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if err := handler.updateLocks(ctx, tx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		return nil
 	})
@@ -169,21 +169,21 @@ func (h *Handler) SettleBalances(ctx context.Context) ([]*ledgermwpb.Ledger, err
 		handler.lop.ledgerIDs = append(handler.lop.ledgerIDs, lock.LedgerID)
 	}
 	if len(h.StatementIDs) != len(handler.locks) {
-		return nil, fmt.Errorf("mismatched statementids")
+		return nil, wlog.Errorf("mismatched statementids")
 	}
 
 	err := db.WithTx(ctx, func(ctx context.Context, tx *ent.Tx) error {
 		if err := handler.lop.getLedgers(ctx, tx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if err := handler.settleBalances(ctx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if err := handler.createStatements(ctx, tx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if err := handler.updateLocks(ctx, tx); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		return nil
 	})
