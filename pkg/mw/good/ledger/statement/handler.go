@@ -100,7 +100,7 @@ func WithTotalAmount(amount *string, must bool) func(context.Context, *Handler) 
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
 			if must {
-				return fmt.Errorf("invalid total amount")
+				return fmt.Errorf("invalid totalamount")
 			}
 			return nil
 		}
@@ -108,8 +108,8 @@ func WithTotalAmount(amount *string, must bool) func(context.Context, *Handler) 
 		if err != nil {
 			return err
 		}
-		if _amount.Cmp(decimal.NewFromInt(0)) <= 0 {
-			return fmt.Errorf("total amount is less than equal 0 %v", *amount)
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("invalid totalamount")
 		}
 		h.TotalAmount = &_amount
 		return nil
@@ -130,7 +130,7 @@ func WithUnsoldAmount(amount *string, must bool) func(context.Context, *Handler)
 			return err
 		}
 		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("unsold amount is less than 0 %v", *amount)
+			return fmt.Errorf("invalid unsoldamount")
 		}
 		h.UnsoldAmount = &_amount
 		return nil
@@ -142,7 +142,7 @@ func WithTechniqueServiceFeeAmount(amount *string, must bool) func(context.Conte
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
 			if must {
-				return fmt.Errorf("invalid technique service fee amount")
+				return fmt.Errorf("invalid techniqueservicefeeamount")
 			}
 			return nil
 		}
@@ -151,7 +151,7 @@ func WithTechniqueServiceFeeAmount(amount *string, must bool) func(context.Conte
 			return err
 		}
 		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
-			return fmt.Errorf("technique service fee amount is less than 0 %v", *amount)
+			return fmt.Errorf("invalid techniqueservicefeeamount")
 		}
 		h.TechniqueServiceFeeAmount = &_amount
 		return nil
@@ -239,8 +239,8 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 				if err != nil {
 					return err
 				}
-				if amount.Cmp(decimal.NewFromInt(0)) <= 0 {
-					return fmt.Errorf("total amount is less than equal 0 %v", *req.TotalAmount)
+				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+					return fmt.Errorf("invalid totalamount")
 				}
 				_req.TotalAmount = &amount
 			}
@@ -250,7 +250,7 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 					return err
 				}
 				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
-					return fmt.Errorf("unsold amount is less than 0 %v", *req.UnsoldAmount)
+					return fmt.Errorf("invalid unsoldamount")
 				}
 				_req.UnsoldAmount = &amount
 			}
@@ -260,13 +260,13 @@ func WithReqs(reqs []*npool.GoodStatementReq, must bool) func(context.Context, *
 					return err
 				}
 				if amount.Cmp(decimal.NewFromInt(0)) < 0 {
-					return fmt.Errorf("technique service fee amount is less than 0 %v", *req.TechniqueServiceFeeAmount)
+					return fmt.Errorf("invalid techniqueservicefeeamount")
 				}
 				_req.TechniqueServiceFeeAmount = &amount
 			}
 			if req.BenefitDate != nil {
 				if *req.BenefitDate == 0 {
-					return fmt.Errorf("invalid benefit date 0")
+					return fmt.Errorf("invalid benefitdate")
 				}
 				_req.BenefitDate = req.BenefitDate
 			}
