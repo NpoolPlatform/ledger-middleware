@@ -90,15 +90,11 @@ func (h *lockopHandler) updateLocks(ctx context.Context, tx *ent.Tx) error {
 
 		stm := tx.
 			LedgerLock.
-			Update().
+			UpdateOneID(lock.ID).
 			SetLockState(h.state.String())
 		if *h.state == types.LedgerLockState_LedgerLockSettle {
 			stm.SetStatementID(h.StatementIDs[i])
 		}
-		stm.Where(
-			entledgerlock.ExLockID(lock.ExLockID),
-			entledgerlock.DeletedAt(0),
-		)
 		if _, err := stm.Save(ctx); err != nil {
 			return err
 		}

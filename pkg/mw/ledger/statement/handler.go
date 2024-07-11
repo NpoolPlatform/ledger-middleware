@@ -8,7 +8,7 @@ import (
 	constant "github.com/NpoolPlatform/ledger-middleware/pkg/const"
 	crud "github.com/NpoolPlatform/ledger-middleware/pkg/crud/ledger/statement"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
+	types "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	npool "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -117,7 +117,7 @@ func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error
 }
 
 //nolint
-func WithIOType(_type *basetypes.IOType, must bool) func(context.Context, *Handler) error {
+func WithIOType(_type *types.IOType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {
 			if must {
@@ -126,8 +126,8 @@ func WithIOType(_type *basetypes.IOType, must bool) func(context.Context, *Handl
 			return nil
 		}
 		flag := false
-		for ioType := range basetypes.IOType_value {
-			if ioType == _type.String() && ioType != basetypes.IOType_DefaultType.String() {
+		for ioType := range types.IOType_value {
+			if ioType == _type.String() && ioType != types.IOType_DefaultType.String() {
 				flag = true
 			}
 		}
@@ -140,7 +140,7 @@ func WithIOType(_type *basetypes.IOType, must bool) func(context.Context, *Handl
 }
 
 //nolint
-func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, *Handler) error {
+func WithIOSubType(_type *types.IOSubType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if _type == nil {
 			if must {
@@ -149,8 +149,8 @@ func WithIOSubType(_type *basetypes.IOSubType, must bool) func(context.Context, 
 			return nil
 		}
 		flag := false
-		for ioSubType := range basetypes.IOSubType_value {
-			if ioSubType == _type.String() && ioSubType != basetypes.IOSubType_DefaultSubType.String() {
+		for ioSubType := range types.IOSubType_value {
+			if ioSubType == _type.String() && ioSubType != types.IOSubType_DefaultSubType.String() {
 				flag = true
 			}
 		}
@@ -293,14 +293,14 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 			ioType := conds.GetIOType().GetValue()
 			h.Conds.IOType = &cruder.Cond{
 				Op:  conds.GetIOType().GetOp(),
-				Val: basetypes.IOType(ioType),
+				Val: types.IOType(ioType),
 			}
 		}
 		if conds.IOSubType != nil {
 			ioSubType := conds.GetIOSubType().GetValue()
 			h.Conds.IOSubType = &cruder.Cond{
 				Op:  conds.GetIOSubType().GetOp(),
-				Val: basetypes.IOSubType(ioSubType),
+				Val: types.IOSubType(ioSubType),
 			}
 		}
 		if conds.IOExtra != nil {
@@ -324,7 +324,7 @@ func WithConds(conds *npool.Conds) func(context.Context, *Handler) error {
 		if len(conds.GetIOSubTypes().GetValue()) > 0 {
 			ioSubTypes := []string{}
 			for _, val := range conds.GetIOSubTypes().GetValue() {
-				ioSubTypes = append(ioSubTypes, basetypes.IOSubType_name[int32(val)])
+				ioSubTypes = append(ioSubTypes, types.IOSubType_name[int32(val)])
 			}
 			h.Conds.IOSubTypes = &cruder.Cond{Op: conds.GetIOSubTypes().GetOp(), Val: ioSubTypes}
 		}
@@ -388,25 +388,26 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 					return fmt.Errorf("invalid io sub type")
 				}
 				switch *req.IOType {
-				case basetypes.IOType_Incoming:
+				case types.IOType_Incoming:
 					switch *req.IOSubType {
-					case basetypes.IOSubType_Payment:
-					case basetypes.IOSubType_MiningBenefit:
-					case basetypes.IOSubType_Commission:
-					case basetypes.IOSubType_TechniqueFeeCommission:
-					case basetypes.IOSubType_Deposit:
-					case basetypes.IOSubType_Transfer:
-					case basetypes.IOSubType_OrderRevoke:
-					case basetypes.IOSubType_SimulateMiningBenefit:
+					case types.IOSubType_Payment:
+					case types.IOSubType_MiningBenefit:
+					case types.IOSubType_Commission:
+					case types.IOSubType_TechniqueFeeCommission:
+					case types.IOSubType_Deposit:
+					case types.IOSubType_Transfer:
+					case types.IOSubType_OrderRevoke:
+					case types.IOSubType_SimulateMiningBenefit:
+					case types.IOSubType_ObseletePayment:
 					default:
 						return fmt.Errorf("io subtype not match io type")
 					}
-				case basetypes.IOType_Outcoming:
+				case types.IOType_Outcoming:
 					switch *req.IOSubType {
-					case basetypes.IOSubType_Payment:
-					case basetypes.IOSubType_Withdrawal:
-					case basetypes.IOSubType_Transfer:
-					case basetypes.IOSubType_CommissionRevoke:
+					case types.IOSubType_Payment:
+					case types.IOSubType_Withdrawal:
+					case types.IOSubType_Transfer:
+					case types.IOSubType_CommissionRevoke:
 					default:
 						return fmt.Errorf("io subtype not match io type")
 					}

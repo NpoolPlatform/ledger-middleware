@@ -1,3 +1,4 @@
+//nolint:dupl
 package statement
 
 import (
@@ -255,7 +256,7 @@ func (h *Handler) CreateStatements(ctx context.Context) ([]*npool.Statement, err
 	return infos, nil
 }
 
-func (h *Handler) validate() error {
+func (h *Handler) validate() error { //nolint:gocyclo
 	switch *h.IOType {
 	case types.IOType_Incoming:
 		switch *h.IOSubType {
@@ -267,6 +268,7 @@ func (h *Handler) validate() error {
 		case types.IOSubType_Transfer:
 		case types.IOSubType_OrderRevoke:
 		case types.IOSubType_SimulateMiningBenefit:
+		case types.IOSubType_ObseletePayment:
 		default:
 			return fmt.Errorf("io subtype not match io type")
 		}
