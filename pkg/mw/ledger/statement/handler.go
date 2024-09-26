@@ -399,6 +399,7 @@ func WithReqs(reqs []*npool.StatementReq, must bool) func(context.Context, *Hand
 					case types.IOSubType_OrderRevoke:
 					case types.IOSubType_SimulateMiningBenefit:
 					case types.IOSubType_ObseletePayment:
+					case types.IOSubType_EventReward:
 					default:
 						return fmt.Errorf("io subtype not match io type")
 					}
